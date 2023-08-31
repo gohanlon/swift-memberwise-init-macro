@@ -1,0 +1,67 @@
+public enum AccessLevelConfig {
+  case `private`
+  case `fileprivate`
+  case `internal`
+  case `public`
+  case `open`
+}
+
+// MARK: @MemberwiseInit macro
+
+@attached(member, names: named(init))
+public macro MemberwiseInit(
+  _ accessLevel: AccessLevelConfig = .internal,
+  optionalsDefaultNil: Bool = false
+) = #externalMacro(
+  module: "MemberwiseInitMacros",
+  type: "MemberwiseInitMacro"
+)
+
+// MARK: @Init macro
+
+public enum EscapingConfig {
+  case escaping
+}
+
+public enum IgnoreConfig {
+  case ignore
+}
+
+@attached(peer)
+public macro Init() = #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "InitMacro"
+)
+
+@attached(peer)
+public macro Init(
+  _ ignore: IgnoreConfig
+) = #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "InitMacro"
+)
+
+@attached(peer)
+public macro Init(
+  _ accessLevel: AccessLevelConfig
+) = #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "InitMacro"
+)
+
+@attached(peer)
+public macro Init(
+  _ escaping: EscapingConfig
+) = #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "InitMacro"
+)
+
+@attached(peer)
+public macro Init(
+  _ accessLevel: AccessLevelConfig,
+  _ escaping: EscapingConfig
+) = #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "InitMacro"
+)
