@@ -17,7 +17,7 @@ Informed by explicit developer cues, MemberwiseInit can more often automatically
 
 * [Quick start](#quick-start)
 * [Quick reference](#quick-reference)
-* [Advanced usage and limitations](#advanced-usage-and-limitations)
+* [Features and limitations](#features-and-limitations)
   * [Custom `init` parameter labels](#custom-init-parameter-labels)
   * [Explicitly ignore properties](#explicitly-ignore-properties)
   * [Attributed properties are ignored by default, but includable](#attributed-properties-are-ignored-by-default-but-includable)
@@ -108,7 +108,7 @@ Attach to struct, actor *(experimental)*, or class *(experimental)*.
 * `@MemberwiseInit(.public)`
   <br> Provide a memberwise `init` with up to the provided access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.public`, `.open`.
 
-* `@MemberwiseInit(_deunderscoreParams: true)` *(experimental)*
+* `@MemberwiseInit(_deunderscoreParameters: true)` *(experimental)*
   <br> Drop underscore prefix from generated `init` parameter names, unless doing so would result in a naming conflict. (Ignored properties won’t contribute to conflicts.)
 
 * `@MemberwiseInit(_optionalsDefaultNil: true)` *(experimental)*
@@ -137,12 +137,12 @@ Attach to member property declarations of a struct, actor, or class that `@Membe
   <br> Assigns a custom parameter label in the provided `init`.
   * Use `@Init(label: "_")` to make the `init` parameter label-less.
   * Diagnostic errors arise from invalid labels, or conflicts among properties included in the `init`. (Ignored properties don’t cause conflicts.)
-  * Overrides MemberwiseInit’s experimental `_deunderscoreParams` behavior.
+  * Overrides MemberwiseInit’s experimental `_deunderscoreParameters` behavior.
 
 * `@Init(.public, label: String)`
   <br> Custom labels can be combined with all other behaviors.
 
-## Advanced usage and limitations
+## Features and limitations
 
 ### Custom `init` parameter labels
 
@@ -469,7 +469,7 @@ public init(
 To override the deunderscore behavior at the property level, use `@Init(label: String)`:
 
 ```swift
-@MemberwiseInit(.public, _deunderscoreParmeters: true)
+@MemberwiseInit(.public, _deunderscoreParameters: true)
 public struct Review {
   @Init(.public, label: "_rating") private let _rating: Int
 }
