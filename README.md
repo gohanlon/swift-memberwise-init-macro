@@ -9,9 +9,6 @@ A Swift Macro for enhanced automatic memberwise initializers, greatly reducing m
 
 Informed by explicit developer cues, MemberwiseInit can more often automatically provide your intended memberwise `init`, while following the same safe-by-default semantics underlying [Swift’s memberwise initializers][swifts-memberwise-init].
 
-> :warning: :warning: :warning: **Pre-release**<br>
-> I’m on the cusp of the official release and excited to share this with you! Dive in, experiment, and any feedback you provide will be greatly appreciated.
-
 > :warning: **Important**<br>
 > `@MemberwiseInit` is a Swift Macro requiring **swift-tools-version: 5.9** or later (**Xcode 15** onwards).
 
@@ -33,21 +30,22 @@ Informed by explicit developer cues, MemberwiseInit can more often automatically
 To use MemberwiseInit:
 
 1. **Installation**
-   <br> Add MemberwiseInit via Swift Package Manager by providing the package URL to your Xcode project: `https://github.com/gohanlon/swift-memberwise-init-macro`.
+   <br> In Xcode, add MemberwiseInit with: `File` → `Add Package Dependencies…` and input the package URL:
 
-   Or, for SPM-based projects, add it to your package dependencies and target dependency:
+   > `https://github.com/gohanlon/swift-memberwise-init-macro`
 
-   ```swift
-   .package(
-     url: "https://github.com/gohanlon/swift-memberwise-init-macro",
-     branch: "main" // NB: tagged release forthcoming
-   ),
-   ```
+   Or, for SPM-based projects, add it to your package dependencies:
 
    ```swift
    dependencies: [
-     .product(name: "MemberwiseInit", package: "swift-memberwise-init-macro"),
+     .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", from: "0.1.0")
    ]
+   ```
+
+   And then add the product to all targets that use MemberwiseInit:
+
+   ```swift
+   .product(name: "MemberwiseInit", package: "swift-memberwise-init-macro"),
    ```
 
 2. **Import & basic usage**
