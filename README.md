@@ -13,7 +13,7 @@ A Swift Macro for enhanced automatic memberwise initializers, greatly reducing m
 
 Informed by explicit developer cues, MemberwiseInit can more often automatically provide your intended memberwise `init`, while following the same safe-by-default semantics underlying [Swift’s memberwise initializers][swifts-memberwise-init].
 
-> :warning: **Important**<br>
+> [!IMPORTANT]
 > `@MemberwiseInit` is a Swift Macro requiring **swift-tools-version: 5.9** or later (**Xcode 15** onwards).
 
 * [Quick start](#quick-start)
@@ -114,7 +114,7 @@ Attach to struct, actor *(experimental)*, or class *(experimental)*.
   <br> Drop underscore prefix from generated `init` parameter names, unless doing so would result in a naming conflict. (Ignored properties won’t contribute to conflicts.)
 
 * `@MemberwiseInit(_optionalsDefaultNil: true)` *(experimental)*
-  <br> Give all optional fields a default `init` parameter value of `nil`.
+  <br> When set to `true`, give all optional properties a default `init` parameter value of `nil`. For non-public initializers, optional `var` properties default to `nil` unless this parameter is explicitly set to `false`.
 
 ### `@Init`
 
@@ -489,14 +489,25 @@ public init(
 
 ### Experimental: Defaulting optionals to nil
 
-`@MemberwiseInit(_optionalsDefaultNil: true)` automatically defaults all optional fields to `nil` in its initializer, trading off compile-time guidance.
+Use `@MemberwiseInit(_optionalsDefaultNil: Bool)` to explicitly control whether optional properties are defaulted to `nil` in the provided initializer:
+
+* Set `_optionalsDefaultNil: true` to default all optional properties to `nil`, trading off compile-time guidance.
+* Set `_optionalsDefaultNil: false` to ensure that MemberwiseInit never defaults optional properties to `nil`.
+
+The default behavior of MemberwiseInit regarding optional properties aligns with Swift’s memberwise initializer:
+
+* For non-public initializers, `var` optional properties automatically default to `nil`.
+* For public initializers, MemberwiseInit follows Swift’s cautious approach to public APIs by requiring all parameters explicitly, including optionals, unless `_optionalsDefaultNil` is set to `true`.
+* `let` optional properties are never automatically defaulted to `nil`. Setting `_optionalsDefaultNil` to `true` is the only way to cause them to default to `nil`.
 
 > **Note**
-> `@Init(default:)` is a planned future enhancement to generally specify default values, and is expected to supersede `_optionalsDefaultNil` due to its improved safety.
+> `@Init(default:)` is a planned future enhancement to generally specify default values, and will be a safer, more explicit alternative to `_optionalsDefaultNil`.
 
 #### Explanation
 
-This feature eases instantiation for types with numerous optional fields, like `Codable` structs that mirror loosely structured HTTP APIs. However, it has a drawback: when properties change, the compiler won’t flag outdated instantiations, risking unintended `nil` assignments and potential runtime errors.
+With `_optionalsDefaultNil`, you gain control over a default behavior of Swift’s memberwise init. And, it allows you to explicitly opt-in to your public initializer defaulting optional properties to `nil`.
+
+Easing instantiation is the primary purpose of `_optionalsDefaultNil`, and is especially useful when your types mirror a loosely structured external dependency, e.g. `Codable` structs that mirror HTTP APIs. However, `_optionalsDefaultNil` has a drawback: when properties change, the compiler won’t flag outdated instantiations, risking unintended `nil` assignments and potential runtime errors.
 
 In Swift:
 

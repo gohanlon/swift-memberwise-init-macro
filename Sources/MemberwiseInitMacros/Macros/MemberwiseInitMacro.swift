@@ -25,8 +25,8 @@ public struct MemberwiseInitMacro: MemberMacro {
       throw MemberwiseInitMacroDiagnostic.invalidDeclarationKind(decl)
     }
     let configuredAccessLevel: AccessLevelModifier? = extractConfiguredAccessLevel(from: node)
-    let optionalsDefaultNil: Bool =
-      extractLabeledBoolArgument("_optionalsDefaultNil", from: node) ?? false
+    let optionalsDefaultNil: Bool? =
+      extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
     let deunderscoreParameters: Bool =
       extractLabeledBoolArgument("_deunderscoreParameters", from: node) ?? false
 
@@ -51,6 +51,10 @@ public struct MemberwiseInitMacro: MemberMacro {
             considering: properties,
             deunderscoreParameters: deunderscoreParameters,
             optionalsDefaultNil: optionalsDefaultNil
+              ?? defaultOptionalsDefaultNil(
+                for: property.keywordToken,
+                initAccessLevel: accessLevel
+              )
           )
         }
         .joined(separator: ",\n")
@@ -288,6 +292,19 @@ public struct MemberwiseInitMacro: MemberMacro {
       label: configuredLabel,
       _syntaxNode: memberConfiguration
     )
+  }
+
+  private static func defaultOptionalsDefaultNil(
+    for bindingKeyword: TokenKind,
+    initAccessLevel: AccessLevelModifier
+  ) -> Bool {
+    guard bindingKeyword == .keyword(.var) else { return false }
+    return switch initAccessLevel {
+    case .private, .fileprivate, .internal:
+      true
+    case .public, .open:
+      false
+    }
   }
 
   private static func formatParameter(

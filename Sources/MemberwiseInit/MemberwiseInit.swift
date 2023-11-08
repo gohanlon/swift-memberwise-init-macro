@@ -12,7 +12,7 @@ public enum AccessLevelConfig {
 public macro MemberwiseInit(
   _ accessLevel: AccessLevelConfig = .internal,
   _deunderscoreParameters: Bool = false,
-  _optionalsDefaultNil: Bool = false
+  _optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
     module: "MemberwiseInitMacros",
