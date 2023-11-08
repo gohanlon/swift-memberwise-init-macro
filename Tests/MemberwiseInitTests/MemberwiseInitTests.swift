@@ -84,29 +84,6 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testOptionlProperty() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct Person {
-        let nickname: String?
-      }
-      """
-    } expansion: {
-      """
-      struct Person {
-        let nickname: String?
-
-        internal init(
-          nickname: String?
-        ) {
-          self.nickname = nickname
-        }
-      }
-      """
-    }
-  }
-
   // MARK: - Test assignment variations
 
   func testVarProperty() {
@@ -1825,7 +1802,128 @@ final class MemberwiseInitTests: XCTestCase {
 
   // MARK: - Test _optionalsDefaultNil (experimental)
 
-  func testOptionalsDefaultNilFalse_AssignsNoDefaultToOptional() {
+  func testOptionalLetProperty_InternalInitNoDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct Person {
+        let nickname: String?
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        let nickname: String?
+
+        internal init(
+          nickname: String?
+        ) {
+          self.nickname = nickname
+        }
+      }
+      """
+    }
+  }
+
+  func testOptionalLetProperty_PublicInitNoDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct Person {
+        public let nickname: String?
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        public let nickname: String?
+
+        public init(
+          nickname: String?
+        ) {
+          self.nickname = nickname
+        }
+      }
+      """
+    }
+  }
+
+  // NB: Swift's memberwise init defaults optional vars to nil, which seems reasonable considering
+  // it only provides non-public initializers. Swift will never default lets to nil, however.
+  // I assume that automatically assigning lets precludes uncommon init flows where you'd want to
+  // assign the constant some other way.
+  func testOptionalVarProperty_InternalInitWithDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct Person {
+        var nickname: String?
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        var nickname: String?
+
+        internal init(
+          nickname: String? = nil
+        ) {
+          self.nickname = nickname
+        }
+      }
+      """
+    }
+  }
+
+  func testOptionalVarProperty_PublicInitNoDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct Person {
+        public var nickname: String?
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        public var nickname: String?
+
+        public init(
+          nickname: String?
+        ) {
+          self.nickname = nickname
+        }
+      }
+      """
+    }
+  }
+
+  // NB: With MemberwiseInit, Swift's default behavior can be disabled.
+  func testOptionalVar_OptionalsDefaultNilFalse_InternalInitNoDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit(_optionalsDefaultNil: false)
+      struct Product {
+        var discountCode: String?
+      }
+      """
+    } expansion: {
+      """
+      struct Product {
+        var discountCode: String?
+
+        internal init(
+          discountCode: String?
+        ) {
+          self.discountCode = discountCode
+        }
+      }
+      """
+    }
+  }
+
+  // NB: Confirms that `_optionalsDefaultNil: false` for optional let has no effect.
+  func testOptionalLet_OptionalsDefaultNilFalse_InternalIntiNoDefault() {
     assertMacro {
       """
       @MemberwiseInit(_optionalsDefaultNil: false)
@@ -1848,7 +1946,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testOptionalsDefaultNilTrue_ParameterValueDefaultsNil() {
+  func testOptionalLet_OptionalsDefaultNilTrue_InternalInitWithDefault() {
     assertMacro {
       """
       @MemberwiseInit(_optionalsDefaultNil: true)
@@ -1862,6 +1960,29 @@ final class MemberwiseInitTests: XCTestCase {
         let nickname: String?
 
         internal init(
+          nickname: String? = nil
+        ) {
+          self.nickname = nickname
+        }
+      }
+      """
+    }
+  }
+
+  func testOptionalVar_OptionalsDefaultNilTrue_PublicInitWithDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public, _optionalsDefaultNil: true)
+      public struct Person {
+        public var nickname: String?
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        public var nickname: String?
+
+        public init(
           nickname: String? = nil
         ) {
           self.nickname = nickname
@@ -1924,16 +2045,16 @@ final class MemberwiseInitTests: XCTestCase {
     assertMacro {
       """
       @MemberwiseInit(.public, _deunderscoreParameters: true)
-      @MemberwiseInit(.internal)
-      @MemberwiseInit(.private, _optionalsDefaultNil: true)
+      @MemberwiseInit(.internal, _optionalsDefaultNil: false)
+      @MemberwiseInit(.private)
       public struct Person {
-        @Init(.public) let _name: String?
+        @Init(.public) var _name: String?
       }
       """
     } expansion: {
       """
       public struct Person {
-        let _name: String?
+        var _name: String?
 
         public init(
           name: String?
