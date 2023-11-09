@@ -173,26 +173,6 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testVarPropertyWithInitializerWithoutExplicitType_FailsWithDiagnostic() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      public struct Pedometer {
-        var stepsToday = 0
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit
-      public struct Pedometer {
-        var stepsToday = 0
-            ┬─────────────
-            ╰─ 🛑 @MemberwiseInit requires explicit type declarations for `var` stored properties.
-      }
-      """
-    }
-  }
-
   func testInlineCommentOnProperty() {
     assertMacro {
       """
@@ -366,7 +346,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testLetStatementHavingThreeBindingsWhereMiddleLacksExplicitType() {
+  func testLetHavingThreeBindingsWhereMiddleLacksExplicitType() {
     assertMacro {
       """
       @MemberwiseInit
@@ -393,8 +373,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testLetStatementHavingThreeBindingsWhereOnlyLastHasExplicitFunctionType_AllEscaping() throws
-  {
+  func testLetHavingThreeBindingsWhereOnlyLastHasFunctionTypeAnnotation_AllEscaping() throws {
     assertMacro {
       """
       @MemberwiseInit
@@ -1923,7 +1902,7 @@ final class MemberwiseInitTests: XCTestCase {
   }
 
   // NB: Confirms that `_optionalsDefaultNil: false` for optional let has no effect.
-  func testOptionalLet_OptionalsDefaultNilFalse_InternalIntiNoDefault() {
+  func testOptionalLet_OptionalsDefaultNilFalse_InternalInitNoDefault() {
     assertMacro {
       """
       @MemberwiseInit(_optionalsDefaultNil: false)

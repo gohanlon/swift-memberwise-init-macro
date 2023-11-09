@@ -6,7 +6,7 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
   case labelConflictsWithAnotherLabel(String)
   case invalidDeclarationKind(DeclGroupSyntax)
   case invalidSwiftLabel
-  case missingExplicitTypeForVarProperty
+  case missingTypeForVarProperty
   case tupleDestructuringInProperty
 
   private var rawValue: String {
@@ -23,8 +23,8 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
     case .labelConflictsWithAnotherLabel(let label):
       ".labelCollidesWithAnotherLabel(\(label))"
 
-    case .missingExplicitTypeForVarProperty:
-      ".missingExplicitTypeForVarProperty"
+    case .missingTypeForVarProperty:
+      ".missingTypeForVarProperty"
 
     case .tupleDestructuringInProperty:
       ".tupleUsedInProperty"
@@ -50,8 +50,9 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
     case let .labelConflictsWithAnotherLabel(label):
       return "Label '\(label)' conflicts with another label"
 
-    case .missingExplicitTypeForVarProperty:
-      return "@MemberwiseInit requires explicit type declarations for `var` stored properties."
+    case .missingTypeForVarProperty:
+      return
+        "@MemberwiseInit requires a type annotation."
 
     case .tupleDestructuringInProperty:
       return """
