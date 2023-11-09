@@ -51,7 +51,8 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
       return "Label '\(label)' conflicts with another label"
 
     case .missingExplicitTypeForVarProperty:
-      return "@MemberwiseInit requires explicit type declarations for `var` stored properties."
+      return
+        "@MemberwiseInit requires a type annotation when properties are initialized with a non-literal."
 
     case .tupleDestructuringInProperty:
       return """
