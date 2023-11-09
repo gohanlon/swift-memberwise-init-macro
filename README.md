@@ -20,6 +20,7 @@ Informed by explicit developer cues, MemberwiseInit can more often automatically
 * [Quick reference](#quick-reference)
 * [Features and limitations](#features-and-limitations)
   * [Custom `init` parameter labels](#custom-init-parameter-labels)
+  * [Infer type from property initialization expressions](#infer-type-from-property-initialization-expressions)
   * [Explicitly ignore properties](#explicitly-ignore-properties)
   * [Attributed properties are ignored by default, but includable](#attributed-properties-are-ignored-by-default-but-includable)
   * [Automatic `@escaping` for closure types (usually)](#automatic-escaping-for-closure-types-usually)
@@ -194,6 +195,61 @@ Customize your initializer parameter labels with `@Init(label: String)`:
      self.item = item
    }
    ```
+
+### Infer type from property initialization expressions
+
+Explicit type annotations are not required when properties are initialized with an expression whose syntax implies type information, e.g., most Swift literals:
+
+```swift
+struct Example {
+  var count = 0  // 👈 `Int` is inferred
+}
+```
+
+#### Explanation
+
+Explicit type specification can feel redundant. Helpfully, Swift’s memberwise initializer infers type from arbitrary expressions.
+
+MemberwiseInit, as a Swift Macro, operates at the syntax level and doesn’t inherently understand type information. Still, many expressions which imply type from their syntax alone and are supported, including all of the following:
+
+```swift
+@MemberwiseInit
+public struct Example<T: CaseIterable> {
+  var string = "", int = 0
+  var boolTrue = true
+
+  var mixedDivide = 8.0 / 4  // Double
+  var halfOpenRange = 1.0..<5  // Range<Double>
+
+  var arrayTypeInit = [T]()
+  var arrayIntLiteral = [1, 2, 3]
+  var arrayPromoted = [1, 2.0]  // [Double]
+  var nestedArray = [[1, 2], [20, 30]]  // [[Int]]
+
+  var dictionaryTypeInit = [String: T]()
+  var dictionaryLiteral = ["key1": 1, "key2": 2]
+  var dictionaryPromoted = [1: 2.0, 3.0: 4]  // [Double: Double]
+  var nestedDictionary = ["key1": ["subkey1": 10], "key2": ["subkey2": 20]]  // [String: [String: Int]]
+
+  var tuple = (1, ("Hello", true))
+  var value = T.allCases.first as T?
+
+  var nestedMixed = ((1 + 2) * 3) >= (4 / 2) && ((true || false) && !(false))  // Bool
+
+  var bitwiseAnd = 0b1010 & 0b0101
+  var leftShift = 1 << 2
+  var bitwiseNotInt = ~0b0011
+
+  var intBinary = 0b01010101
+  var intOctal = 0o21
+  var intHex = 0x1A
+  var floatExponential = 1.25e2  // Double
+  var floatHex = 0xC.3p0  // Double
+
+  var arrayAs = [1, "foo", 3] as [Any]
+  var dictionaryAs = ["foo": 1, 3: "bar"] as [AnyHashable: Any]
+}
+```
 
 ### Explicitly ignore properties
 

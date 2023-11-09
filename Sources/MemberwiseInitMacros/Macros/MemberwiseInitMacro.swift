@@ -142,7 +142,7 @@ public struct MemberwiseInitMacro: MemberMacro {
           .reduce(
             into: (
               bindings: [PropertyBinding](),
-              typeFromTrailingBinding: TypeAnnotationSyntax?.none
+              typeFromTrailingBinding: TypeSyntax?.none
             )
           ) { acc, binding in
             let customSettings = extractPropertyCustomSettings(from: variable)
@@ -151,16 +151,22 @@ public struct MemberwiseInitMacro: MemberMacro {
               return
             }
 
+            let type =
+              binding.typeAnnotation?.type
+              ?? binding.initializer?.value.inferredTypeSyntax
+              ?? acc.typeFromTrailingBinding
+
             acc.bindings.append(
               PropertyBinding(
                 accessLevel: variable.accessLevel,
-                adoptedType: binding.typeAnnotation == nil ? acc.typeFromTrailingBinding : nil,
+                adoptedType: type,
                 binding: binding,
                 customSettings: customSettings,
                 keywordToken: variable.bindingSpecifier.tokenKind
               )
             )
-            acc.typeFromTrailingBinding = binding.typeAnnotation ?? acc.typeFromTrailingBinding
+            acc.typeFromTrailingBinding =
+              binding.typeAnnotation?.type ?? acc.typeFromTrailingBinding
           }
           .bindings
           .reversed()
@@ -175,10 +181,12 @@ public struct MemberwiseInitMacro: MemberMacro {
         if propertyBinding.isComputedProperty || propertyBinding.isPreinitializedLet {
           return (properties, diagnostics)
         }
-        if propertyBinding.isPreinitializedVarWithoutType {
+        if propertyBinding.isPreinitializedVarWithoutType,
+          propertyBinding.initializer?.inferredTypeSyntax == nil
+        {
           return (
             properties,
-            diagnostics + [propertyBinding.diagnostic(message: .missingExplicitTypeForVarProperty)]
+            diagnostics + [propertyBinding.diagnostic(message: .missingTypeForVarProperty)]
           )
         }
         if propertyBinding.isTuplePattern {
@@ -198,7 +206,7 @@ public struct MemberwiseInitMacro: MemberMacro {
         }
         guard
           let name = propertyBinding.name,
-          let effectiveTypeAnnotation = propertyBinding.effectiveTypeAnnotation
+          let effectiveType = propertyBinding.effectiveType
         else { return (properties, diagnostics) }
 
         let newProperty = MemberProperty(
@@ -207,7 +215,7 @@ public struct MemberwiseInitMacro: MemberMacro {
           initializer: propertyBinding.initializer,
           keywordToken: propertyBinding.keywordToken,
           name: name,
-          type: effectiveTypeAnnotation.type.trimmed
+          type: effectiveType.trimmed
         )
         return (properties + [newProperty], diagnostics)
       }
@@ -359,7 +367,7 @@ private struct PropertyCustomSettings: Equatable {
 private struct PropertyBinding {
   let accessLevel: AccessLevelModifier
   let customSettings: PropertyCustomSettings?
-  let effectiveTypeAnnotation: TypeAnnotationSyntax?
+  let effectiveType: TypeSyntax?
   let initializer: ExprSyntax?
   let isComputedProperty: Bool
   let isTuplePattern: Bool
@@ -372,14 +380,14 @@ private struct PropertyBinding {
   // Or, store `binding` and add a bunch of computed properties.
   init(
     accessLevel: AccessLevelModifier,
-    adoptedType: TypeAnnotationSyntax?,
+    adoptedType: TypeSyntax?,
     binding: PatternBindingSyntax,
     customSettings: PropertyCustomSettings?,
     keywordToken: TokenKind
   ) {
     self.accessLevel = accessLevel
     self.customSettings = customSettings
-    self.effectiveTypeAnnotation = binding.typeAnnotation ?? adoptedType
+    self.effectiveType = binding.typeAnnotation?.type ?? adoptedType
     self.initializer = binding.initializer?.trimmed.value
     self.isComputedProperty = binding.isComputedProperty
     self.isTuplePattern = binding.pattern.isTuplePattern
@@ -390,7 +398,7 @@ private struct PropertyBinding {
 
   var isPreinitializedVarWithoutType: Bool {
     self.initializer != nil
-      && self.effectiveTypeAnnotation == nil
+      && self.effectiveType == nil
       && self.keywordToken == .keyword(.var)
   }
 
