@@ -310,7 +310,7 @@ public struct MemberwiseInitMacro: MemberMacro {
     return switch initAccessLevel {
     case .private, .fileprivate, .internal:
       true
-    case .public, .open:
+    case .package, .public, .open:
       false
     }
   }

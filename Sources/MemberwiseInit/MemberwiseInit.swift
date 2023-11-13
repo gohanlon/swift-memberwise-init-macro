@@ -2,6 +2,7 @@ public enum AccessLevelConfig {
   case `private`
   case `fileprivate`
   case `internal`
+  case `package`
   case `public`
   case `open`
 }

@@ -17,6 +17,7 @@ enum AccessLevelModifier: String, Comparable, CaseIterable, Sendable {
   case `private`
   case `fileprivate`
   case `internal`
+  case `package`
   case `public`
   case `open`
 
@@ -25,6 +26,7 @@ enum AccessLevelModifier: String, Comparable, CaseIterable, Sendable {
     case .private: return .private
     case .fileprivate: return .fileprivate
     case .internal: return .internal
+    case .package: return .package
     case .public: return .public
     case .open: return .open
     }
