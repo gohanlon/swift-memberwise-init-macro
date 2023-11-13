@@ -300,7 +300,7 @@ public struct MemberwiseInitMacro: MemberMacro {
   ) -> Bool {
     guard bindingKeyword == .keyword(.var) else { return false }
     return switch initAccessLevel {
-    case .private, .fileprivate, .internal:
+    case .private, .fileprivate, .internal, .package:
       true
     case .public, .open:
       false
