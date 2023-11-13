@@ -886,6 +886,10 @@ final class MemberwiseInitTests: XCTestCase {
       }
 
       @MemberwiseInit
+      package struct Person {
+      }
+
+      @MemberwiseInit
       public struct Person {
       }
 
@@ -915,6 +919,11 @@ final class MemberwiseInitTests: XCTestCase {
           internal init() {
           }
       }
+      package struct Person {
+
+          internal init() {
+          }
+      }
       public struct Person {
 
           internal init() {
@@ -929,9 +938,9 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  // NB: This is almost covered by the exhaustive AccessLevelTests, but `open class Person`
-  // is missing. This test touches on all the access levels (instead of a meaningful few).
-  func testDefaultInitAccessLeves() {
+  // NB: This is almost covered by the exhaustive AccessLevelTests. This test touches on all the
+  // access levels (instead of a meaningful few).
+  func testDefaultInitAccessLevels() {
     assertMacro {
       """
       @MemberwiseInit
@@ -952,6 +961,11 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit
       internal struct Person {
         fileprivate let name: String
+      }
+
+      @MemberwiseInit
+      package struct Person {
+        let name: String
       }
 
       @MemberwiseInit
@@ -997,6 +1011,15 @@ final class MemberwiseInitTests: XCTestCase {
         fileprivate let name: String
 
         fileprivate init(
+          name: String
+        ) {
+          self.name = name
+        }
+      }
+      package struct Person {
+        let name: String
+
+        internal init(
           name: String
         ) {
           self.name = name
@@ -1047,6 +1070,29 @@ final class MemberwiseInitTests: XCTestCase {
         ) {
           self.firstName = firstName
           self.lastName = lastName
+        }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPackage_PublicStruct_PublicProperty_PackageInit() throws {
+    assertMacro {
+      """
+      @MemberwiseInit(.package)
+      public struct Person {
+        public let firstName: String
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        public let firstName: String
+
+        package init(
+          firstName: String
+        ) {
+          self.firstName = firstName
         }
       }
       """
@@ -1846,6 +1892,29 @@ final class MemberwiseInitTests: XCTestCase {
 
         internal init(
           nickname: String? = nil
+        ) {
+          self.nickname = nickname
+        }
+      }
+      """
+    }
+  }
+
+  func testOptionalVarProperty_PackageInitNoDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct Person {
+        package var nickname: String?
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        package var nickname: String?
+
+        package init(
+          nickname: String?
         ) {
           self.nickname = nickname
         }
