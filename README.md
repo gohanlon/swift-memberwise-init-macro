@@ -43,7 +43,7 @@ To use MemberwiseInit:
 
    ```swift
    dependencies: [
-     .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", from: "0.1.1")
+     .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", from: "0.2.0")
    ]
    ```
 
