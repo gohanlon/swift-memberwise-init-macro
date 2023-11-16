@@ -210,7 +210,7 @@ struct Example {
 
 Explicit type specification can feel redundant. Helpfully, Swift’s memberwise initializer infers type from arbitrary expressions.
 
-MemberwiseInit, as a Swift Macro, operates at the syntax level and doesn’t inherently understand type information. Still, many expressions which imply type from their syntax alone and are supported, including all of the following:
+MemberwiseInit, as a Swift Macro, operates at the syntax level and doesn’t inherently understand type information. Still, many expressions which imply type from their syntax alone are supported, including all of the following:
 
 ```swift
 @MemberwiseInit
