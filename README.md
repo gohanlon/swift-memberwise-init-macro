@@ -109,7 +109,7 @@ Attach to struct, actor *(experimental)*, or class *(experimental)*.
   <br> Provide up to an internal memberwise `init`, closely mimicking Swift’s memberwise `init`.
 
 * `@MemberwiseInit(.public)`
-  <br> Provide a memberwise `init` with up to the provided access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.public`, `.open`.
+  <br> Provide a memberwise `init` with up to the provided access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.package`, `.public`, `.open`.
 
 * `@MemberwiseInit(_deunderscoreParameters: true)` *(experimental)*
   <br> Drop underscore prefix from generated `init` parameter names, unless doing so would result in a naming conflict. (Ignored properties won’t contribute to conflicts.)
@@ -128,7 +128,7 @@ Attach to member property declarations of a struct, actor, or class that `@Membe
   <br> Ignore that member property. The access level of an ignored property won’t affect that of the provided `init`, and the property won’t be included in the `init`. *Note: Ignored properties must be initialized elsewhere.*
 
 * `@Init(.public)`
-  <br> For calculating the provided `init`’s access level, consider the property as having a different access level than its declared access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.public`, `.open`.
+  <br> For calculating the provided `init`’s access level, consider the property as having a different access level than its declared access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.package`, `.public`, `.open`.
 
 * `@Init(.escaping`)
   <br> To avoid compiler errors when a property’s `init` argument can’t automatically be `@escaped`, e.g. when a property’s type uses a typealias that represents a closure.
