@@ -373,7 +373,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testLetHavingThreeBindingsWhereOnlyLastHasFunctionTypeAnnotation_AllEscaping() throws {
+  func testLetHavingThreeBindingsWhereOnlyLastHasFunctionTypeAnnotation_AllEscaping() {
     assertMacro {
       """
       @MemberwiseInit
@@ -1047,9 +1047,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testMemberwiseInitPublic_PublicStruct_PublicAndImplicitlyInternalProperties_InternalInit()
-    throws
-  {
+  func testMemberwiseInitPublic_PublicStruct_PublicAndImplicitlyInternalProperties_InternalInit() {
     assertMacro {
       """
       @MemberwiseInit(.public)
@@ -1076,7 +1074,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testMemberwiseInitPackage_PublicStruct_PublicProperty_PackageInit() throws {
+  func testMemberwiseInitPackage_PublicStruct_PublicProperty_PackageInit() {
     assertMacro {
       """
       @MemberwiseInit(.package)
