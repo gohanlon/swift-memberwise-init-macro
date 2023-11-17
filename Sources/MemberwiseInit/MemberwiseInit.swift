@@ -11,8 +11,8 @@ public enum AccessLevelConfig {
 
 @attached(member, names: named(init))
 public macro MemberwiseInit(
-  _ accessLevel: AccessLevelConfig = .internal,
-  _deunderscoreParameters: Bool = false,
+  _ accessLevel: AccessLevelConfig? = nil,
+  _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
@@ -31,7 +31,13 @@ public enum IgnoreConfig {
 }
 
 @attached(peer)
-public macro Init() =
+public macro Init(
+  _ accessLevel: AccessLevelConfig? = nil,
+  assignee: String? = nil,
+  escaping: Bool? = nil,
+  label: String? = nil,
+  type: Any.Type? = nil
+) =
   #externalMacro(
     module: "MemberwiseInitMacros",
     type: "InitMacro"
@@ -46,15 +52,9 @@ public macro Init(
     type: "InitMacro"
   )
 
-@attached(peer)
-public macro Init(
-  label: String
-) =
-  #externalMacro(
-    module: "MemberwiseInitMacros",
-    type: "InitMacro"
-  )
+// MARK: - Deprecated
 
+// Deprecated; remove in 1.0
 @attached(peer)
 public macro Init(
   _ accessLevel: AccessLevelConfig,
@@ -66,16 +66,7 @@ public macro Init(
     type: "InitMacro"
   )
 
-@attached(peer)
-public macro Init(
-  _ accessLevel: AccessLevelConfig,
-  label: String? = nil
-) =
-  #externalMacro(
-    module: "MemberwiseInitMacros",
-    type: "InitMacro"
-  )
-
+// Deprecated; remove in 1.0
 @attached(peer)
 public macro Init(
   _ escaping: EscapingConfig,

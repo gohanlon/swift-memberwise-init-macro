@@ -59,3 +59,12 @@ extension PatternSyntax {
     self.as(TuplePatternSyntax.self) != nil
   }
 }
+
+extension ExprSyntax {
+  var trimmedStringLiteral: String? {
+    self.as(StringLiteralExprSyntax.self)?
+      .segments
+      .trimmedDescription
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+}

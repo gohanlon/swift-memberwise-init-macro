@@ -23,6 +23,7 @@ Informed by explicit developer cues, MemberwiseInit can more often automatically
   * [Infer type from property initialization expressions](#infer-type-from-property-initialization-expressions)
   * [Explicitly ignore properties](#explicitly-ignore-properties)
   * [Attributed properties are ignored by default, but includable](#attributed-properties-are-ignored-by-default-but-includable)
+  * [Support for property wrappers](#support-for-property-wrappers)
   * [Automatic `@escaping` for closure types (usually)](#automatic-escaping-for-closure-types-usually)
   * [Experimental: Deunderscore parameter names](#experimental-deunderscore-parameter-names)
   * [Experimental: Defaulting optionals to nil](#experimental-defaulting-optionals-to-nil)
@@ -99,7 +100,7 @@ To use MemberwiseInit:
 
 ## Quick reference
 
-MemberwiseInit includes two autocomplete-friendly macros:
+MemberwiseInit includes two macros:
 
 ### `@MemberwiseInit`
 
@@ -144,6 +145,20 @@ Attach to member property declarations of a struct, actor, or class that `@Membe
 
 * `@Init(.public, label: String)`
   <br> Custom labels can be combined with all other behaviors.
+
+* `@Init(assignee: String)`
+  <br> Override the target property to which the initializer argument should be assigned. By default, a property named “property” has the assignee `self.property`, as demonstrated in `self.property = property`.
+
+* `@Init(type: Any.Type)`
+  <br> Override the type of the argument in the initializer.
+
+* `@Init(assignee: String, type: Any.Type)`
+  <br> Combine `assignee` and `type` to support usage with property wrappers:
+
+  ```swift
+  @Init(assignee: "self._isOn", type: Binding<Bool>)
+  @Binding var isOn = true
+  ```
 
 ## Features and limitations
 
@@ -380,6 +395,22 @@ From here, you have two alternatives:
      self.isOn = isOn
    }
    ```
+
+### Support for property wrappers
+
+Combine `@Init(assignee:)` and `@Init(type)` to support property wrappers. For example, here’s a simple usage with SwiftUI’s `@Binding`:
+
+```swift
+import SwiftUI
+
+@MemberwiseInit
+struct CounterView: View {
+  @Init(assignee: “self._count”, type: Binding<Int>)
+  @Binding var count = 0
+
+  var body: some View { … }
+}
+```
 
 ### Automatic `@escaping` for closure types (usually)
 
