@@ -152,16 +152,17 @@ public struct MemberwiseInitMacro: MemberMacro {
             }
 
             let type =
-              binding.typeAnnotation?.type
+              customSettings?.type
+              ?? binding.typeAnnotation?.type
               ?? binding.initializer?.value.inferredTypeSyntax
               ?? acc.typeFromTrailingBinding
 
             acc.bindings.append(
               PropertyBinding(
                 accessLevel: variable.accessLevel,
-                adoptedType: type,
                 binding: binding,
                 customSettings: customSettings,
+                effectiveType: type,
                 keywordToken: variable.bindingSpecifier.tokenKind
               )
             )
@@ -181,9 +182,7 @@ public struct MemberwiseInitMacro: MemberMacro {
         if propertyBinding.isComputedProperty || propertyBinding.isPreinitializedLet {
           return (properties, diagnostics)
         }
-        if propertyBinding.isPreinitializedVarWithoutType,
-          propertyBinding.initializer?.inferredTypeSyntax == nil
-        {
+        if propertyBinding.isPreinitializedVarWithoutType {
           return (
             properties,
             diagnostics + [propertyBinding.diagnostic(message: .missingTypeForVarProperty)]
@@ -280,24 +279,36 @@ public struct MemberwiseInitMacro: MemberMacro {
 
     let configuredIgnore = configuredValues.contains("ignore")
     let configuredForceEscaping = configuredValues.contains("escaping")
+
     let configuredAccessLevel =
       configuredValues
       .compactMap(AccessLevelModifier.init(rawValue:))
       .first
+
     let configuredLabel =
       memberConfiguration
       .first(where: { $0.label?.text == "label" })?
       .expression
-      .as(StringLiteralExprSyntax.self)?
-      .segments
-      .trimmedDescription
-      .trimmingCharacters(in: .whitespacesAndNewlines)
+      .trimmedStringLiteral
+
+    let configuredType =
+      memberConfiguration
+      .first(where: { $0.label?.text == "type" })?
+      .expression
+
+    let configuredAssignee =
+      memberConfiguration
+      .first(where: { $0.label?.text == "assignee" })?
+      .expression
+      .trimmedStringLiteral
 
     return PropertyCustomSettings(
       accessLevel: configuredAccessLevel,
+      assignee: configuredAssignee,
       forceEscaping: configuredForceEscaping,
       ignore: configuredIgnore,
       label: configuredLabel,
+      type: configuredType.map { TypeSyntax(stringLiteral: $0.trimmedDescription) },
       _syntaxNode: memberConfiguration
     )
   }
@@ -340,15 +351,22 @@ public struct MemberwiseInitMacro: MemberMacro {
     considering allProperties: [MemberProperty],
     deunderscoreParameters: Bool
   ) -> String {
-    "self.\(property.name) = \(property.initParameterName(considering: allProperties, deunderscoreParameters: deunderscoreParameters))"
+    let assignee = property.customSettings?.assignee ?? "self.\(property.name)"
+    let parameterName = property.initParameterName(
+      considering: allProperties,
+      deunderscoreParameters: deunderscoreParameters
+    )
+    return "\(assignee) = \(parameterName)"
   }
 }
 
 private struct PropertyCustomSettings: Equatable {
   let accessLevel: AccessLevelModifier?
+  let assignee: String?
   let forceEscaping: Bool
   let ignore: Bool
   let label: String?
+  let type: TypeSyntax?
   let _syntaxNode: LabeledExprListSyntax
 
   func diagnostic(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
@@ -380,14 +398,14 @@ private struct PropertyBinding {
   // Or, store `binding` and add a bunch of computed properties.
   init(
     accessLevel: AccessLevelModifier,
-    adoptedType: TypeSyntax?,
     binding: PatternBindingSyntax,
     customSettings: PropertyCustomSettings?,
+    effectiveType: TypeSyntax?,
     keywordToken: TokenKind
   ) {
     self.accessLevel = accessLevel
     self.customSettings = customSettings
-    self.effectiveType = binding.typeAnnotation?.type ?? adoptedType
+    self.effectiveType = effectiveType
     self.initializer = binding.initializer?.trimmed.value
     self.isComputedProperty = binding.isComputedProperty
     self.isTuplePattern = binding.pattern.isTuplePattern
@@ -398,8 +416,9 @@ private struct PropertyBinding {
 
   var isPreinitializedVarWithoutType: Bool {
     self.initializer != nil
-      && self.effectiveType == nil
       && self.keywordToken == .keyword(.var)
+      && self.effectiveType == nil
+      && self.initializer?.inferredTypeSyntax == nil
   }
 
   var isPreinitializedLet: Bool {
