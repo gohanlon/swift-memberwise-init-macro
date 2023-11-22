@@ -1035,7 +1035,7 @@ final class MemberwiseInitTests: XCTestCase {
 
   // NB: This is almost covered by the exhaustive AccessLevelTests. This test touches on all the
   // access levels (instead of a meaningful few).
-  func testDefaultInitAccessLevels() {
+  func testDefaultInitAccessLevels_FailsWithDiagnotics() {
     assertMacro {
       """
       @MemberwiseInit
@@ -1057,7 +1057,43 @@ final class MemberwiseInitTests: XCTestCase {
       internal struct Person {
         fileprivate let name: String
       }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      private struct Person {
+        private let name: String
+        ┬──────
+        ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
+      }
 
+      @MemberwiseInit
+      fileprivate struct Person {
+        private let name: String
+        ┬──────
+        ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
+      }
+
+      @MemberwiseInit
+      struct Person {
+        fileprivate let name: String
+        ┬──────────
+        ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'fileprivate' property
+      }
+
+      @MemberwiseInit
+      internal struct Person {
+        fileprivate let name: String
+        ┬──────────
+        ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'fileprivate' property
+      }
+      """
+    }
+  }
+
+  func testDefaultInitAccessLevels() {
+    assertMacro {
+      """
       @MemberwiseInit
       package struct Person {
         let name: String
@@ -1075,42 +1111,6 @@ final class MemberwiseInitTests: XCTestCase {
       """
     } expansion: {
       """
-      private struct Person {
-        private let name: String
-
-        private init(
-          name: String
-        ) {
-          self.name = name
-        }
-      }
-      fileprivate struct Person {
-        private let name: String
-
-        private init(
-          name: String
-        ) {
-          self.name = name
-        }
-      }
-      struct Person {
-        fileprivate let name: String
-
-        fileprivate init(
-          name: String
-        ) {
-          self.name = name
-        }
-      }
-      internal struct Person {
-        fileprivate let name: String
-
-        fileprivate init(
-          name: String
-        ) {
-          self.name = name
-        }
-      }
       package struct Person {
         let name: String
 
@@ -1142,7 +1142,9 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testMemberwiseInitPublic_PublicStruct_PublicAndImplicitlyInternalProperties_InternalInit() {
+  func
+    testMemberwiseInitPublic_PublicStruct_PublicAndImplicitlyInternalProperties_FailsWithDiagnostic()
+  {
     assertMacro {
       """
       @MemberwiseInit(.public)
@@ -1151,19 +1153,14 @@ final class MemberwiseInitTests: XCTestCase {
         let lastName: String
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit(.public)
       public struct Person {
         public let firstName: String
         let lastName: String
-
-        internal init(
-          firstName: String,
-          lastName: String
-        ) {
-          self.firstName = firstName
-          self.lastName = lastName
-        }
+        ┬───────────────────
+        ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
       }
       """
     }
@@ -1192,7 +1189,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testPublicStruct_PublicAndFileprivateProperty_FileprivateInit() {
+  func testPublicStruct_PublicAndFileprivateProperty_FailsWithDiagnostic() {
     assertMacro {
       """
       @MemberwiseInit
@@ -1201,19 +1198,14 @@ final class MemberwiseInitTests: XCTestCase {
         fileprivate let lastName: String
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       public struct Person {
         public let firstName: String
         fileprivate let lastName: String
-
-        fileprivate init(
-          firstName: String,
-          lastName: String
-        ) {
-          self.firstName = firstName
-          self.lastName = lastName
-        }
+        ┬──────────
+        ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'fileprivate' property
       }
       """
     }
@@ -1228,25 +1220,20 @@ final class MemberwiseInitTests: XCTestCase {
         private let lastName: String
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       public struct Person {
         public let firstName: String
         private let lastName: String
-
-        private init(
-          firstName: String,
-          lastName: String
-        ) {
-          self.firstName = firstName
-          self.lastName = lastName
-        }
+        ┬──────
+        ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
       }
       """
     }
   }
 
-  func testImplicitlyInternalStructWithPublicAndPrivateProperty_PrivateInit() {
+  func testImplicitlyInternalStructWithPublicAndPrivateProperty_FailsWithDiagnostic() {
     assertMacro {
       """
       @MemberwiseInit
@@ -1255,29 +1242,104 @@ final class MemberwiseInitTests: XCTestCase {
         private let lastName: String
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       struct Person {
         public let firstName: String
         private let lastName: String
+        ┬──────
+        ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
+      }
+      """
+    }
+  }
 
-        private init(
-          firstName: String,
-          lastName: String
-        ) {
-          self.firstName = firstName
-          self.lastName = lastName
-        }
+  func testEmptyCustomInitOnImplicitlyInternalProperty_FailsWithDiagnosticOnVariable() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init let v: T
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init let v: T
+        ┬─────────────
+        ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
+      }
+      """
+    }
+  }
+
+  func testEmptyCustomInitOnPrivateProperty_FailsWithDiagnosticOnPrivateModifier() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init private let v: T
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init private let v: T
+              ┬──────
+              ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+      }
+      """
+    }
+  }
+
+  func testCustomInitPrivate_FailsWithDiagnosticOnCustomInitPrivate() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.private, label: "_") let v: T
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.private, label: "_") let v: T
+              ┬───────
+              ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+      }
+      """
+    }
+  }
+
+  func testCustomInitLabel_FailsWithDiagnosticOnPrivateModifier() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(label: "_") private let v: T
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(label: "_") private let v: T
+                          ┬──────
+                          ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
       }
       """
     }
   }
 
   // NB: Swift's memberwise init has the same behavior.
-  func testPublicStructWithPreinitializedPrivateLet_InternalInit() {
+  func testPublicStructWithPreinitializedPrivateLet_PublicInit() {
     assertMacro {
       """
-      @MemberwiseInit
+      @MemberwiseInit(.public)
       public struct Person {
         private let lastName: String = ""
       }
@@ -1287,7 +1349,7 @@ final class MemberwiseInitTests: XCTestCase {
       public struct Person {
         private let lastName: String = ""
 
-        internal init() {
+        public init() {
         }
       }
       """
@@ -1332,10 +1394,10 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testPrivateSetProperty_IsIncludedPrivateInit() {
+  func testMemberwiseInitPrivate_PrivateSetProperty_IsIncludedPrivateInit() {
     assertMacro {
       """
-      @MemberwiseInit
+      @MemberwiseInit(.private)
       struct Pedometer {
         private(set) var stepsToday: Int
       }
@@ -1355,7 +1417,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testPublicGetPrivateSetProperty_IsIncludedPrivateInit() {
+  func testPublicGetPrivateSetProperty_FailsWithDiagnostic() {
     assertMacro {
       """
       @MemberwiseInit
@@ -1363,42 +1425,56 @@ final class MemberwiseInitTests: XCTestCase {
         public private(set) var stepsToday: Int
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       struct Pedometer {
         public private(set) var stepsToday: Int
-
-        private init(
-          stepsToday: Int
-        ) {
-          self.stepsToday = stepsToday
-        }
+        ┬──────────────────
+        ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
       }
       """
     }
   }
 
-  func testNonInternalDefaultAccess() {
+  func testMemberwiseInitPublic_PrivateVarWithInitializer_FailsWithDiagnostic() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      struct Pedometer {
+        private var stepsToday: Int = 0
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public)
+      struct Pedometer {
+        private var stepsToday: Int = 0
+        ┬──────
+        ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+      }
+      """
+    }
+  }
+
+  func testNonInternalDefaultAccess_FailsWithDiagnostic() {
     assertMacro {
       """
       struct S {
-        @MemberwiseInit
+        @MemberwiseInit(.internal)
         private struct T {
           let v: Int
         }
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
       struct S {
+        @MemberwiseInit(.internal)
         private struct T {
           let v: Int
-
-          private init(
-            v: Int
-          ) {
-            self.v = v
-          }
+          ┬─────────
+          ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
         }
       }
       """
@@ -1428,6 +1504,51 @@ final class MemberwiseInitTests: XCTestCase {
           for callback: @escaping CompletionHandler
         ) {
           self.callback = callback
+        }
+      }
+      """
+    }
+  }
+
+  func testCustomLabelWithMultipleBindings_FailsWithDiagnostic() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct Person {
+        @Init(label: "with") public let firstName, lastName: String
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public)
+      public struct Person {
+        @Init(label: "with") public let firstName, lastName: String
+              ┬────────────
+              ╰─ 🛑 Custom 'label' can't be applied to multiple bindings
+      }
+      """
+    }
+  }
+
+  func testLabellessCustomInitForMultipleBindings() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct Person {
+        @Init(label: "_") public let firstName, lastName: String
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        public let firstName, lastName: String
+
+        public init(
+          _ firstName: String,
+          _ lastName: String
+        ) {
+          self.firstName = firstName
+          self.lastName = lastName
         }
       }
       """
@@ -1766,8 +1887,8 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit
       struct Person {
         @Init(label: "1foo") let name: String
-              ┬────────────
-              ╰─ 🛑 Invalid label value
+                     ┬─────
+                     ╰─ 🛑 Invalid label value
       }
       """
     }
@@ -1789,7 +1910,7 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit
       struct Person {
         @Init(label: """
-              ╰─ 🛑 Invalid label value
+                     ╰─ 🛑 Invalid label value
           too
           long
         """) let name: String
@@ -1923,7 +2044,7 @@ final class MemberwiseInitTests: XCTestCase {
   func testOptionalLetProperty_InternalInitNoDefault() {
     assertMacro {
       """
-      @MemberwiseInit(.public)
+      @MemberwiseInit(.internal)
       public struct Person {
         let nickname: String?
       }
@@ -1973,14 +2094,14 @@ final class MemberwiseInitTests: XCTestCase {
   func testOptionalVarProperty_InternalInitWithDefault() {
     assertMacro {
       """
-      @MemberwiseInit(.public)
-      public struct Person {
+      @MemberwiseInit(.internal)
+      struct Person {
         var nickname: String?
       }
       """
     } expansion: {
       """
-      public struct Person {
+      struct Person {
         var nickname: String?
 
         internal init(
@@ -1996,7 +2117,7 @@ final class MemberwiseInitTests: XCTestCase {
   func testOptionalVarProperty_PackageInitNoDefault() {
     assertMacro {
       """
-      @MemberwiseInit(.public)
+      @MemberwiseInit(.package)
       public struct Person {
         package var nickname: String?
       }

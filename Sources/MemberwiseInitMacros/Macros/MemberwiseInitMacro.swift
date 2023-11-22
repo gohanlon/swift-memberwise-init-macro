@@ -2,6 +2,7 @@ import SwiftCompilerPlugin
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 
 public struct InitMacro: PeerMacro {
@@ -30,15 +31,12 @@ public struct MemberwiseInitMacro: MemberMacro {
     let deunderscoreParameters: Bool =
       extractLabeledBoolArgument("_deunderscoreParameters", from: node) ?? false
 
+    let accessLevel = configuredAccessLevel ?? .internal
     let (properties, diagnostics) = try collectMemberPropertiesAndDiagnostics(
-      from: decl.memberBlock.members
+      from: decl.memberBlock.members,
+      targetAccessLevel: accessLevel
     )
     diagnostics.forEach { context.diagnose($0) }
-
-    let accessLevel = NonEmptyArray(
-      head: configuredAccessLevel ?? .internal,
-      tail: properties.compactMap { $0.customSettings?.accessLevel ?? $0.accessLevel }
-    ).min()
 
     func formatParameters() -> String {
       guard !properties.isEmpty else { return "" }
@@ -116,133 +114,133 @@ public struct MemberwiseInitMacro: MemberMacro {
   }
 
   private static func collectMemberPropertiesAndDiagnostics(
-    from decl: MemberBlockItemListSyntax
+    from decl: MemberBlockItemListSyntax,
+    targetAccessLevel: AccessLevelModifier
   ) throws -> ([MemberProperty], [Diagnostic]) {
-    var (properties, diagnostics) = try collectMemberProperties(from: decl)
-    diagnostics += diagnosticsOnCustomInitLabels(properties: properties)
-    return (properties, diagnostics)
+    let (variables, variableDiagnostics) = collectMemberVariables(
+      from: decl,
+      targetAccessLevel: targetAccessLevel
+    )
+
+    let bindings = collectPropertyBindings(variables: variables)
+    let bindingDiagnostics = customInitLabelDiagnosticsFor(bindings: bindings)
+
+    var (properties, memberDiagnostics) = collectMemberProperties(bindings: bindings)
+    memberDiagnostics += customInitLabelDiagnosticsFor(properties: properties)
+
+    return (properties, variableDiagnostics + bindingDiagnostics + memberDiagnostics)
   }
 
-  private static func collectMemberProperties(
-    from decl: MemberBlockItemListSyntax
-  ) throws -> ([MemberProperty], [Diagnostic]) {
-    return
-      decl
-      .compactMap { (member: MemberBlockItemSyntax) -> VariableDeclSyntax? in
+  private static func collectMemberVariables(
+    from decl: MemberBlockItemListSyntax,
+    targetAccessLevel: AccessLevelModifier
+  ) -> ([MemberVariable], [Diagnostic]) {
+    decl
+      .reduce(
+        into: (
+          variables: [MemberVariable](),
+          diagnostics: [Diagnostic]()
+        )
+      ) { acc, member in
         guard
           let variable = member.decl.as(VariableDeclSyntax.self),
           variable.attributes.isEmpty || variable.attributes.contains(attributeNamed: "Init"),
           variable.modifiersExclude([.static, .lazy])
-        else { return nil }
-        return variable
-      }
-      .flatMap { variable -> [PropertyBinding] in
-        variable.bindings
-          .reversed()
-          .reduce(
-            into: (
-              bindings: [PropertyBinding](),
-              typeFromTrailingBinding: TypeSyntax?.none
-            )
-          ) { acc, binding in
-            let customSettings = extractPropertyCustomSettings(from: variable)
+        else { return }
 
-            if let customSettings, customSettings.ignore {
-              return
-            }
+        var diagnostics = [Diagnostic]()
 
-            let type =
-              customSettings?.type
-              ?? binding.typeAnnotation?.type
-              ?? binding.initializer?.value.inferredTypeSyntax
-              ?? acc.typeFromTrailingBinding
+        let customSettings = extractVariableCustomSettings(from: variable)
+        if let customSettings, customSettings.ignore {
+          return
+        }
 
-            acc.bindings.append(
-              PropertyBinding(
-                accessLevel: variable.accessLevel,
-                binding: binding,
-                customSettings: customSettings,
-                effectiveType: type,
-                keywordToken: variable.bindingSpecifier.tokenKind
+        if let customSettings, customSettings.label?.isInvalidSwiftLabel ?? false {
+          diagnostics.append(customSettings.diagnosticOnLabelValue(message: .invalidSwiftLabel))
+        } else if let customSettings,
+          customSettings.label != "_",
+          variable.bindings.count > 1
+        {
+          diagnostics.append(
+            customSettings.diagnosticOnLabel(message: .labelAppliedToMultipleBindings))
+        }
+
+        // TODO: repetition of logic for custom configuration logic
+        let effectiveAccessLevel = customSettings?.accessLevel ?? variable.accessLevel
+        if targetAccessLevel > effectiveAccessLevel,
+          !variable.isFullyInitializedLet
+        {
+          let customAccess = variable.customConfiguration?
+            .first?
+            .expression
+            .as(MemberAccessExprSyntax.self)
+
+          let targetNode =
+            customAccess?._syntaxNode
+            ?? (variable.modifiers.isEmpty ? variable._syntaxNode : variable.modifiers._syntaxNode)
+
+          diagnostics += [
+            Diagnostic(
+              node: targetNode,
+              message: MacroExpansionErrorMessage(
+                """
+                @MemberwiseInit(.\(targetAccessLevel)) would leak access to '\(effectiveAccessLevel)' property
+                """
               )
             )
-            acc.typeFromTrailingBinding =
-              binding.typeAnnotation?.type ?? acc.typeFromTrailingBinding
-          }
-          .bindings
-          .reversed()
-      }
-      .reduce(
-        (
-          [MemberProperty](),
-          [Diagnostic]()
-        )
-      ) { acc, propertyBinding in
-        let (properties, diagnostics) = acc
-        if propertyBinding.isComputedProperty || propertyBinding.isPreinitializedLet {
-          return (properties, diagnostics)
-        }
-        if propertyBinding.isPreinitializedVarWithoutType {
-          return (
-            properties,
-            diagnostics + [propertyBinding.diagnostic(message: .missingTypeForVarProperty)]
-          )
-        }
-        if propertyBinding.isTuplePattern {
-          return (
-            properties,
-            diagnostics + [propertyBinding.diagnostic(message: .tupleDestructuringInProperty)]
-          )
+          ]
         }
 
-        if let customSettings = propertyBinding.customSettings {
-          if customSettings.label?.isInvalidSwiftLabel ?? false {
-            return (
-              properties,
-              diagnostics + [customSettings.diagnostic(message: .invalidSwiftLabel)]
-            )
-          }
+        guard diagnostics.isEmpty else {
+          acc.diagnostics += diagnostics
+          return
         }
-        guard
-          let name = propertyBinding.name,
-          let effectiveType = propertyBinding.effectiveType
-        else { return (properties, diagnostics) }
 
-        let newProperty = MemberProperty(
-          accessLevel: propertyBinding.accessLevel,
-          customSettings: propertyBinding.customSettings,
-          initializer: propertyBinding.initializer,
-          keywordToken: propertyBinding.keywordToken,
-          name: name,
-          type: effectiveType.trimmed
+        acc.variables.append(
+          MemberVariable(
+            customSettings: customSettings,
+            syntax: variable
+          )
         )
-        return (properties + [newProperty], diagnostics)
       }
   }
 
-  private static func diagnosticsOnCustomInitLabels(properties: [MemberProperty]) -> [Diagnostic] {
+  private static func customInitLabelDiagnosticsFor(bindings: [PropertyBinding]) -> [Diagnostic] {
     var diagnostics: [Diagnostic] = []
 
-    var seenLabels: Set<String> = []
-    for property in properties {
+    let customLabeledBindings = bindings.filter {
+      $0.variable.customSettings?.label != nil
+    }
+
+    // Diagnose custom label conflicts with another custom label
+    var seenCustomLabels: Set<String> = []
+    for binding in customLabeledBindings {
       guard
-        let propertyCustomSettings = property.customSettings,
-        let label = propertyCustomSettings.label,
+        let customSettings = binding.variable.customSettings,
+        let label = customSettings.label,
         label != "_"
       else { continue }
-      defer { seenLabels.insert(label) }
-      if seenLabels.contains(label) {
+      defer { seenCustomLabels.insert(label) }
+      if seenCustomLabels.contains(label) {
         diagnostics.append(
-          propertyCustomSettings.diagnosticOnLabel(message: .labelConflictsWithAnotherLabel(label))
+          customSettings.diagnosticOnLabelValue(message: .labelConflictsWithAnotherLabel(label))
         )
       }
     }
+
+    return diagnostics
+  }
+
+  private static func customInitLabelDiagnosticsFor(properties: [MemberProperty]) -> [Diagnostic] {
+    var diagnostics: [Diagnostic] = []
 
     let propertiesByName: [String: MemberProperty] = properties.reduce([:]) { acc, property in
       var acc = acc
       acc[property.name] = property
       return acc
     }
+
+    // Diagnose custom label conflicts with a property
     for property in properties {
       guard
         let propertyCustomSettings = property.customSettings,
@@ -252,28 +250,87 @@ public struct MemberwiseInitMacro: MemberMacro {
       else { continue }
 
       diagnostics.append(
-        propertyCustomSettings.diagnosticOnLabel(message: .labelConflictsWithProperty(label))
+        propertyCustomSettings.diagnosticOnLabelValue(message: .labelConflictsWithProperty(label))
       )
     }
 
     return diagnostics
   }
 
-  private static func extractPropertyCustomSettings(
-    from variable: VariableDeclSyntax
-  ) -> PropertyCustomSettings? {
-    let memberConfiguration = variable.attributes
-      .first(where: {
-        $0.as(AttributeSyntax.self)?.attributeName.trimmedDescription == "Init"
-      })?
-      .as(AttributeSyntax.self)?
-      .arguments?
-      .as(LabeledExprListSyntax.self)
+  private static func collectPropertyBindings(variables: [MemberVariable]) -> [PropertyBinding] {
+    variables.flatMap { variable -> [PropertyBinding] in
+      variable.bindings
+        .reversed()
+        .reduce(
+          into: (
+            bindings: [PropertyBinding](),
+            typeFromTrailingBinding: TypeSyntax?.none
+          )
+        ) { acc, binding in
+          acc.bindings.append(
+            PropertyBinding(
+              typeFromTrailingBinding: acc.typeFromTrailingBinding,
+              syntax: binding,
+              variable: variable
+            )
+          )
+          acc.typeFromTrailingBinding =
+            binding.typeAnnotation?.type ?? acc.typeFromTrailingBinding
+        }
+        .bindings
+        .reversed()
+    }
+  }
 
-    guard let memberConfiguration else { return nil }
+  private static func collectMemberProperties(
+    bindings: [PropertyBinding]
+  ) -> (
+    members: [MemberProperty],
+    diagnostics: [Diagnostic]
+  ) {
+    bindings.reduce(
+      into: (
+        members: [MemberProperty](),
+        diagnostics: [Diagnostic]()
+      )
+    ) { acc, propertyBinding in
+      if propertyBinding.isComputedProperty || propertyBinding.isInitializedLet {
+        return
+      }
+
+      if propertyBinding.isInitializedVarWithoutType {
+        acc.diagnostics.append(propertyBinding.diagnostic(message: .missingTypeForVarProperty))
+        return
+      }
+      if propertyBinding.isTuplePattern {
+        acc.diagnostics.append(propertyBinding.diagnostic(message: .tupleDestructuringInProperty))
+        return
+      }
+
+      guard
+        let name = propertyBinding.name,
+        let effectiveType = propertyBinding.effectiveType
+      else { return }
+
+      let newProperty = MemberProperty(
+        accessLevel: propertyBinding.variable.accessLevel,
+        customSettings: propertyBinding.variable.customSettings,
+        initializerValue: propertyBinding.initializerValue,
+        keywordToken: propertyBinding.variable.keywordToken,
+        name: name,
+        type: effectiveType.trimmed
+      )
+      acc.members.append(newProperty)
+    }
+  }
+
+  private static func extractVariableCustomSettings(
+    from variable: VariableDeclSyntax
+  ) -> VariableCustomSettings? {
+    guard let customConfiguration = variable.customConfiguration else { return nil }
 
     let configuredValues =
-      memberConfiguration.compactMap {
+      customConfiguration.compactMap {
         $0.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.trimmedDescription
       }
 
@@ -286,30 +343,35 @@ public struct MemberwiseInitMacro: MemberMacro {
       .first
 
     let configuredLabel =
-      memberConfiguration
-      .first(where: { $0.label?.text == "label" })?
+      customConfiguration
+      .firstWhereLabel("label")?
       .expression
       .trimmedStringLiteral
 
     let configuredType =
-      memberConfiguration
-      .first(where: { $0.label?.text == "type" })?
+      customConfiguration
+      .firstWhereLabel("type")?
       .expression
 
+    // TODO: Is it possible for invalid type syntax to be provided for an `Any.Type` parameter?
+    // NB: All expressions satisfying the `Any.Type` parameter type are parsable to TypeSyntax.
+    let configuredTypeSyntax =
+      configuredType.map { TypeSyntax(stringLiteral: $0.trimmedDescription) }
+
     let configuredAssignee =
-      memberConfiguration
-      .first(where: { $0.label?.text == "assignee" })?
+      customConfiguration
+      .firstWhereLabel("assignee")?
       .expression
       .trimmedStringLiteral
 
-    return PropertyCustomSettings(
+    return VariableCustomSettings(
       accessLevel: configuredAccessLevel,
       assignee: configuredAssignee,
       forceEscaping: configuredForceEscaping,
       ignore: configuredIgnore,
       label: configuredLabel,
-      type: configuredType.map { TypeSyntax(stringLiteral: $0.trimmedDescription) },
-      _syntaxNode: memberConfiguration
+      type: configuredTypeSyntax,
+      _syntaxNode: customConfiguration
     )
   }
 
@@ -333,7 +395,7 @@ public struct MemberwiseInitMacro: MemberMacro {
     optionalsDefaultNil: Bool
   ) -> String {
     let defaultValue =
-      property.initializer.map { " = \($0.description)" }
+      property.initializerValue.map { " = \($0.description)" }
       ?? (optionalsDefaultNil && property.type.isOptionalType ? " = nil" : "")
     let escaping =
       (property.customSettings?.forceEscaping ?? false || property.type.isFunctionType)
@@ -360,7 +422,7 @@ public struct MemberwiseInitMacro: MemberMacro {
   }
 }
 
-private struct PropertyCustomSettings: Equatable {
+private struct VariableCustomSettings: Equatable {
   let accessLevel: AccessLevelModifier?
   let assignee: String?
   let forceEscaping: Bool
@@ -369,90 +431,102 @@ private struct PropertyCustomSettings: Equatable {
   let type: TypeSyntax?
   let _syntaxNode: LabeledExprListSyntax
 
-  func diagnostic(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
-    Diagnostic(node: self._syntaxNode, message: message)
-  }
-
   func diagnosticOnLabel(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
     let labelNode = self._syntaxNode
-      .first(where: { $0.label?.text == "label" })?
+      .firstWhereLabel("label")
+
+    return diagnostic(node: labelNode ?? self._syntaxNode, message: message)
+  }
+
+  func diagnosticOnLabelValue(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
+    let labelValueNode = self._syntaxNode
+      .firstWhereLabel("label")?
       .expression
-    guard let labelNode else { return diagnostic(message: message) }
-    return Diagnostic(node: labelNode, message: message)
+
+    return diagnostic(node: labelValueNode ?? self._syntaxNode, message: message)
+  }
+
+  private func diagnostic(
+    node: any SyntaxProtocol,
+    message: MemberwiseInitMacroDiagnostic
+  ) -> Diagnostic {
+    Diagnostic(node: node, message: message)
   }
 }
 
 private struct PropertyBinding {
-  let accessLevel: AccessLevelModifier
-  let customSettings: PropertyCustomSettings?
-  let effectiveType: TypeSyntax?
-  let initializer: ExprSyntax?
-  let isComputedProperty: Bool
-  let isTuplePattern: Bool
-  let keywordToken: TokenKind
-  let name: String?
-  private let _syntaxNode: Syntax
+  let typeFromTrailingBinding: TypeSyntax?
+  let syntax: PatternBindingSyntax
+  let variable: MemberVariable
 
-  // TODO: Make this a simple memberwise init?
-  // Yes, while droping `binding` from params.
-  // Or, store `binding` and add a bunch of computed properties.
-  init(
-    accessLevel: AccessLevelModifier,
-    binding: PatternBindingSyntax,
-    customSettings: PropertyCustomSettings?,
-    effectiveType: TypeSyntax?,
-    keywordToken: TokenKind
-  ) {
-    self.accessLevel = accessLevel
-    self.customSettings = customSettings
-    self.effectiveType = effectiveType
-    self.initializer = binding.initializer?.trimmed.value
-    self.isComputedProperty = binding.isComputedProperty
-    self.isTuplePattern = binding.pattern.isTuplePattern
-    self.keywordToken = keywordToken
-    self.name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
-    self._syntaxNode = binding._syntaxNode
+  var effectiveType: TypeSyntax? {
+    variable.customSettings?.type
+      ?? self.syntax.typeAnnotation?.type
+      ?? self.syntax.initializer?.value.inferredTypeSyntax
+      ?? self.typeFromTrailingBinding
   }
 
-  var isPreinitializedVarWithoutType: Bool {
-    self.initializer != nil
-      && self.keywordToken == .keyword(.var)
+  var initializerValue: ExprSyntax? {
+    self.syntax.initializer?.trimmed.value
+  }
+
+  var isComputedProperty: Bool {
+    self.syntax.isComputedProperty
+  }
+
+  var isTuplePattern: Bool {
+    self.syntax.pattern.isTuplePattern
+  }
+
+  // TODO: think carefully about how to improve this situation
+  var name: String? {
+    self.syntax.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
+  }
+
+  var isInitializedVarWithoutType: Bool {
+    self.initializerValue != nil
+      && self.variable.keywordToken == .keyword(.var)
       && self.effectiveType == nil
-      && self.initializer?.inferredTypeSyntax == nil
+      && self.initializerValue?.inferredTypeSyntax == nil
   }
 
-  var isPreinitializedLet: Bool {
-    self.initializer != nil && self.keywordToken == .keyword(.let)
+  var isInitializedLet: Bool {
+    self.initializerValue != nil && self.variable.keywordToken == .keyword(.let)
   }
 
   func diagnostic(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
-    Diagnostic(node: self._syntaxNode, message: message)
+    Diagnostic(node: self.syntax._syntaxNode, message: message)
+  }
+}
+
+private struct MemberVariable {
+  let customSettings: VariableCustomSettings?
+  let syntax: VariableDeclSyntax
+
+  var accessLevel: AccessLevelModifier {
+    self.syntax.accessLevel
+  }
+
+  var bindings: PatternBindingListSyntax {
+    self.syntax.bindings
+  }
+
+  var keywordToken: TokenKind {
+    self.syntax.bindingSpecifier.tokenKind
+  }
+
+  var _syntaxNode: Syntax {
+    self.syntax._syntaxNode
   }
 }
 
 private struct MemberProperty: Equatable {
   let accessLevel: AccessLevelModifier
-  let customSettings: PropertyCustomSettings?
-  let initializer: ExprSyntax?
+  let customSettings: VariableCustomSettings?
+  let initializerValue: ExprSyntax?
   let keywordToken: TokenKind
   let name: String
   let type: TypeSyntax
-
-  init(
-    accessLevel: AccessLevelModifier,
-    customSettings: PropertyCustomSettings?,
-    initializer: ExprSyntax?,
-    keywordToken: TokenKind,
-    name: String,
-    type: TypeSyntax
-  ) {
-    self.accessLevel = accessLevel
-    self.customSettings = customSettings
-    self.initializer = initializer
-    self.keywordToken = keywordToken
-    self.name = name
-    self.type = type
-  }
 
   func initParameterLabel(
     considering allProperties: [MemberProperty],
@@ -481,29 +555,5 @@ private struct MemberProperty: Equatable {
 
     let potentialName = self.name.hasPrefix("_") ? String(name.dropFirst()) : self.name
     return allProperties.contains(where: { $0.name == potentialName }) ? self.name : potentialName
-  }
-}
-
-private struct NonEmptyArray<Element> {
-  let head: Element
-  let tail: [Element]
-
-  var allElements: [Element] {
-    return [head] + tail
-  }
-
-  init(head: Element, tail: [Element]) {
-    self.head = head
-    self.tail = tail
-  }
-
-  //  func min(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows -> Element {
-  //    return try allElements.min(by: areInIncreasingOrder)!
-  //  }
-}
-
-extension NonEmptyArray where Element: Comparable {
-  fileprivate func min() -> Element {
-    return allElements.min()!
   }
 }

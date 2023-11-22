@@ -2,6 +2,7 @@ import SwiftDiagnostics
 import SwiftSyntax
 
 enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
+  case labelAppliedToMultipleBindings
   case labelConflictsWithProperty(String)
   case labelConflictsWithAnotherLabel(String)
   case invalidDeclarationKind(DeclGroupSyntax)
@@ -11,6 +12,9 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
 
   private var rawValue: String {
     switch self {
+    case .labelAppliedToMultipleBindings:
+      ".labelAppliedToMultipleBindings"
+
     case .invalidDeclarationKind(let declGroup):
       ".invalidDeclarationKind(\(declGroup.kind))"
 
@@ -35,6 +39,11 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
 
   var message: String {
     switch self {
+    case .labelAppliedToMultipleBindings:
+      return """
+        Custom 'label' can't be applied to multiple bindings
+        """
+
     case let .invalidDeclarationKind(declGroup):
       return """
         @MemberwiseInit can only be attached to a struct, class, or actor; \
