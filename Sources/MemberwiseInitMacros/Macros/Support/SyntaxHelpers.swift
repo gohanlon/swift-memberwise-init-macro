@@ -60,6 +60,13 @@ extension PatternSyntax {
   }
 }
 
+extension VariableDeclSyntax {
+  var isFullyInitializedLet: Bool {
+    self.bindingSpecifier.tokenKind == .keyword(.let)
+      && self.bindings.allSatisfy { $0.initializer != nil }
+  }
+}
+
 extension ExprSyntax {
   var trimmedStringLiteral: String? {
     self.as(StringLiteralExprSyntax.self)?
