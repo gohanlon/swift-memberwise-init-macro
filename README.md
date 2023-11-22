@@ -11,7 +11,7 @@ A Swift Macro for enhanced automatic memberwise initializers, greatly reducing m
 
 ![swift-memberwise-init-hero04](https://github.com/gohanlon/swift-memberwise-init-macro/assets/3375/5aab978d-fe31-4d2a-968a-b540adbd1355)
 
-Informed by explicit developer cues, MemberwiseInit can more often automatically provide your intended memberwise `init`, while following the same safe-by-default semantics underlying [Swift’s memberwise initializers][swifts-memberwise-init].
+Informed by explicit developer cues, MemberwiseInit can more often automatically provide your intended memberwise `init`, while maintaining a safe-by-default standard in line with [Swift’s memberwise initializers][swifts-memberwise-init].
 
 > [!IMPORTANT]
 > `@MemberwiseInit` is a Swift Macro requiring **swift-tools-version: 5.9** or later (**Xcode 15** onwards).
@@ -55,30 +55,19 @@ To use MemberwiseInit:
    ```
 
 2. **Import & basic usage**
-   <br> After importing MemberwiseInit, add `@MemberwiseInit` before your type definition. This will mirror Swift’s behavior: it provides an initializer with up to internal access, but scales down if any properties are more restrictive. Here, `age` being private makes the initializer private too:
-
-   ```swift
-   import MemberwiseInit
-
-   @MemberwiseInit
-   struct Person {
-     let name: String
-     private var age: Int? = nil
-   }
-   ```
-
-3. **Customize visibility**
-   <br> Make the struct public and use `@MemberwiseInit(.public)` to enable up to a public initializer. At this point, the `init` will still be private because `age` is private.
+   <br> After importing MemberwiseInit, add `@MemberwiseInit(.public)` before your struct definition. This provides an initializer with public access, or, if any properties are more restrictive, the macro will not compile and will emit an error diagnostic. Here, `age` being private makes the macro emit an error:
 
    ```swift
    @MemberwiseInit(.public)
    public struct Person {
-     let name: String
+     public let name: String
      private var age: Int? = nil
+   //┬──────
+   //╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
    }
    ```
 
-   Make `name` public instead of internal, and tell MemberwiseInit to ignore `age` with `@Init(.ignore)`:
+   Tell MemberwiseInit to ignore `age` with `@Init(.ignore)`:
 
    ```swift
    @MemberwiseInit(.public)
@@ -107,10 +96,10 @@ MemberwiseInit includes two macros:
 Attach to struct, actor *(experimental)*, or class *(experimental)*.
 
 * `@MemberwiseInit`
-  <br> Provide up to an internal memberwise `init`, closely mimicking Swift’s memberwise `init`.
+  <br> Provide an internal memberwise `init`.
 
 * `@MemberwiseInit(.public)`
-  <br> Provide a memberwise `init` with up to the provided access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.package`, `.public`, `.open`.
+  <br> Provide a memberwise `init` at the provided access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.package`, `.public`, `.open`.
 
 * `@MemberwiseInit(_deunderscoreParameters: true)` *(experimental)*
   <br> Drop underscore prefix from generated `init` parameter names, unless doing so would result in a naming conflict. (Ignored properties won’t contribute to conflicts.)
@@ -126,10 +115,10 @@ Attach to member property declarations of a struct, actor, or class that `@Membe
   <br> Include a property that would otherwise be ignored, e.g., attributed properties such as SwiftUI’s `@State` properties.
 
 * `@Init(.ignore)`
-  <br> Ignore that member property. The access level of an ignored property won’t affect that of the provided `init`, and the property won’t be included in the `init`. *Note: Ignored properties must be initialized elsewhere.*
+  <br> Ignore that member property. The access level of an ignored property won’t cause the macro to fail, and the property won’t be included in the `init`. *Note: Ignored properties must be initialized elsewhere.*
 
 * `@Init(.public)`
-  <br> For calculating the provided `init`’s access level, consider the property as having a different access level than its declared access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.package`, `.public`, `.open`.
+  <br> For the provided `init`, consider the property as having a different access level than its declared access level. Valid access levels: `.private`, `.fileprivate`, `.internal`, `.package`, `.public`, `.open`.
 
 * `@Init(.escaping`)
   <br> To avoid compiler errors when a property’s `init` argument can’t automatically be `@escaped`, e.g. when a property’s type uses a typealias that represents a closure.
@@ -164,13 +153,13 @@ Attach to member property declarations of a struct, actor, or class that `@Membe
 
 ### Custom `init` parameter labels
 
-To control the naming of parameters in the provided initializer, use `@Init(label: String)`. Tip: For a label-less parameter, use `@Init(label: "_")`.
+To control the naming of parameters in the provided initializer, use `@Init(label: String)`. Tip: For a label-less/wildcard parameter, use `@Init(label: "_")`.
 
 #### Explanation
 
 Customize your initializer parameter labels with `@Init(label: String)`:
 
-1. **Label-less parameters**
+1. **Label-less/wildcard parameters**
 
    ```swift
    @MemberwiseInit
@@ -294,7 +283,7 @@ public init(
 }
 ```
 
-If `age` weren't marked as ignored, the initializer would be private and would include the `age` property.
+If `age` weren't marked as ignored, MemberwiseInit would fail to compile and provide a diagnostic.
 
 > **Note**
 > In line with Swift’s memberwise initializer, MemberwiseInit automatically ignores `let` properties with assigned default values, as reassigning such properties within the initializer would be invalid.
@@ -321,7 +310,7 @@ struct MyView: View {
 }
 ```
 
-Swift provides the following memberwise `init`:
+Swift provides the following internal memberwise `init`:
 
 ```swift
 internal init(
@@ -335,7 +324,7 @@ However, initializing `@State` properties in this manner is a common pitfall in 
 
 ```swift
 import SwiftUI
-@MemberwiseInit  // 👈
+@MemberwiseInit(.internal)  // 👈
 struct MyView: View {
   @State var isOn: Bool
 
@@ -358,7 +347,7 @@ From here, you have two alternatives:
 
    ```swift
    import SwiftUI
-   @MemberwiseInit
+   @MemberwiseInit(. internal)
    struct MyView: View {
      @State var isOn: Bool = false  // 👈 Default value provided
 
@@ -378,7 +367,7 @@ From here, you have two alternatives:
 
    ```swift
    import SwiftUI
-   @MemberwiseInit
+   @MemberwiseInit(.internal)
    struct MyView: View {
      @Init @State var isOn: Bool  // 👈 `@Init`
 
@@ -405,7 +394,7 @@ import SwiftUI
 
 @MemberwiseInit
 struct CounterView: View {
-  @Init(assignee: “self._count”, type: Binding<Int>)
+  @Init(assignee: "self._count", type: Binding<Int>)
   @Binding var count = 0
 
   var body: some View { … }
@@ -708,7 +697,7 @@ Unlike Swift’s memberwise initializer, you can inspect MemberwiseInit’s init
 > **Note**
 > Introducing an explicit `init` suppresses the addition of Swift’s memberwise initializer. MemberwiseInit’s initializer is always added and can coexist with your other initializers, even for types directly conforming to `init`-specifying protocols like `Decodable` and `RawRepresentable`.[^1]
 
-In contrast to Swift’s memberwise initializer, MemberwiseInit can provide an initializer up to any access level, including public. You explicitly allow it to provide a public `init` by marking `Person` with `@MemberwiseInit(.public)`:
+In contrast to Swift’s memberwise initializer, MemberwiseInit can provide an initializer at any access level, including public. You explicitly instruct MemberwiseInit to provide a public `init` by marking `Person` with `@MemberwiseInit(.public)`:
 
 ```swift
 @MemberwiseInit(.public)  // 👈 `.public`
@@ -737,19 +726,19 @@ public struct Person {
 }
 ```
 
-Now MemberwiseInit, as Swift would, provides a private `init`:
+Now, rather than degrading to providing a private `init` as Swift’s memberwise initializer must, MemberwiseInit instead fails with a diagnostic:
 
 ```swift
-private init(  // 👈 `private`
-  name: String,
-  age: Int?
-) {
-  self.name = name
-  self.age = age
-}
+@MemberwiseInit(.public)
+public struct Person {
+  public let name: String
+  private var age: Int?
+//┬──────
+//╰─ 🛑 @MemberwiseInit(. public) would leak access to 'private' property
 ```
 
-The reason this `init` is private is foundational to understanding both Swift’s and MemberwiseInit’s memberwise initializer. By default, they both provide an initializer that will never unintentionally leak access to more restricted properties.
+> **Note**
+> Both Swift’s and MemberwiseInit’s memberwise initializer are safe by default. Neither will provide an initializer that unintentionally leaks access to more restricted properties.
 
 To publicly expose `age` via MemberwiseInit’s initializer, mark it with `@Init(.public)`:
 
@@ -772,6 +761,13 @@ public init(  // 👈 `public`
   self.age = age
 }
 ```
+
+Compared to Swift’s memberwise initializer, MemberwiseInit’s approach has several advantages:
+
+1. **Clear Intent**: `@MemberwiseInit` is a declaration of the developer’s explicit intention, thereby avoiding any ambiguity about the desired access level for the initializer.
+2. **Safety**: By failing fast when expectations aren’t met, MemberwiseInit prevents unintended access level leaks that could compromise the encapsulation and safety of the code. That is, it is still safe by default.
+3. **Simpler**: MemberwiseInit’s reduced complexity makes it easier to use, as its behavior is more direct and predictable.
+4. **Learnable**:  `@MemberwiseInit` can be applied naively, and most usage issues can be remedied in response to MemberwiseInit’s immediate feedback via diagnostic messages[^2].
 
 Let’s give `age` a default value:
 
@@ -820,6 +816,7 @@ public init(  // 👈 `public`, ignoring `age` property
 MemberwiseInit is available under the MIT license. See the [LICENSE][mit-license] file for more info.
 
 [^1]: Swift omits its memberwise initializer when any explicit `init` is present. You can do an [“extension dance”][extension-dance] to retain Swift’s memberwise `init`, but with imposed tradeoffs.
+[^2]: Presently, MemberwiseInit’s diagnostics are limited to simple diagnostic errors—it doesn’t yet offer “fix-it” diagnostics. And, there are usage errors presently left to the compiler checking the provided `init` that may be addressed directly in the future, e.g. rather than implicitly ignoring attributed properties marked with attributes like `@State`, MemberwiseInit may raise a diagnostic error and “fix-its” to add either `@Init`, `@Init(.ignore)`, or to assign a default value for the variable declaration.
 
 [swifts-memberwise-init]: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/initialization/#Memberwise-Initializers-for-Structure-Types "Swift.org: Memberwise Initializers for Structure Types"
 [pointfreeco-website-memberwiseinit]: https://github.com/gohanlon/pointfreeco/compare/main..memberwise-init-macro "Demo of Point-Free’s website using @MemberwiseInit"
