@@ -54,15 +54,23 @@ public typealias CompletionHandler = @Sendable () -> Void
 
 @MemberwiseInit(.public)
 public struct TaskRunner: Sendable {
-  @Init(.escaping) public let onCompletion: CompletionHandler
+  @Init(escaping: true) public let onCompletion: CompletionHandler
 }
 
 @MemberwiseInit(.public)
 public struct Job {
-  @Init(.public, .escaping, label: "for")
+  @Init(.public, escaping: true, label: "for")
   let callback: CompletionHandler
 }
 _ = Job(for: { print("Done!") })
+
+//@MemberwiseInit(.public)
+//public struct TaskRunner: Sendable {
+//  @Init(.escaping) public let onCompletion: CompletionHandler
+//  ┬─────────────────────────────
+//  ╰─ ⚠️ @Init(.escaping) is deprecated
+//     ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
+//}
 
 @MemberwiseInit
 struct Point2D {

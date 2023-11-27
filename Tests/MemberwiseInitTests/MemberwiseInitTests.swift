@@ -899,7 +899,7 @@ final class MemberwiseInitTests: XCTestCase {
       """
       @MemberwiseInit(.internal)
       public struct Person {
-        @Init(.public, .escaping) private let name: String
+        @Init(.public, escaping: true) private let name: String
       }
       """
     } expansion: {
@@ -1490,7 +1490,7 @@ final class MemberwiseInitTests: XCTestCase {
 
       @MemberwiseInit(.public)
       public struct Job {
-        @Init(.public, .escaping, label: "for")
+        @Init(.public, escaping: true, label: "for")
         let callback: CompletionHandler
       }
       """
@@ -1588,7 +1588,7 @@ final class MemberwiseInitTests: XCTestCase {
 
       @MemberwiseInit
       struct TaskRunner: Sendable {
-        @Init(.escaping) let log: LoggingMechanism
+        @Init(escaping: true) let log: LoggingMechanism
       }
       """
     } expansion: {
@@ -1614,7 +1614,7 @@ final class MemberwiseInitTests: XCTestCase {
       """
       @MemberwiseInit
       struct Config: Sendable {
-        @Init(.escaping) let version: Int
+        @Init(escaping: true) let version: Int
       }
       """
     } expansion: {
