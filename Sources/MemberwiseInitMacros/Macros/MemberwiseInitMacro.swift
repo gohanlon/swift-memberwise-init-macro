@@ -25,6 +25,10 @@ public struct MemberwiseInitMacro: MemberMacro {
     guard [SwiftSyntax.SyntaxKind.classDecl, .structDecl, .actorDecl].contains(decl.kind) else {
       throw MemberwiseInitMacroDiagnostic.invalidDeclarationKind(decl)
     }
+
+    deprecationDiagnostics(node: node, declaration: decl)
+      .forEach(context.diagnose)
+
     let configuredAccessLevel: AccessLevelModifier? = extractConfiguredAccessLevel(from: node)
     let optionalsDefaultNil: Bool? =
       extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
@@ -234,11 +238,7 @@ public struct MemberwiseInitMacro: MemberMacro {
   private static func customInitLabelDiagnosticsFor(properties: [MemberProperty]) -> [Diagnostic] {
     var diagnostics: [Diagnostic] = []
 
-    let propertiesByName: [String: MemberProperty] = properties.reduce([:]) { acc, property in
-      var acc = acc
-      acc[property.name] = property
-      return acc
-    }
+    let propertiesByName = Dictionary(uniqueKeysWithValues: properties.map { ($0.name, $0) })
 
     // Diagnose custom label conflicts with a property
     for property in properties {
@@ -335,12 +335,20 @@ public struct MemberwiseInitMacro: MemberMacro {
       }
 
     let configuredIgnore = configuredValues.contains("ignore")
-    let configuredForceEscaping = configuredValues.contains("escaping")
 
     let configuredAccessLevel =
       configuredValues
       .compactMap(AccessLevelModifier.init(rawValue:))
       .first
+
+    let configuredForceEscaping =
+      (customConfiguration
+        .firstWhereLabel("escaping")?
+        .expression
+        .as(BooleanLiteralExprSyntax.self)?
+        .literal
+        .text == "true")
+      || configuredValues.contains("escaping")  // Deprecated; remove in 1.0
 
     let configuredLabel =
       customConfiguration

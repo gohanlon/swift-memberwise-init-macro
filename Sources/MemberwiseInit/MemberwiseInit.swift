@@ -11,7 +11,17 @@ public enum AccessLevelConfig {
 
 @attached(member, names: named(init))
 public macro MemberwiseInit(
-  _ accessLevel: AccessLevelConfig? = nil,
+  _ accessLevel: AccessLevelConfig,
+  _deunderscoreParameters: Bool? = nil,
+  _optionalsDefaultNil: Bool? = nil
+) =
+  #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "MemberwiseInitMacro"
+  )
+
+@attached(member, names: named(init))
+public macro MemberwiseInit(
   _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
@@ -21,10 +31,6 @@ public macro MemberwiseInit(
   )
 
 // MARK: @Init macro
-
-public enum EscapingConfig {
-  case escaping
-}
 
 public enum IgnoreConfig {
   case ignore
@@ -55,6 +61,8 @@ public macro Init(
 // MARK: - Deprecated
 
 // Deprecated; remove in 1.0
+public enum EscapingConfig { case escaping }
+
 @attached(peer)
 public macro Init(
   _ accessLevel: AccessLevelConfig,
