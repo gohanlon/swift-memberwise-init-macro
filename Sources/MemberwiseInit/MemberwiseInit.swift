@@ -39,6 +39,29 @@ public enum IgnoreConfig {
 @attached(peer)
 public macro Init(
   _ accessLevel: AccessLevelConfig? = nil,
+  escaping: Bool? = nil,
+  label: String? = nil
+) =
+  #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "InitMacro"
+  )
+
+@attached(peer)
+public macro InitWrapper(
+  _ accessLevel: AccessLevelConfig? = nil,
+  escaping: Bool? = nil,
+  label: String? = nil,
+  type: Any.Type
+) =
+  #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "InitMacro"
+  )
+
+@attached(peer)
+public macro InitRaw(
+  _ accessLevel: AccessLevelConfig? = nil,
   assignee: String? = nil,
   escaping: Bool? = nil,
   label: String? = nil,

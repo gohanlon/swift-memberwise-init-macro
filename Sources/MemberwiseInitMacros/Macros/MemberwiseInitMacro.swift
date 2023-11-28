@@ -118,11 +118,11 @@ public struct MemberwiseInitMacro: MemberMacro {
   }
 
   private static func collectMemberPropertiesAndDiagnostics(
-    from decl: MemberBlockItemListSyntax,
+    from memberBlockItemList: MemberBlockItemListSyntax,
     targetAccessLevel: AccessLevelModifier
   ) throws -> ([MemberProperty], [Diagnostic]) {
     let (variables, variableDiagnostics) = collectMemberVariables(
-      from: decl,
+      from: memberBlockItemList,
       targetAccessLevel: targetAccessLevel
     )
 
@@ -136,10 +136,10 @@ public struct MemberwiseInitMacro: MemberMacro {
   }
 
   private static func collectMemberVariables(
-    from decl: MemberBlockItemListSyntax,
+    from memberBlockItemList: MemberBlockItemListSyntax,
     targetAccessLevel: AccessLevelModifier
   ) -> ([MemberVariable], [Diagnostic]) {
-    decl
+    memberBlockItemList
       .reduce(
         into: (
           variables: [MemberVariable](),
@@ -148,16 +148,30 @@ public struct MemberwiseInitMacro: MemberMacro {
       ) { acc, member in
         guard
           let variable = member.decl.as(VariableDeclSyntax.self),
-          variable.attributes.isEmpty || variable.attributes.contains(attributeNamed: "Init"),
+          variable.attributes.isEmpty || variable.hasCustomConfigurationAttribute,
           variable.modifiersExclude([.static, .lazy])
         else { return }
 
-        var diagnostics = [Diagnostic]()
+        if variable.customConfigurationAttributes.count > 1 {
+          acc.diagnostics += variable.customConfigurationAttributes.dropFirst().map { attribute in
+            Diagnostic(
+              node: attribute,
+              message: MacroExpansionErrorMessage(
+                """
+                Multiple @Init configurations are not supported by @MemberwiseInit
+                """
+              )
+            )
+          }
+          return
+        }
 
         let customSettings = extractVariableCustomSettings(from: variable)
         if let customSettings, customSettings.ignore {
           return
         }
+
+        var diagnostics = [Diagnostic]()
 
         if let customSettings, customSettings.label?.isInvalidSwiftLabel ?? false {
           diagnostics.append(customSettings.diagnosticOnLabelValue(message: .invalidSwiftLabel))
@@ -166,7 +180,8 @@ public struct MemberwiseInitMacro: MemberMacro {
           variable.bindings.count > 1
         {
           diagnostics.append(
-            customSettings.diagnosticOnLabel(message: .labelAppliedToMultipleBindings))
+            customSettings.diagnosticOnLabel(message: .labelAppliedToMultipleBindings)
+          )
         }
 
         // TODO: repetition of logic for custom configuration logic
@@ -174,7 +189,7 @@ public struct MemberwiseInitMacro: MemberMacro {
         if targetAccessLevel > effectiveAccessLevel,
           !variable.isFullyInitializedLet
         {
-          let customAccess = variable.customConfiguration?
+          let customAccess = variable.customConfigurationArguments?
             .first?
             .expression
             .as(MemberAccessExprSyntax.self)
@@ -327,50 +342,57 @@ public struct MemberwiseInitMacro: MemberMacro {
   private static func extractVariableCustomSettings(
     from variable: VariableDeclSyntax
   ) -> VariableCustomSettings? {
-    guard let customConfiguration = variable.customConfiguration else { return nil }
+    guard let customConfigurationAttribute = variable.customConfigurationAttribute else {
+      return nil
+    }
+
+    let customConfiguration = variable.customConfigurationArguments
 
     let configuredValues =
-      customConfiguration.compactMap {
+      customConfiguration?.compactMap {
         $0.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.trimmedDescription
       }
 
-    let configuredIgnore = configuredValues.contains("ignore")
+    let configuredIgnore = configuredValues?.contains("ignore") ?? false
 
     let configuredAccessLevel =
-      configuredValues
+      configuredValues?
       .compactMap(AccessLevelModifier.init(rawValue:))
       .first
 
     let configuredForceEscaping =
-      (customConfiguration
+      (customConfiguration?
         .firstWhereLabel("escaping")?
         .expression
         .as(BooleanLiteralExprSyntax.self)?
         .literal
         .text == "true")
-      || configuredValues.contains("escaping")  // Deprecated; remove in 1.0
+      || configuredValues?.contains("escaping") ?? false  // Deprecated; remove in 1.0
 
     let configuredLabel =
-      customConfiguration
+      customConfiguration?
       .firstWhereLabel("label")?
       .expression
       .trimmedStringLiteral
 
     let configuredType =
-      customConfiguration
+      customConfiguration?
       .firstWhereLabel("type")?
       .expression
+      .trimmedDescription
 
     // TODO: Is it possible for invalid type syntax to be provided for an `Any.Type` parameter?
     // NB: All expressions satisfying the `Any.Type` parameter type are parsable to TypeSyntax.
     let configuredTypeSyntax =
-      configuredType.map { TypeSyntax(stringLiteral: $0.trimmedDescription) }
+      configuredType.map(TypeSyntax.init(stringLiteral:))
 
-    let configuredAssignee =
-      customConfiguration
+    let configuredAssignee: VariableCustomSettings.Assignee? =
+      (customConfigurationAttribute.isInitWrapper ? .wrapper : nil)
+      ?? customConfiguration?
       .firstWhereLabel("assignee")?
       .expression
       .trimmedStringLiteral
+      .map(VariableCustomSettings.Assignee.raw)
 
     return VariableCustomSettings(
       accessLevel: configuredAccessLevel,
@@ -379,7 +401,7 @@ public struct MemberwiseInitMacro: MemberMacro {
       ignore: configuredIgnore,
       label: configuredLabel,
       type: configuredTypeSyntax,
-      _syntaxNode: customConfiguration
+      _syntaxNode: customConfigurationAttribute
     )
   }
 
@@ -421,7 +443,16 @@ public struct MemberwiseInitMacro: MemberMacro {
     considering allProperties: [MemberProperty],
     deunderscoreParameters: Bool
   ) -> String {
-    let assignee = property.customSettings?.assignee ?? "self.\(property.name)"
+    let assignee =
+      switch property.customSettings?.assignee {
+      case .none:
+        "self.\(property.name)"
+      case .wrapper:
+        "self._\(property.name)"
+      case let .raw(assignee):
+        assignee
+      }
+
     let parameterName = property.initParameterName(
       considering: allProperties,
       deunderscoreParameters: deunderscoreParameters
@@ -431,16 +462,23 @@ public struct MemberwiseInitMacro: MemberMacro {
 }
 
 private struct VariableCustomSettings: Equatable {
+  enum Assignee: Equatable {
+    case wrapper
+    case raw(String)
+  }
+
   let accessLevel: AccessLevelModifier?
-  let assignee: String?
+  let assignee: Assignee?
   let forceEscaping: Bool
   let ignore: Bool
   let label: String?
   let type: TypeSyntax?
-  let _syntaxNode: LabeledExprListSyntax
+  let _syntaxNode: AttributeSyntax
 
   func diagnosticOnLabel(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
     let labelNode = self._syntaxNode
+      .arguments?
+      .as(LabeledExprListSyntax.self)?
       .firstWhereLabel("label")
 
     return diagnostic(node: labelNode ?? self._syntaxNode, message: message)
@@ -448,6 +486,8 @@ private struct VariableCustomSettings: Equatable {
 
   func diagnosticOnLabelValue(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
     let labelValueNode = self._syntaxNode
+      .arguments?
+      .as(LabeledExprListSyntax.self)?
       .firstWhereLabel("label")?
       .expression
 

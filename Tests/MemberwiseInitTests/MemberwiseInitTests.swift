@@ -20,101 +20,6 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  // MARK: - Test custom type
-
-  func testCustomType() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct S {
-        @Init(type: Q) var type: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var type: T
-
-        internal init(
-          type: Q
-        ) {
-          self.type = type
-        }
-      }
-      """
-    }
-  }
-
-  func testCustomType_GenericExpression() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct S {
-        @Init(type: Q<R>) var type: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var type: T
-
-        internal init(
-          type: Q<R>
-        ) {
-          self.type = type
-        }
-      }
-      """
-    }
-  }
-
-  // TODO: Add fix-it diagnostic when provided type is a Metatype
-  //  func testCustomType_MetatypeFailsWithDiagnostic() {
-  //    assertMacro(record: true) {
-  //      """
-  //      @MemberwiseInit
-  //      struct S {
-  //        @Init(type: Q.self) var type: T
-  //      }
-  //      """
-  //    } diagnostics: {
-  //      """
-  //      @MemberwiseInit
-  //      struct S {
-  //        @Init(type: Q.self) var type: T
-  //            ┬─────────────────
-  //            ╰─ 🛑 Invalid use of metatype 'Q.self'. Expected a type, not its metatype.
-  //            ╰─ 🛑 Remove '.self'; type is expected, not a metatype.
-  //      }
-  //      """
-  //    }
-  //  }
-
-  // MARK: - Test custom assign
-
-  func testCustomAssign() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct S {
-        @Init(assignee: "self._type") var type: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var type: T
-
-        internal init(
-          type: T
-        ) {
-          self._type = type
-        }
-      }
-      """
-    }
-  }
-
   // MARK: - Test simple usage
 
   // NB: Redundant to AccessLevelTests but handy to have here, too.
@@ -912,6 +817,52 @@ final class MemberwiseInitTests: XCTestCase {
         ) {
           self.name = name
         }
+      }
+      """
+    }
+  }
+
+  func testInitAndInit_FailsWithDiagnostic() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init @Init
+        let value: T
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init @Init
+              ┬────
+              ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+        let value: T
+      }
+      """
+    }
+  }
+
+  func testInitInitWrapperInitRaw_FailsWithDiagnostics() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init @InitWrapper @InitRaw
+        let value: T
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init @InitWrapper @InitRaw
+                           ┬───────
+              │            ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+              ┬───────────
+              ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+        let value: T
       }
       """
     }
