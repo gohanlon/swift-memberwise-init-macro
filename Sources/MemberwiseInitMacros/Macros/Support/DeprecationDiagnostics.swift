@@ -16,7 +16,7 @@ private func diagnoseDotEscaping<D: DeclGroupSyntax>(_ decl: D) -> [Diagnostic] 
     guard
       let configuration = element.decl
         .as(VariableDeclSyntax.self)?
-        .customConfiguration
+        .customConfigurationArguments
     else { return nil }
 
     let dotEscapingIndex = configuration.firstIndex(

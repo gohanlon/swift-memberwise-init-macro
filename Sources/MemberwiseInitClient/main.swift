@@ -122,6 +122,62 @@ public struct InferType<T: CaseIterable> {
   var dictionaryAs = ["foo": 1, 3: "bar"] as [AnyHashable: Any]
 }
 
+// - MARK: Usage tour
+
+public typealias SimpleClosure = () -> Void
+
+@propertyWrapper
+public struct Logged<Value> {
+  public var wrappedValue: Value {
+    didSet {
+      print("Logged: \(wrappedValue)")
+    }
+  }
+
+  public init(wrappedValue: Value) {
+    self.wrappedValue = wrappedValue
+  }
+}
+
+@MemberwiseInit(.public)
+public struct Usage<T> {
+  @Init(.ignore) var ignored: T? = nil
+  @Init(.public) var initPublic: T
+  @Init(.public, escaping: true) var initPublicEscaping: SimpleClosure
+  @Init(.public, escaping: true, label: "_") var initPublicEscapingLabel: SimpleClosure
+
+  // Some property wrappers require initialization of the property wrapper
+  // itself, hence `@InitWrapper`.
+  @InitWrapper(type: Logged<String>)
+  @Logged
+  public var nameWithWrapper: String
+
+  // `@InitRaw` enables direct specification of initialization values.
+  @InitRaw(
+    .public,
+    assignee: "self._nameWithWrapperRaw",
+    escaping: false,
+    label: "_",
+    type: Logged<String>
+  )
+  @Logged
+  var nameWithWrapperRaw: String
+}
+
+// - MARK: Diagnostics
+
+//@MemberwiseInit
+//struct Diagnostics<T> {
+//  @Init @InitWrapper @InitRaw
+////                   ┬───────
+////      │            ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+////      ┬───────────
+////      ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+//  let value: T
+//}
+
+// - MARK: @Init(label:)
+
 @MemberwiseInit
 struct S1 {
   @Init(label: "b") let _a: String
