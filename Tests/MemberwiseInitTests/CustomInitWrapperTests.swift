@@ -24,18 +24,18 @@ final class CustomInitWrapperTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @InitWrapper(type: Q<T>)
-        var initWrapper: T
+        var v: T
       }
       """
     } expansion: {
       """
       struct S {
-        var initWrapper: T
+        var v: T
 
         internal init(
-          initWrapper: Q<T>
+          v: Q<T>
         ) {
-          self._initWrapper = initWrapper
+          self._v = v
         }
       }
       """
@@ -48,18 +48,18 @@ final class CustomInitWrapperTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @InitWrapper(escaping: true, type: Q<T>)
-        var initWrapper: T
+        var v: T
       }
       """
     } expansion: {
       """
       struct S {
-        var initWrapper: T
+        var v: T
 
         internal init(
-          initWrapper: @escaping Q<T>
+          v: @escaping Q<T>
         ) {
-          self._initWrapper = initWrapper
+          self._v = v
         }
       }
       """
@@ -72,18 +72,18 @@ final class CustomInitWrapperTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @InitWrapper(label: "_", type: Q<T>)
-        var initWrapper: T
+        var v: T
       }
       """
     } expansion: {
       """
       struct S {
-        var initWrapper: T
+        var v: T
 
         internal init(
-          _ initWrapper: Q<T>
+          _ v: Q<T>
         ) {
-          self._initWrapper = initWrapper
+          self._v = v
         }
       }
       """
@@ -95,19 +95,19 @@ final class CustomInitWrapperTests: XCTestCase {
       """
       @MemberwiseInit(.public)
       public struct S {
-        @InitWrapper(.public, escaping: true, label: "_", type: Q<T>)
-        var initWrapper: T
+        @InitWrapper(.public, default: Q<T>(), escaping: true, label: "_", type: Q<T>)
+        var v: T
       }
       """
     } expansion: {
       """
       public struct S {
-        var initWrapper: T
+        var v: T
 
         public init(
-          _ initWrapper: @escaping Q<T>
+          _ v: @escaping Q<T> = Q<T>()
         ) {
-          self._initWrapper = initWrapper
+          self._v = v
         }
       }
       """

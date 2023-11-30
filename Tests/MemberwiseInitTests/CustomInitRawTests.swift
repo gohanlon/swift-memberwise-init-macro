@@ -22,18 +22,41 @@ final class CustomInitRawTests: XCTestCase {
       """
       @MemberwiseInit
       struct S {
-        @InitRaw var type: T
+        @InitRaw var v: T
       }
       """
     } expansion: {
       """
       struct S {
-        var type: T
+        var v: T
 
         internal init(
-          type: T
+          v: T
         ) {
-          self.type = type
+          self.v = v
+        }
+      }
+      """
+    }
+  }
+
+  func testDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      public struct S<T: Numeric> {
+        @InitRaw(default: 0) let number: T
+      }
+      """
+    } expansion: {
+      """
+      public struct S<T: Numeric> {
+        let number: T
+
+        internal init(
+          number: T = 0
+        ) {
+          self.number = number
         }
       }
       """
@@ -45,18 +68,18 @@ final class CustomInitRawTests: XCTestCase {
       """
       @MemberwiseInit
       struct S {
-        @InitRaw(type: Q) var type: T
+        @InitRaw(type: Q) var v: T
       }
       """
     } expansion: {
       """
       struct S {
-        var type: T
+        var v: T
 
         internal init(
-          type: Q
+          v: Q
         ) {
-          self.type = type
+          self.v = v
         }
       }
       """
@@ -68,18 +91,18 @@ final class CustomInitRawTests: XCTestCase {
       """
       @MemberwiseInit
       struct S {
-        @InitRaw(type: Q<R>) var type: T
+        @InitRaw(type: Q<R>) var v: T
       }
       """
     } expansion: {
       """
       struct S {
-        var type: T
+        var v: T
 
         internal init(
-          type: Q<R>
+          v: Q<R>
         ) {
-          self.type = type
+          self.v = v
         }
       }
       """
@@ -91,7 +114,7 @@ final class CustomInitRawTests: XCTestCase {
       """
       @MemberwiseInit(.public)
       public struct S {
-        @InitRaw(.public, assignee: "self.foo", escaping: true, label: "_", type: Q<T>)
+        @InitRaw(.public, assignee: "self.foo", default: nil, escaping: true, label: "_", type: Q<T>?)
         var initRaw: T
       }
       """
@@ -101,7 +124,7 @@ final class CustomInitRawTests: XCTestCase {
         var initRaw: T
 
         public init(
-          _ initRaw: @escaping Q<T>
+          _ initRaw: @escaping Q<T>? = nil
         ) {
           self.foo = initRaw
         }
@@ -116,14 +139,14 @@ final class CustomInitRawTests: XCTestCase {
   //      """
   //      @MemberwiseInit
   //      struct S {
-  //        @Init(type: Q.self) var type: T
+  //        @Init(type: Q.self) var v: T
   //      }
   //      """
   //    } diagnostics: {
   //      """
   //      @MemberwiseInit
   //      struct S {
-  //        @Init(type: Q.self) var type: T
+  //        @Init(type: Q.self) var v: T
   //            ┬─────────────────
   //            ╰─ 🛑 Invalid use of metatype 'Q.self'. Expected a type, not its metatype.
   //            ╰─ 🛑 Remove '.self'; type is expected, not a metatype.

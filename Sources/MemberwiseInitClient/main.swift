@@ -164,6 +164,37 @@ public struct Usage<T> {
   var nameWithWrapperRaw: String
 }
 
+@MemberwiseInit
+public struct SimpleDefault {
+  @Init(default: "Blob") let name: String
+}
+print(SimpleDefault())
+// → SimpleDefault(name: "Blob")
+
+@MemberwiseInit
+public struct NilDefault {
+  @Init(default: nil) let name: String?
+}
+print(NilDefault())
+// → NilDefault(name: nil)
+
+let global = 42
+@MemberwiseInit
+public struct GlobalDefault<T: Numeric> {
+  @Init(default: global) let number: T
+}
+print(GlobalDefault())
+// → GlobalDefault<Int>(number: 42)
+
+@MemberwiseInit
+public struct ClosureDefault {
+  @Init(default: { "Blob" }) let name: () -> String
+}
+print(ClosureDefault())
+// → ClosureDefault(name: (Function))
+print(ClosureDefault().name())
+// → Blob
+
 // - MARK: Diagnostics
 
 //@MemberwiseInit

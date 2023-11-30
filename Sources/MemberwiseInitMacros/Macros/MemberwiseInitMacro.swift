@@ -353,12 +353,18 @@ public struct MemberwiseInitMacro: MemberMacro {
         $0.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.trimmedDescription
       }
 
-    let configuredIgnore = configuredValues?.contains("ignore") ?? false
-
     let configuredAccessLevel =
       configuredValues?
       .compactMap(AccessLevelModifier.init(rawValue:))
       .first
+
+    let configuredAssignee: VariableCustomSettings.Assignee? =
+      (customConfigurationAttribute.isInitWrapper ? .wrapper : nil)
+      ?? customConfiguration?
+      .firstWhereLabel("assignee")?
+      .expression
+      .trimmedStringLiteral
+      .map(VariableCustomSettings.Assignee.raw)
 
     let configuredForceEscaping =
       (customConfiguration?
@@ -368,6 +374,14 @@ public struct MemberwiseInitMacro: MemberMacro {
         .literal
         .text == "true")
       || configuredValues?.contains("escaping") ?? false  // Deprecated; remove in 1.0
+
+    let configuredIgnore = configuredValues?.contains("ignore") ?? false
+
+    let configuredDefault =
+      customConfiguration?
+      .firstWhereLabel("default")?
+      .expression
+      .trimmedDescription
 
     let configuredLabel =
       customConfiguration?
@@ -386,17 +400,10 @@ public struct MemberwiseInitMacro: MemberMacro {
     let configuredTypeSyntax =
       configuredType.map(TypeSyntax.init(stringLiteral:))
 
-    let configuredAssignee: VariableCustomSettings.Assignee? =
-      (customConfigurationAttribute.isInitWrapper ? .wrapper : nil)
-      ?? customConfiguration?
-      .firstWhereLabel("assignee")?
-      .expression
-      .trimmedStringLiteral
-      .map(VariableCustomSettings.Assignee.raw)
-
     return VariableCustomSettings(
       accessLevel: configuredAccessLevel,
       assignee: configuredAssignee,
+      defaultValue: configuredDefault,
       forceEscaping: configuredForceEscaping,
       ignore: configuredIgnore,
       label: configuredLabel,
@@ -425,13 +432,17 @@ public struct MemberwiseInitMacro: MemberMacro {
     optionalsDefaultNil: Bool
   ) -> String {
     let defaultValue =
-      property.initializerValue.map { " = \($0.description)" }
+      property.customSettings?.defaultValue.map { " = \($0.description)" }
+      ?? property.initializerValue.map { " = \($0.description)" }
       ?? (optionalsDefaultNil && property.type.isOptionalType ? " = nil" : "")
+
     let escaping =
       (property.customSettings?.forceEscaping ?? false || property.type.isFunctionType)
       ? "@escaping " : ""
+
     let label = property.initParameterLabel(
       considering: allProperties, deunderscoreParameters: deunderscoreParameters)
+
     let parameterName = property.initParameterName(
       considering: allProperties, deunderscoreParameters: deunderscoreParameters)
 
@@ -469,6 +480,7 @@ private struct VariableCustomSettings: Equatable {
 
   let accessLevel: AccessLevelModifier?
   let assignee: Assignee?
+  let defaultValue: String?
   let forceEscaping: Bool
   let ignore: Bool
   let label: String?
