@@ -1990,6 +1990,31 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
+  // MARK: - Test default value
+
+  func testInitDefault() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      public struct S<T: Numeric> {
+        @Init(default: 0) let number: T
+      }
+      """
+    } expansion: {
+      """
+      public struct S<T: Numeric> {
+        let number: T
+
+        internal init(
+          number: T = 0
+        ) {
+          self.number = number
+        }
+      }
+      """
+    }
+  }
+
   // MARK: - Test _optionalsDefaultNil (experimental)
 
   func testOptionalLetProperty_InternalInitNoDefault() {

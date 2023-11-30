@@ -36,9 +36,14 @@ public enum IgnoreConfig {
   case ignore
 }
 
+// NB: The behavior of `@Init(default: nil)` can be surprising upon close examination:
+// * `@Init()`: No argument is given, so `default` semantically defaults to nil, which means "no default value".
+// * `@Init(default: nil)`: However, when nil is explicitly provided, it means "set the default value to nil".
+
 @attached(peer)
 public macro Init(
   _ accessLevel: AccessLevelConfig? = nil,
+  default: Any? = nil,
   escaping: Bool? = nil,
   label: String? = nil
 ) =
@@ -50,6 +55,7 @@ public macro Init(
 @attached(peer)
 public macro InitWrapper(
   _ accessLevel: AccessLevelConfig? = nil,
+  default: Any? = nil,
   escaping: Bool? = nil,
   label: String? = nil,
   type: Any.Type
@@ -63,6 +69,7 @@ public macro InitWrapper(
 public macro InitRaw(
   _ accessLevel: AccessLevelConfig? = nil,
   assignee: String? = nil,
+  default: Any? = nil,
   escaping: Bool? = nil,
   label: String? = nil,
   type: Any.Type? = nil
