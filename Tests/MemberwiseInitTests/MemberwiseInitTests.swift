@@ -541,7 +541,7 @@ final class MemberwiseInitTests: XCTestCase {
       """
       @MemberwiseInit
       struct Person {
-        var hasGoodFavoriteNumber: Bool {
+        private var hasGoodFavoriteNumber: Bool {
           true
         }
       }
@@ -549,7 +549,7 @@ final class MemberwiseInitTests: XCTestCase {
     } expansion: {
       """
       struct Person {
-        var hasGoodFavoriteNumber: Bool {
+        private var hasGoodFavoriteNumber: Bool {
           true
         }
 
