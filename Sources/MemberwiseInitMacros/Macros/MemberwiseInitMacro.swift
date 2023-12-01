@@ -176,8 +176,10 @@ public struct MemberwiseInitMacro: MemberMacro {
 
         if let customSettings, customSettings.label?.isInvalidSwiftLabel ?? false {
           diagnostics.append(customSettings.diagnosticOnLabelValue(message: .invalidSwiftLabel))
-        } else if let customSettings,
-          customSettings.label != "_",
+        } else if
+          let customSettings,
+          let label = customSettings.label,
+          label != "_",
           variable.bindings.count > 1
         {
           diagnostics.append(

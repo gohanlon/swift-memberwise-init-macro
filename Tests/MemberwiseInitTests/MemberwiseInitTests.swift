@@ -1461,6 +1461,32 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
+  func testCustomInitEscapingWithMultipleBindings() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(escaping: true)
+        let v, r: T
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let v, r: T
+
+        internal init(
+          v: @escaping T,
+          r: @escaping T
+        ) {
+          self.v = v
+          self.r = r
+        }
+      }
+      """
+    }
+  }
+
   func testCustomLabelWithMultipleBindings_FailsWithDiagnostic() {
     assertMacro {
       """
