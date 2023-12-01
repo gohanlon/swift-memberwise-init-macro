@@ -61,6 +61,15 @@ extension PatternSyntax {
 }
 
 extension VariableDeclSyntax {
+  var isComputedProperty: Bool {
+    guard
+      self.bindings.count == 1,
+      let binding = self.bindings.first?.as(PatternBindingSyntax.self)
+    else { return false }
+
+    return self.bindingSpecifier.tokenKind == .keyword(.var) && binding.isComputedProperty
+  }
+
   var isFullyInitializedLet: Bool {
     self.bindingSpecifier.tokenKind == .keyword(.let)
       && self.bindings.allSatisfy { $0.initializer != nil }

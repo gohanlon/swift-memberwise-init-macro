@@ -149,7 +149,8 @@ public struct MemberwiseInitMacro: MemberMacro {
         guard
           let variable = member.decl.as(VariableDeclSyntax.self),
           variable.attributes.isEmpty || variable.hasCustomConfigurationAttribute,
-          variable.modifiersExclude([.static, .lazy])
+          variable.modifiersExclude([.static, .lazy]),
+          !variable.isComputedProperty
         else { return }
 
         if variable.customConfigurationAttributes.count > 1 {
@@ -309,7 +310,7 @@ public struct MemberwiseInitMacro: MemberMacro {
         diagnostics: [Diagnostic]()
       )
     ) { acc, propertyBinding in
-      if propertyBinding.isComputedProperty || propertyBinding.isInitializedLet {
+      if propertyBinding.isInitializedLet {
         return
       }
 
