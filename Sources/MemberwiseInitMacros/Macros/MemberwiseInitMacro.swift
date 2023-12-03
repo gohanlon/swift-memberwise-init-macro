@@ -434,8 +434,8 @@ public struct MemberwiseInitMacro: MemberMacro {
     optionalsDefaultNil: Bool
   ) -> String {
     let defaultValue =
-      property.customSettings?.defaultValue.map { " = \($0.description)" }
-      ?? property.initializerValue.map { " = \($0.description)" }
+      property.initializerValue.map { " = \($0.description)" }
+      ?? property.customSettings?.defaultValue.map { " = \($0.description)" }
       ?? (optionalsDefaultNil && property.type.isOptionalType ? " = nil" : "")
 
     let escaping =
