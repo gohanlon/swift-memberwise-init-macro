@@ -174,16 +174,22 @@ public struct MemberwiseInitMacro: MemberMacro {
 
         var diagnostics = [Diagnostic]()
 
-        if let customSettings, customSettings.label?.isInvalidSwiftLabel ?? false {
-          diagnostics.append(customSettings.diagnosticOnLabelValue(message: .invalidSwiftLabel))
-        } else if let customSettings,
-          let label = customSettings.label,
-          label != "_",
-          variable.bindings.count > 1
-        {
-          diagnostics.append(
-            customSettings.diagnosticOnLabel(message: .labelAppliedToMultipleBindings)
-          )
+        if let customSettings = customSettings {
+          if customSettings.label?.isInvalidSwiftLabel ?? false {
+            diagnostics.append(customSettings.diagnosticOnLabelValue(message: .invalidSwiftLabel))
+          } else if let label = customSettings.label,
+            label != "_",
+            variable.bindings.count > 1
+          {
+            diagnostics.append(
+              customSettings.diagnosticOnLabel(message: .labelAppliedToMultipleBindings))
+          }
+
+          if customSettings.defaultValue != nil, variable.bindings.count > 1 {
+            diagnostics.append(
+              customSettings.diagnosticOnDefault(message: .defaultAppliedToMultipleBindings)
+            )
+          }
         }
 
         // TODO: repetition of logic for custom configuration logic
@@ -488,6 +494,15 @@ private struct VariableCustomSettings: Equatable {
   let label: String?
   let type: TypeSyntax?
   let _syntaxNode: AttributeSyntax
+
+  func diagnosticOnDefault(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
+    let labelNode = self._syntaxNode
+      .arguments?
+      .as(LabeledExprListSyntax.self)?
+      .firstWhereLabel("default")
+
+    return diagnostic(node: labelNode ?? self._syntaxNode, message: message)
+  }
 
   func diagnosticOnLabel(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
     let labelNode = self._syntaxNode
