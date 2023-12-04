@@ -8,6 +8,7 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
   case invalidDeclarationKind(DeclGroupSyntax)
   case invalidSwiftLabel
   case missingTypeForVarProperty
+  case defaultAppliedToMultipleBindings
   case tupleDestructuringInProperty
 
   private var rawValue: String {
@@ -30,8 +31,10 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
     case .missingTypeForVarProperty:
       ".missingTypeForVarProperty"
 
+    case .defaultAppliedToMultipleBindings:
+      ".defaultAppliedToMultipleBindings"
     case .tupleDestructuringInProperty:
-      ".tupleUsedInProperty"
+      ".defaultAppliedToMultipleBindings"
     }
   }
 
@@ -63,6 +66,8 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
       return
         "@MemberwiseInit requires a type annotation."
 
+    case .defaultAppliedToMultipleBindings:
+      return "Default value can't be applied to multiple bindings"
     case .tupleDestructuringInProperty:
       return """
         @MemberwiseInit does not support tuple destructuring for property declarations. \
