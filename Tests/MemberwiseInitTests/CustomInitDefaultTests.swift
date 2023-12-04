@@ -114,18 +114,13 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let x, y: Int
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       struct S {
         @Init(default: 42) let x, y: Int
-
-        internal init(
-          x: Int = 42,
-          y: Int = 42
-        ) {
-          self.x = x
-          self.y = y
-        }
+              ┬──────────
+              ╰─ 🛑 Default value can't be applied to multiple bindings
       }
       """
     }
@@ -139,18 +134,13 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) var x, y: Int
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       struct S {
         @Init(default: 42) var x, y: Int
-
-        internal init(
-          x: Int = 42,
-          y: Int = 42
-        ) {
-          self.x = x
-          self.y = y
-        }
+              ┬──────────
+              ╰─ 🛑 Default value can't be applied to multiple bindings
       }
       """
     }
@@ -164,16 +154,13 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let x = 0, y: Int
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       struct S {
         @Init(default: 42) let x = 0, y: Int
-
-        internal init(
-          y: Int = 42
-        ) {
-          self.y = y
-        }
+              ┬──────────
+              ╰─ 🛑 Default value can't be applied to multiple bindings
       }
       """
     }
@@ -187,18 +174,13 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) var x = 0, y: Int
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       struct S {
         @Init(default: 42) var x = 0, y: Int
-
-        internal init(
-          x: Int = 0,
-          y: Int = 42
-        ) {
-          self.x = x
-          self.y = y
-        }
+              ┬──────────
+              ╰─ 🛑 Default value can't be applied to multiple bindings
       }
       """
     }
@@ -212,18 +194,13 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let x: Int, isOn: Bool
       }
       """
-    } expansion: {
+    } diagnostics: {
       """
+      @MemberwiseInit
       struct S {
         @Init(default: 42) let x: Int, isOn: Bool
-
-        internal init(
-          x: Int = 42,
-          isOn: Bool = 42
-        ) {
-          self.x = x
-          self.isOn = isOn
-        }
+              ┬──────────
+              ╰─ 🛑 Default value can't be applied to multiple bindings
       }
       """
     }

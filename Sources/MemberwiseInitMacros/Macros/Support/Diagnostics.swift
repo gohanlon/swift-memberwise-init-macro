@@ -2,17 +2,20 @@ import SwiftDiagnostics
 import SwiftSyntax
 
 enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
+  case defaultAppliedToMultipleBindings
   case labelAppliedToMultipleBindings
   case labelConflictsWithProperty(String)
   case labelConflictsWithAnotherLabel(String)
   case invalidDeclarationKind(DeclGroupSyntax)
   case invalidSwiftLabel
   case missingTypeForVarProperty
-  case defaultAppliedToMultipleBindings
   case tupleDestructuringInProperty
 
   private var rawValue: String {
     switch self {
+    case .defaultAppliedToMultipleBindings:
+      ".defaultAppliedToMultipleBindings"
+
     case .labelAppliedToMultipleBindings:
       ".labelAppliedToMultipleBindings"
 
@@ -31,8 +34,6 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
     case .missingTypeForVarProperty:
       ".missingTypeForVarProperty"
 
-    case .defaultAppliedToMultipleBindings:
-      ".defaultAppliedToMultipleBindings"
     case .tupleDestructuringInProperty:
       ".defaultAppliedToMultipleBindings"
     }
