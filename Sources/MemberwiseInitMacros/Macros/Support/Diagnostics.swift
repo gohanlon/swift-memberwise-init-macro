@@ -2,6 +2,7 @@ import SwiftDiagnostics
 import SwiftSyntax
 
 enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
+  case defaultAppliedToMultipleBindings
   case labelAppliedToMultipleBindings
   case labelConflictsWithProperty(String)
   case labelConflictsWithAnotherLabel(String)
@@ -12,6 +13,9 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
 
   private var rawValue: String {
     switch self {
+    case .defaultAppliedToMultipleBindings:
+      ".defaultAppliedToMultipleBindings"
+
     case .labelAppliedToMultipleBindings:
       ".labelAppliedToMultipleBindings"
 
@@ -39,6 +43,9 @@ enum MemberwiseInitMacroDiagnostic: Error, DiagnosticMessage {
 
   var message: String {
     switch self {
+    case .defaultAppliedToMultipleBindings:
+      return "Custom 'default' can't be applied to multiple bindings"
+
     case .labelAppliedToMultipleBindings:
       return """
         Custom 'label' can't be applied to multiple bindings
