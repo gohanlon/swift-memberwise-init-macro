@@ -23,7 +23,12 @@ public struct MemberwiseInitMacro: MemberMacro {
   ) throws -> [SwiftSyntax.DeclSyntax]
   where D: DeclGroupSyntax, C: MacroExpansionContext {
     guard [SwiftSyntax.SyntaxKind.classDecl, .structDecl, .actorDecl].contains(decl.kind) else {
-      throw MemberwiseInitMacroDiagnostic.invalidDeclarationKind(decl)
+      throw MacroExpansionErrorMessage(
+        """
+        @MemberwiseInit can only be attached to a struct, class, or actor; \
+        not to \(decl.descriptiveDeclKind(withArticle: true)).
+        """
+      )
     }
 
     deprecationDiagnostics(node: node, declaration: decl)
@@ -153,17 +158,8 @@ public struct MemberwiseInitMacro: MemberMacro {
           !variable.isComputedProperty
         else { return }
 
-        if variable.customConfigurationAttributes.count > 1 {
-          acc.diagnostics += variable.customConfigurationAttributes.dropFirst().map { attribute in
-            Diagnostic(
-              node: attribute,
-              message: MacroExpansionErrorMessage(
-                """
-                Multiple @Init configurations are not supported by @MemberwiseInit
-                """
-              )
-            )
-          }
+        if let diagnostics = diagnoseMultipleConfigurations(variable: variable) {
+          acc.diagnostics += diagnostics
           return
         }
 
@@ -172,52 +168,11 @@ public struct MemberwiseInitMacro: MemberMacro {
           return
         }
 
-        var diagnostics = [Diagnostic]()
-
-        if let customSettings = customSettings {
-          if customSettings.label?.isInvalidSwiftLabel ?? false {
-            diagnostics.append(customSettings.diagnosticOnLabelValue(message: .invalidSwiftLabel))
-          } else if let label = customSettings.label,
-            label != "_",
-            variable.bindings.count > 1
-          {
-            diagnostics.append(
-              customSettings.diagnosticOnLabel(message: .labelAppliedToMultipleBindings))
-          }
-
-          if customSettings.defaultValue != nil, variable.bindings.count > 1 {
-            diagnostics.append(
-              customSettings.diagnosticOnDefault(message: .defaultAppliedToMultipleBindings)
-            )
-          }
-        }
-
-        // TODO: repetition of logic for custom configuration logic
-        let effectiveAccessLevel = customSettings?.accessLevel ?? variable.accessLevel
-        if targetAccessLevel > effectiveAccessLevel,
-          !variable.isFullyInitializedLet
-        {
-          let customAccess = variable.customConfigurationArguments?
-            .first?
-            .expression
-            .as(MemberAccessExprSyntax.self)
-
-          let targetNode =
-            customAccess?._syntaxNode
-            ?? (variable.modifiers.isEmpty ? variable._syntaxNode : variable.modifiers._syntaxNode)
-
-          diagnostics += [
-            Diagnostic(
-              node: targetNode,
-              message: MacroExpansionErrorMessage(
-                """
-                @MemberwiseInit(.\(targetAccessLevel)) would leak access to '\(effectiveAccessLevel)' property
-                """
-              )
-            )
-          ]
-        }
-
+        let diagnostics = diagnoseVariableDecl(
+          customSettings: customSettings,
+          variable: variable,
+          targetAccessLevel: targetAccessLevel
+        )
         guard diagnostics.isEmpty else {
           acc.diagnostics += diagnostics
           return
@@ -230,54 +185,6 @@ public struct MemberwiseInitMacro: MemberMacro {
           )
         )
       }
-  }
-
-  private static func customInitLabelDiagnosticsFor(bindings: [PropertyBinding]) -> [Diagnostic] {
-    var diagnostics: [Diagnostic] = []
-
-    let customLabeledBindings = bindings.filter {
-      $0.variable.customSettings?.label != nil
-    }
-
-    // Diagnose custom label conflicts with another custom label
-    var seenCustomLabels: Set<String> = []
-    for binding in customLabeledBindings {
-      guard
-        let customSettings = binding.variable.customSettings,
-        let label = customSettings.label,
-        label != "_"
-      else { continue }
-      defer { seenCustomLabels.insert(label) }
-      if seenCustomLabels.contains(label) {
-        diagnostics.append(
-          customSettings.diagnosticOnLabelValue(message: .labelConflictsWithAnotherLabel(label))
-        )
-      }
-    }
-
-    return diagnostics
-  }
-
-  private static func customInitLabelDiagnosticsFor(properties: [MemberProperty]) -> [Diagnostic] {
-    var diagnostics: [Diagnostic] = []
-
-    let propertiesByName = Dictionary(uniqueKeysWithValues: properties.map { ($0.name, $0) })
-
-    // Diagnose custom label conflicts with a property
-    for property in properties {
-      guard
-        let propertyCustomSettings = property.customSettings,
-        let label = propertyCustomSettings.label,
-        let duplicated = propertiesByName[label],
-        duplicated != property
-      else { continue }
-
-      diagnostics.append(
-        propertyCustomSettings.diagnosticOnLabelValue(message: .labelConflictsWithProperty(label))
-      )
-    }
-
-    return diagnostics
   }
 
   private static func collectPropertyBindings(variables: [MemberVariable]) -> [PropertyBinding] {
@@ -322,11 +229,25 @@ public struct MemberwiseInitMacro: MemberMacro {
       }
 
       if propertyBinding.isInitializedVarWithoutType {
-        acc.diagnostics.append(propertyBinding.diagnostic(message: .missingTypeForVarProperty))
+        acc.diagnostics.append(
+          propertyBinding.diagnostic(
+            MacroExpansionErrorMessage("@MemberwiseInit requires a type annotation.")
+          )
+        )
         return
       }
       if propertyBinding.isTuplePattern {
-        acc.diagnostics.append(propertyBinding.diagnostic(message: .tupleDestructuringInProperty))
+        acc.diagnostics.append(
+          propertyBinding.diagnostic(
+            MacroExpansionErrorMessage(
+              """
+              @MemberwiseInit does not support tuple destructuring for property declarations. \
+              Use multiple declarations instead.
+              """
+            )
+          )
+        )
+
         return
       }
 
@@ -477,160 +398,5 @@ public struct MemberwiseInitMacro: MemberMacro {
       deunderscoreParameters: deunderscoreParameters
     )
     return "\(assignee) = \(parameterName)"
-  }
-}
-
-private struct VariableCustomSettings: Equatable {
-  enum Assignee: Equatable {
-    case wrapper
-    case raw(String)
-  }
-
-  let accessLevel: AccessLevelModifier?
-  let assignee: Assignee?
-  let defaultValue: String?
-  let forceEscaping: Bool
-  let ignore: Bool
-  let label: String?
-  let type: TypeSyntax?
-  let _syntaxNode: AttributeSyntax
-
-  func diagnosticOnDefault(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
-    let labelNode = self._syntaxNode
-      .arguments?
-      .as(LabeledExprListSyntax.self)?
-      .firstWhereLabel("default")
-
-    return diagnostic(node: labelNode ?? self._syntaxNode, message: message)
-  }
-
-  func diagnosticOnLabel(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
-    let labelNode = self._syntaxNode
-      .arguments?
-      .as(LabeledExprListSyntax.self)?
-      .firstWhereLabel("label")
-
-    return diagnostic(node: labelNode ?? self._syntaxNode, message: message)
-  }
-
-  func diagnosticOnLabelValue(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
-    let labelValueNode = self._syntaxNode
-      .arguments?
-      .as(LabeledExprListSyntax.self)?
-      .firstWhereLabel("label")?
-      .expression
-
-    return diagnostic(node: labelValueNode ?? self._syntaxNode, message: message)
-  }
-
-  private func diagnostic(
-    node: any SyntaxProtocol,
-    message: MemberwiseInitMacroDiagnostic
-  ) -> Diagnostic {
-    Diagnostic(node: node, message: message)
-  }
-}
-
-private struct PropertyBinding {
-  let typeFromTrailingBinding: TypeSyntax?
-  let syntax: PatternBindingSyntax
-  let variable: MemberVariable
-
-  var effectiveType: TypeSyntax? {
-    variable.customSettings?.type
-      ?? self.syntax.typeAnnotation?.type
-      ?? self.syntax.initializer?.value.inferredTypeSyntax
-      ?? self.typeFromTrailingBinding
-  }
-
-  var initializerValue: ExprSyntax? {
-    self.syntax.initializer?.trimmed.value
-  }
-
-  var isComputedProperty: Bool {
-    self.syntax.isComputedProperty
-  }
-
-  var isTuplePattern: Bool {
-    self.syntax.pattern.isTuplePattern
-  }
-
-  // TODO: think carefully about how to improve this situation
-  var name: String? {
-    self.syntax.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
-  }
-
-  var isInitializedVarWithoutType: Bool {
-    self.initializerValue != nil
-      && self.variable.keywordToken == .keyword(.var)
-      && self.effectiveType == nil
-      && self.initializerValue?.inferredTypeSyntax == nil
-  }
-
-  var isInitializedLet: Bool {
-    self.initializerValue != nil && self.variable.keywordToken == .keyword(.let)
-  }
-
-  func diagnostic(message: MemberwiseInitMacroDiagnostic) -> Diagnostic {
-    Diagnostic(node: self.syntax._syntaxNode, message: message)
-  }
-}
-
-private struct MemberVariable {
-  let customSettings: VariableCustomSettings?
-  let syntax: VariableDeclSyntax
-
-  var accessLevel: AccessLevelModifier {
-    self.syntax.accessLevel
-  }
-
-  var bindings: PatternBindingListSyntax {
-    self.syntax.bindings
-  }
-
-  var keywordToken: TokenKind {
-    self.syntax.bindingSpecifier.tokenKind
-  }
-
-  var _syntaxNode: Syntax {
-    self.syntax._syntaxNode
-  }
-}
-
-private struct MemberProperty: Equatable {
-  let accessLevel: AccessLevelModifier
-  let customSettings: VariableCustomSettings?
-  let initializerValue: ExprSyntax?
-  let keywordToken: TokenKind
-  let name: String
-  let type: TypeSyntax
-
-  func initParameterLabel(
-    considering allProperties: [MemberProperty],
-    deunderscoreParameters: Bool
-  ) -> String {
-    guard
-      let customSettings = self.customSettings,
-      customSettings.label
-        != self.initParameterName(
-          considering: allProperties,
-          deunderscoreParameters: deunderscoreParameters
-        )
-    else { return "" }
-
-    return customSettings.label.map { "\($0) " } ?? ""
-  }
-
-  func initParameterName(
-    considering allProperties: [MemberProperty],
-    deunderscoreParameters: Bool
-  ) -> String {
-    guard
-      self.customSettings?.label == nil,
-      deunderscoreParameters
-    else { return self.name }
-
-    let potentialName = self.name.hasPrefix("_") ? String(name.dropFirst()) : self.name
-    return allProperties.contains(where: { $0.name == potentialName }) ? self.name : potentialName
   }
 }
