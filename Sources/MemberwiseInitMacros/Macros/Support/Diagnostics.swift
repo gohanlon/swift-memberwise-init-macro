@@ -142,15 +142,15 @@ func customInitLabelDiagnosticsFor(bindings: [PropertyBinding]) -> [Diagnostic] 
 func customInitLabelDiagnosticsFor(properties: [MemberProperty]) -> [Diagnostic] {
   var diagnostics: [Diagnostic] = []
 
-  let propertiesByName = Dictionary(uniqueKeysWithValues: properties.map { ($0.name, $0) })
+  let propertiesByName = Dictionary(grouping: properties, by: { $0.name })
 
   // Diagnose custom label conflicts with a property
   for property in properties {
     guard
       let propertyCustomSettings = property.customSettings,
       let label = propertyCustomSettings.label,
-      let duplicated = propertiesByName[label],
-      duplicated != property
+      let duplicates = propertiesByName[label],
+      duplicates.contains(where: { $0 != property })
     else { continue }
 
     diagnostics.append(
