@@ -154,7 +154,6 @@ public struct MemberwiseInitMacro: MemberMacro {
         guard
           let variable = member.decl.as(VariableDeclSyntax.self),
           variable.attributes.isEmpty || variable.hasCustomConfigurationAttribute,
-          variable.modifiersExclude([.static, .lazy]),
           !variable.isComputedProperty
         else { return }
 
@@ -177,6 +176,8 @@ public struct MemberwiseInitMacro: MemberMacro {
           acc.diagnostics += diagnostics
           return
         }
+
+        guard variable.modifiersExclude([.static, .lazy]) else { return }
 
         acc.variables.append(
           MemberVariable(

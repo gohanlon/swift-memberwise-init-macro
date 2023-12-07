@@ -1,16 +1,15 @@
 import SwiftSyntax
 
-extension AttributeListSyntax {
-  func contains(attributeNamed name: String) -> Bool {
-    return self.contains {
-      $0.as(AttributeSyntax.self)?.attributeName.trimmedDescription == name
-    }
-  }
-}
-
 extension VariableDeclSyntax {
   func modifiersExclude(_ keywords: [Keyword]) -> Bool {
     return !self.modifiers.containsAny(of: keywords.map { TokenSyntax.keyword($0) })
+  }
+
+  func firstModifierWhere(keyword: Keyword) -> DeclModifierSyntax? {
+    let keywordText = TokenSyntax.keyword(keyword).text
+    return self.modifiers.first { modifier in
+      modifier.name.text == keywordText
+    }
   }
 }
 
@@ -70,9 +69,20 @@ extension VariableDeclSyntax {
     return self.bindingSpecifier.tokenKind == .keyword(.var) && binding.isComputedProperty
   }
 
+  var isFullyInitialized: Bool {
+    self.bindings.allSatisfy { $0.initializer != nil }
+  }
+
   var isFullyInitializedLet: Bool {
+    self.isLet && self.isFullyInitialized
+  }
+
+  var isLet: Bool {
     self.bindingSpecifier.tokenKind == .keyword(.let)
-      && self.bindings.allSatisfy { $0.initializer != nil }
+  }
+
+  var isVar: Bool {
+    self.bindingSpecifier.tokenKind == .keyword(.var)
   }
 }
 
