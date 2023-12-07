@@ -63,6 +63,45 @@ final class CustomInitRawTests: XCTestCase {
     }
   }
 
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  func testDefaultOnInitializedLet() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @InitRaw(default: 42) let number = 0
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @InitRaw(default: 42) let number = 0
+                 ┬──────────
+                 ╰─ 🛑 @InitRaw can't be applied to already initialized constant
+                    ✏️ Remove '@InitRaw(default: 42)'
+                    ✏️ Remove '= 0'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        let number = 0
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let number = 0
+
+        internal init() {
+        }
+      }
+      """
+    }
+  }
+
   func testType() {
     assertMacro {
       """

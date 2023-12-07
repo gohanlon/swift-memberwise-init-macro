@@ -64,7 +64,8 @@ final class CustomInitDefaultTests: XCTestCase {
     }
   }
 
-  // TODO: For 1.0, diagnostic on nonsensical @Init(default:)?
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  // TODO: For 1.0, strengthen by rejecting @Init on already initialized let (not just on '@Init(default:)')
   func testInitializedLet() {
     assertMacro {
       """
@@ -73,10 +74,28 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let number = 0
       }
       """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(default: 42) let number = 0
+              ┬──────────
+              ╰─ 🛑 @Init can't be applied to already initialized constant
+                 ✏️ Remove '@Init(default: 42)'
+                 ✏️ Remove '= 0'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        let number = 0
+      }
+      """
     } expansion: {
       """
       struct S {
-        @Init(default: 42) let number = 0
+        let number = 0
 
         internal init() {
         }
@@ -85,7 +104,47 @@ final class CustomInitDefaultTests: XCTestCase {
     }
   }
 
-  func testInitializedVar_InitializerWins() {
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  func testInitializedLetCustomLabel() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(default: 42, label: "_") let number = 0
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(default: 42, label: "_") let number = 0
+              ┬───────────
+              ╰─ 🛑 @Init can't be applied to already initialized constant
+                 ✏️ Remove '@Init(default: 42, label: "_")'
+                 ✏️ Remove '= 0'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        let number = 0
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let number = 0
+
+        internal init() {
+        }
+      }
+      """
+    }
+  }
+
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  func testInitializedVar() {
     assertMacro {
       """
       @MemberwiseInit
@@ -93,16 +152,203 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) var number = 0
       }
       """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(default: 42) var number = 0
+              ┬──────────
+              ╰─ 🛑 Custom 'default' can't be applied to already initialized variable
+                 ✏️ Remove '@Init(default: 42)'
+                 ✏️ Remove '= 0'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        var number = 0
+      }
+      """
     } expansion: {
       """
       struct S {
-        @Init(default: 42) var number = 0
+        var number = 0
 
         internal init(
           number: Int = 0
         ) {
           self.number = number
         }
+      }
+      """
+    }
+  }
+
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  func testAttributedInitializedLet() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: 42) let number = 0
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: 42) let number = 0
+                       ┬──────────
+                       ╰─ 🛑 @Init can't be applied to already initialized constant
+                          ✏️ Remove '@Init(default: 42)'
+                          ✏️ Remove '= 0'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding let number = 0
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Binding let number = 0
+
+        internal init() {
+        }
+      }
+      """
+    }
+  }
+
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  func testAttributedInitializedLet2() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: T.q) let number = T.t
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: T.q) let number = T.t
+                       ┬───────────
+                       ╰─ 🛑 @Init can't be applied to already initialized constant
+                          ✏️ Remove '@Init(default: T.q)'
+                          ✏️ Remove '= T.t'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding let number = T.t
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Binding let number = T.t
+
+        internal init() {
+        }
+      }
+      """
+    }
+  }
+
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  func testAttributedInitializedVar() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: T.q) var number = T.t
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: T.q) var number = T.t
+                       ┬───────────
+                       ╰─ 🛑 Custom 'default' can't be applied to already initialized variable
+                          ✏️ Remove 'default: T.q'
+                          ✏️ Remove '= T.t'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: T.q) var number: <#Type#>
+      }
+      """
+    }
+  }
+
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  func testAttributedInitializedVar2() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: T.q) var number = T.t
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: T.q) var number = T.t
+                       ┬───────────
+                       ╰─ 🛑 Custom 'default' can't be applied to already initialized variable
+                          ✏️ Remove 'default: T.q'
+                          ✏️ Remove '= T.t'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Binding @Init(default: T.q) var number: <#Type#>
+      }
+      """
+    }
+  }
+
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  // TODO: This test doesn't fit perfectly here because it touches on label
+  func testInitializedVarCustomLabel() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(default: 42, label: "_") var number = 0
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(default: 42, label: "_") var number = 0
+              ┬───────────
+              ╰─ 🛑 Custom 'default' can't be applied to already initialized variable
+                 ✏️ Remove 'default: 42'
+                 ✏️ Remove '= 0'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(label: "_") 
       }
       """
     }
@@ -123,6 +369,28 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let x, y: Int
               ┬──────────
               ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                 ✏️ Remove '@Init(default: 42)'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        let x, y: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let x, y: Int
+
+        internal init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
+        }
       }
       """
     }
@@ -157,6 +425,28 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) var x, y: Int
               ┬──────────
               ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                 ✏️ Remove '@Init(default: 42)'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        var x, y: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        var x, y: Int
+
+        internal init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
+        }
       }
       """
     }
@@ -191,6 +481,26 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let x = 0, y: Int
               ┬──────────
               ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                 ✏️ Remove '@Init(default: 42)'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        let x = 0, y: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let x = 0, y: Int
+
+        internal init(
+          y: Int
+        ) {
+          self.y = y
+        }
       }
       """
     }
@@ -223,6 +533,28 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) var x = 0, y: Int
               ┬──────────
               ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                 ✏️ Remove '@Init(default: 42)'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        var x = 0, y: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        var x = 0, y: Int
+
+        internal init(
+          x: Int = 0,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
+        }
       }
       """
     }
@@ -242,7 +574,7 @@ final class CustomInitDefaultTests: XCTestCase {
     //      """
   }
 
-  func testLetWithRaggedBindings_SucceedsWithInvalidCode() {
+  func testLetWithRaggedBindings() {
     assertMacro {
       """
       @MemberwiseInit
@@ -257,6 +589,28 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let x: Int, isOn: Bool
               ┬──────────
               ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                 ✏️ Remove '@Init(default: 42)'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        let x: Int, isOn: Bool
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let x: Int, isOn: Bool
+
+        internal init(
+          x: Int,
+          isOn: Bool
+        ) {
+          self.x = x
+          self.isOn = isOn
+        }
       }
       """
     }
