@@ -53,6 +53,7 @@ final class LayeredDiagnosticsTests: XCTestCase {
               │           ╰─ 🛑 Custom 'label' can't be applied to multiple bindings
               ┬──────────
               ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                 ✏️ Remove 'default: 0'
       }
       """
     }
@@ -77,6 +78,7 @@ final class LayeredDiagnosticsTests: XCTestCase {
               │           ╰─ 🛑 Custom 'label' can't be applied to multiple bindings
               ┬──────────
               ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                 ✏️ Remove 'default: 0'
       }
       """
     }

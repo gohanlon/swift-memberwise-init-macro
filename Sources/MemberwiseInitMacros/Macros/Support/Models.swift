@@ -16,22 +16,26 @@ struct VariableCustomSettings: Equatable {
   let type: TypeSyntax?
   let _syntaxNode: AttributeSyntax
 
-  func diagnosticOnDefault(_ message: DiagnosticMessage) -> Diagnostic {
+  var customAttributeName: String {
+    self._syntaxNode.attributeName.trimmedDescription
+  }
+
+  func diagnosticOnDefault(_ message: DiagnosticMessage, fixIts: [FixIt] = []) -> Diagnostic {
     let labelNode = self._syntaxNode
       .arguments?
       .as(LabeledExprListSyntax.self)?
       .firstWhereLabel("default")
 
-    return diagnostic(node: labelNode ?? self._syntaxNode, message: message)
+    return diagnostic(node: labelNode ?? self._syntaxNode, message: message, fixIts: fixIts)
   }
 
-  func diagnosticOnLabel(_ message: DiagnosticMessage) -> Diagnostic {
+  func diagnosticOnLabel(_ message: DiagnosticMessage, fixIts: [FixIt] = []) -> Diagnostic {
     let labelNode = self._syntaxNode
       .arguments?
       .as(LabeledExprListSyntax.self)?
       .firstWhereLabel("label")
 
-    return diagnostic(node: labelNode ?? self._syntaxNode, message: message)
+    return diagnostic(node: labelNode ?? self._syntaxNode, message: message, fixIts: fixIts)
   }
 
   func diagnosticOnLabelValue(_ message: DiagnosticMessage) -> Diagnostic {
@@ -46,9 +50,10 @@ struct VariableCustomSettings: Equatable {
 
   private func diagnostic(
     node: any SyntaxProtocol,
-    message: DiagnosticMessage
+    message: DiagnosticMessage,
+    fixIts: [FixIt] = []
   ) -> Diagnostic {
-    Diagnostic(node: node, message: message)
+    Diagnostic(node: node, message: message, fixIts: fixIts)
   }
 }
 

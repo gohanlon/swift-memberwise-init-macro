@@ -129,13 +129,31 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  // TODO: Emit diagnostic on "@Init" when applied nonsensically.
-  func testInitOnLetWithInitializer_IsIgnored() {
+  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
+  func testInitOnLetWithInitializer_WarnsAndIgnored() {
     assertMacro {
       """
       @MemberwiseInit
       struct Earth {
         @Init let name = "Earth"
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct Earth {
+        @Init let name = "Earth"
+        ┬────
+        ╰─ ⚠️ @Init can't be applied to already initialized constant
+           ✏️ Remove '@Init'
+           ✏️ Remove '= "Earth"'
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct Earth {
+        let name = "Earth"
       }
       """
     } expansion: {
