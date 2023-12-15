@@ -64,7 +64,7 @@ To use MemberwiseInit:
      public let name: String
      private var age: Int? = nil
    //┬──────
-   //╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
+   //╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
    }
    ```
 
@@ -817,7 +817,7 @@ public struct Person {
   public let name: String
   private var age: Int?
 //┬──────
-//╰─ 🛑 @MemberwiseInit(. public) would leak access to 'private' property
+//╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
 ```
 
 > **Note**
