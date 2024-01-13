@@ -22,12 +22,7 @@ let package = Package(
     ),
   ],
   dependencies: [
-    //    .package(
-    //      url: "https://github.com/gohanlon/swift-macro-testing",
-    //      branch: "explicit-indentation-width"
-    //    ),
-    // TODO: w/f https://github.com/pointfreeco/swift-macro-testing/pull/8
-    .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.1"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.15.0"),
     .package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"),
   ],
   targets: [
@@ -50,8 +45,25 @@ let package = Package(
       name: "MemberwiseInitTests",
       dependencies: [
         "MemberwiseInitMacros",
-        .product(name: "MacroTesting", package: "swift-macro-testing"),
+        "MacroTesting",
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+      ]
+    ),
+    .target(
+      name: "MacroTesting",
+      dependencies: [
+        .product(name: "InlineSnapshotTesting", package: "swift-snapshot-testing"),
+        .product(name: "SwiftDiagnostics", package: "swift-syntax"),
+        .product(name: "SwiftOperators", package: "swift-syntax"),
+        .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+      ]
+    ),
+    .testTarget(
+      name: "MacroTestingTests",
+      dependencies: [
+        "MacroTesting"
       ]
     ),
   ]
