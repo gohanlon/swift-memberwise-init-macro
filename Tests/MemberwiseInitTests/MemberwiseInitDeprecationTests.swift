@@ -27,6 +27,18 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
         @Init(.escaping) var value: T
       }
       """
+    } expansion: {
+      """
+      struct S {
+        var value: T
+
+        internal init(
+          value: @escaping T
+        ) {
+          self.value = value
+        }
+      }
+      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -39,21 +51,14 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       """
     } fixes: {
       """
+      @Init(.escaping) var value: T
+            ┬────────
+            ╰─ ⚠️ @Init(.escaping) is deprecated
+
+      ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
       @MemberwiseInit
       struct S {
         @Init(escaping: true) var value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var value: T
-
-        internal init(
-          value: @escaping T
-        ) {
-          self.value = value
-        }
       }
       """
     }
@@ -68,6 +73,18 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
         @Init(.public, .escaping) var value: T
       }
       """
+    } expansion: {
+      """
+      struct S {
+        var value: T
+
+        internal init(
+          value: @escaping T
+        ) {
+          self.value = value
+        }
+      }
+      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -80,21 +97,14 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       """
     } fixes: {
       """
+      @Init(.public, .escaping) var value: T
+            ┬─────────────────
+            ╰─ ⚠️ @Init(.escaping) is deprecated
+
+      ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
       @MemberwiseInit
       struct S {
         @Init(.public, escaping: true) var value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var value: T
-
-        internal init(
-          value: @escaping T
-        ) {
-          self.value = value
-        }
       }
       """
     }
@@ -109,6 +119,18 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
         @Init(.escaping, label: "_") var value: T
       }
       """
+    } expansion: {
+      """
+      struct S {
+        var value: T
+
+        internal init(
+          _ value: @escaping T
+        ) {
+          self.value = value
+        }
+      }
+      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -121,21 +143,14 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       """
     } fixes: {
       """
+      @Init(.escaping, label: "_") var value: T
+            ┬────────────────────
+            ╰─ ⚠️ @Init(.escaping) is deprecated
+
+      ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
       @MemberwiseInit
       struct S {
         @Init(escaping: true, label: "_") var value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var value: T
-
-        internal init(
-          _ value: @escaping T
-        ) {
-          self.value = value
-        }
       }
       """
     }
@@ -150,6 +165,18 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
         @Init(.public, .escaping, label: "_") var value: T
       }
       """
+    } expansion: {
+      """
+      struct S {
+        var value: T
+
+        internal init(
+          _ value: @escaping T
+        ) {
+          self.value = value
+        }
+      }
+      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -162,21 +189,14 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       """
     } fixes: {
       """
+      @Init(.public, .escaping, label: "_") var value: T
+            ┬─────────────────────────────
+            ╰─ ⚠️ @Init(.escaping) is deprecated
+
+      ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
       @MemberwiseInit
       struct S {
         @Init(.public, escaping: true, label: "_") var value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var value: T
-
-        internal init(
-          _ value: @escaping T
-        ) {
-          self.value = value
-        }
       }
       """
     }
