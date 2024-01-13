@@ -219,13 +219,162 @@ private func diagnoseAccessibilityLeak(
     customAccess?._syntaxNode
     ?? (variable.modifiers.isEmpty ? variable._syntaxNode : variable.modifiers._syntaxNode)
 
+  var fixWithCustomInitAccess: FixIt? {
+    var customAttribute =
+      variable.customConfigurationAttribute ?? AttributeSyntax(stringLiteral: "@Init() ")
+    if customAttribute.arguments == nil {
+      customAttribute = AttributeSyntax(
+        stringLiteral: "@\(customAttribute.attributeName.trimmedDescription)() "
+      )
+    }
+
+    let existingArguments =
+      customAttribute.arguments?
+      .as(LabeledExprListSyntax.self)
+      ?? LabeledExprListSyntax()
+
+    let customAccessLevelExpr = LabeledExprSyntax(
+      label: nil,
+      expression: MemberAccessExprSyntax(
+        name: TokenSyntax(stringLiteral: "\(targetAccessLevel)")
+      ),
+      trailingComma: existingArguments.isEmpty ? nil : .commaToken(trailingTrivia: .space)
+    )
+
+    let newArguments =
+      [customAccessLevelExpr]
+      + existingArguments
+      .trimmingPrefix(while: { $0.expression.as(MemberAccessExprSyntax.self) != nil })
+
+    customAttribute.arguments = .argumentList(newArguments)
+    customAttribute.leadingTrivia = variable.leadingTrivia
+
+    var newVariable = variable
+    newVariable.leadingTrivia = Trivia()
+    newVariable.attributes = [.attribute(customAttribute)]
+
+    return FixIt(
+      message: MacroExpansionFixItMessage(
+        "Add '@\(customAttribute.attributeName.trimmedDescription)(.\(targetAccessLevel))'"),
+      changes: [
+        FixIt.Change.replace(
+          oldNode: Syntax(variable), newNode: Syntax(newVariable)
+        )
+      ]
+    )
+  }
+
+  var fixWithAccessModifier: FixIt? {
+    // Check if custom configuration attribute has an access level that would override
+    if let customAttribute = variable.customConfigurationAttribute,
+      MemberwiseInitMacro.extractConfiguredAccessLevel(from: customAttribute) != nil
+    {
+      return nil
+    }
+
+    var newVariable = variable
+
+    func modifyOrAddAccessLevel(to modifiers: DeclModifierListSyntax?) -> DeclModifierListSyntax {
+      var modified = false
+      let newModifiers =
+        modifiers?.map { modifier -> DeclModifierSyntax in
+          if modifier.name.text == effectiveAccessLevel.rawValue {
+            modified = true
+            return
+              modifier
+              .with(\.name, TokenSyntax(stringLiteral: targetAccessLevel.rawValue))
+              .with(\.trailingTrivia, .space)
+          }
+          return modifier
+        } ?? []
+
+      if !modified {
+        let additionalModifier = DeclModifierSyntax(
+          name: TokenSyntax(stringLiteral: targetAccessLevel.rawValue)
+            .with(\.trailingTrivia, .space)
+        )
+        return [additionalModifier] + (modifiers ?? [])
+      }
+
+      return DeclModifierListSyntax(newModifiers)
+    }
+
+    newVariable.leadingTrivia = Trivia()
+    newVariable.modifiers = modifyOrAddAccessLevel(to: newVariable.modifiers)
+    newVariable.leadingTrivia = variable.leadingTrivia
+
+    let message =
+      if variable.modifiers.isEmpty {
+        "Add '\(targetAccessLevel)' access level"
+      } else {
+        "Replace '\(variable.modifiers.trimmedDescription)' access with '\(targetAccessLevel)'"
+      }
+
+    return FixIt(
+      message: MacroExpansionFixItMessage(message),
+      changes: [
+        FixIt.Change.replace(
+          oldNode: Syntax(variable), newNode: Syntax(newVariable)
+        )
+      ]
+    )
+  }
+
+  var fixWithCustomInitIgnore: FixIt? {
+    var customAttribute = AttributeSyntax(stringLiteral: "@Init(.ignore) ")
+
+    var newVariable = variable.with(\.leadingTrivia, Trivia())
+    customAttribute.leadingTrivia = variable.leadingTrivia
+
+    newVariable.attributes = [.attribute(customAttribute)]
+
+    let message =
+      if variable.isFullyInitialized {
+        "Add '\(customAttribute.trimmedDescription)'"
+      } else {
+        "Add '\(customAttribute.trimmedDescription)' and an initializer"
+      }
+
+    newVariable.bindings = PatternBindingListSyntax(
+      newVariable.bindings.map { patternBinding in
+        guard patternBinding.initializer == nil else { return patternBinding }
+
+        var newBinding = patternBinding
+        newBinding.initializer = InitializerClauseSyntax(
+          equal: .equalToken(leadingTrivia: .space, trailingTrivia: .space),
+          value: EditorPlaceholderExprSyntax(
+            placeholder: TokenSyntax(stringLiteral: "\u{3C}#value#\u{3E}")
+          )
+        )
+
+        return newBinding
+      }
+    )
+
+    return FixIt(
+      message: MacroExpansionFixItMessage(message),
+      changes: [
+        FixIt.Change.replace(
+          oldNode: Syntax(variable), newNode: Syntax(newVariable)
+        )
+      ]
+    )
+  }
+
+  let fixIts: [FixIt] = [
+    fixWithCustomInitAccess,
+    fixWithAccessModifier,
+    fixWithCustomInitIgnore,
+  ].compactMap { $0 }
+
   return Diagnostic(
     node: targetNode,
     message: MacroExpansionErrorMessage(
       """
       @MemberwiseInit(.\(targetAccessLevel)) would leak access to '\(effectiveAccessLevel)' property
       """
-    )
+    ),
+    fixIts: fixIts
   )
 }
 
@@ -296,8 +445,11 @@ extension VariableDeclSyntax {
     let newArguments = arguments.filter { $0.label?.text != "default" }
     newAttribute.arguments = newArguments.as(AttributeSyntax.Arguments.self)
     if newArguments.count == 0 {
+      // TODO: test coverage on @InitRaw(default:) and @InitWrapper(default:), not just @Init(default:)
+      let trailingTrivia = newAttribute.trailingTrivia
       newAttribute.leftParen = nil
       newAttribute.rightParen = nil
+      newAttribute.trailingTrivia = trailingTrivia
     }
 
     return FixIt(
@@ -363,5 +515,27 @@ extension VariableDeclSyntax {
         )
       ]
     )
+  }
+}
+
+// MARK: - Extensions
+
+extension LabeledExprListSyntax {
+  fileprivate func trimmingPrefix(
+    while predicate: (LabeledExprListSyntax.Element) throws -> Bool
+  ) rethrows -> LabeledExprListSyntax {
+    var endIndex = self.startIndex
+
+    while endIndex != self.endIndex, try predicate(self[endIndex]) {
+      formIndex(after: &endIndex)
+    }
+
+    if endIndex == self.startIndex {
+      return self
+    } else {
+      var modifiedSyntaxList = self
+      modifiedSyntaxList.removeSubrange(self.startIndex..<endIndex)
+      return modifiedSyntaxList
+    }
   }
 }

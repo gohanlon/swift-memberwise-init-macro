@@ -63,13 +63,21 @@ final class CustomInitRawTests: XCTestCase {
     }
   }
 
-  // FIXME: Exclusively applicable fix-its aren't testable: https://github.com/pointfreeco/swift-macro-testing/issues/14
   func testDefaultOnInitializedLet() {
     assertMacro {
       """
       @MemberwiseInit
       struct S {
         @InitRaw(default: 42) let number = 0
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let number = 0
+
+        internal init() {
+        }
       }
       """
     } diagnostics: {
@@ -85,18 +93,20 @@ final class CustomInitRawTests: XCTestCase {
       """
     } fixes: {
       """
+      @InitRaw(default: 42) let number = 0
+               ┬──────────
+               ╰─ 🛑 @InitRaw can't be applied to already initialized constant
+
+      ✏️ Remove '@InitRaw(default: 42)'
       @MemberwiseInit
       struct S {
         let number = 0
       }
-      """
-    } expansion: {
-      """
-      struct S {
-        let number = 0
 
-        internal init() {
-        }
+      ✏️ Remove '= 0'
+      @MemberwiseInit
+      struct S {
+        @InitRaw(default: 42) let number: Int
       }
       """
     }
@@ -188,7 +198,7 @@ final class CustomInitRawTests: XCTestCase {
   //        @Init(type: Q.self) var v: T
   //            ┬─────────────────
   //            ╰─ 🛑 Invalid use of metatype 'Q.self'. Expected a type, not its metatype.
-  //            ╰─ 🛑 Remove '.self'; type is expected, not a metatype.
+  //               ✏️ Remove '.self'; type is expected, not a metatype.
   //      }
   //      """
   //    }

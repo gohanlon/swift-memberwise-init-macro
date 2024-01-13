@@ -77,6 +77,21 @@ final class InvalidSyntaxTests: XCTestCase {
         let x: T
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Init(label: "x") let x: T
+        let x: T
+
+        internal init(
+          x: T,
+          x: T
+        ) {
+          self.x = x
+          self.x = x
+        }
+      }
+      """
     } diagnostics: {
       """
       @MemberwiseInit
