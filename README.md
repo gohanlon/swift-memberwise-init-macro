@@ -157,6 +157,7 @@ Attach to the property declarations of a struct that `@MemberwiseInit` is provid
   public macro InitRaw(
     _ accessLevel: AccessLevelConfig? = nil,
     assignee: String? = nil,
+    default: Any? = nil,
     escaping: Bool? = nil,
     label: String? = nil,
     type: Any.Type? = nil
@@ -169,8 +170,8 @@ Attach to the property declarations of a struct that `@MemberwiseInit` is provid
 * `@MemberwiseInit(_deunderscoreParameters: true)` *(experimental)*
   <br> Drop underscore prefix from generated `init` parameter names, unless doing so would result in a naming conflict. Ignored properties won’t contribute to conflicts, and overridable using `@Init(label:)`.
 
-* `@MemberwiseInit class|actor` *(experimental)*
-  <br> Attachable to class and actor.
+* `@MemberwiseInit` on  `actor`, `class` *(experimental)*
+  <br> Attachable to actor and class.
 
 ## Features and limitations
 
