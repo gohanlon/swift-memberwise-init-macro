@@ -256,6 +256,11 @@ extension ExprSyntax {
       else { return nil }
       return .tuple(elementTypes)
 
+    #if canImport(SwiftSyntax510)
+      case .thenStmt:
+        return nil
+    #endif
+
     case .token, .accessorBlock, .accessorDeclList, .accessorDecl, .accessorEffectSpecifiers,
       .accessorParameters, .actorDecl, .arrayElementList, .arrayElement, .arrayType, .arrowExpr,
       .assignmentExpr, .associatedTypeDecl, .attributeList, .attribute, .attributedType,

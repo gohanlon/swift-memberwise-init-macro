@@ -17,10 +17,18 @@ jobs:
   macos:
     name: macOS
     runs-on: macos-13
+    strategy:
+      matrix:
+        swift-syntax-version: ['509.0.0..<510.0.0', '510.0.0..<511.0.0']
+
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 15
         run: sudo xcode-select -s /Applications/Xcode_15.0.app
+      - name: Set SWIFT_SYNTAX_VERSION environment variable
+        run: echo "SWIFT_SYNTAX_VERSION=${{ matrix.swift-syntax-version }}" >> $GITHUB_ENV
+      - name: Resolve Dependencies
+        run: swift package resolve
       - name: Run tests
         run: swift test
 
@@ -29,9 +37,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Swift
-        uses: slashmo/install-swift@v0.4.0
+        uses: swift-actions/setup-swift@v2
         with:
-          version: 5.9
+          swift-version: "5.10"
       - uses: actions/checkout@v4
       - name: Run tests
         run: swift test
