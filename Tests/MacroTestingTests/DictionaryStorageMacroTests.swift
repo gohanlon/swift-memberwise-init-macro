@@ -14,38 +14,73 @@ final class DictionaryStorageMacroTests: BaseTestCase {
   }
 
   func testExpansionConvertsStoredProperties() {
-    assertMacro {
-      """
-      @DictionaryStorage
-      struct Point {
-        var x: Int = 1
-        var y: Int = 2
-      }
-      """
-    } expansion: {
-      """
-      struct Point {
-        var x: Int = 1 {
-          get {
-            _storage["x", default: 1] as! Int
-          }
-          set {
-            _storage["x"] = newValue
-          }
+    #if canImport(SwiftSyntax510)
+      assertMacro {
+        """
+        @DictionaryStorage
+        struct Point {
+          var x: Int = 1
+          var y: Int = 2
         }
-        var y: Int = 2 {
-          get {
-            _storage["y", default: 2] as! Int
+        """
+      } expansion: {
+        """
+        struct Point {
+          var x: Int {
+            get {
+              _storage["x", default: 1] as! Int
+            }
+            set {
+              _storage["x"] = newValue
+            }
           }
-          set {
-            _storage["y"] = newValue
+          var y: Int {
+            get {
+              _storage["y", default: 2] as! Int
+            }
+            set {
+              _storage["y"] = newValue
+            }
           }
-        }
 
-        var _storage: [String: Any] = [:]
+          var _storage: [String: Any] = [:]
+        }
+        """
       }
-      """
-    }
+    #elseif canImport(SwiftSyntax509)
+      assertMacro {
+        """
+        @DictionaryStorage
+        struct Point {
+          var x: Int = 1
+          var y: Int = 2
+        }
+        """
+      } expansion: {
+        """
+        struct Point {
+          var x: Int = 1 {
+            get {
+              _storage["x", default: 1] as! Int
+            }
+            set {
+              _storage["x"] = newValue
+            }
+          }
+          var y: Int = 2 {
+            get {
+              _storage["y", default: 2] as! Int
+            }
+            set {
+              _storage["y"] = newValue
+            }
+          }
+
+          var _storage: [String: Any] = [:]
+        }
+        """
+      }
+    #endif
   }
 
   func testExpansionWithoutInitializersEmitsError() {

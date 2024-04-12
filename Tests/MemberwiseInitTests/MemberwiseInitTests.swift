@@ -2046,84 +2046,188 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
+  // TODO: regress MemberwiseInit to match swift-syntax 5.10 limitation
   func testCustomInitEscapingWithMultipleBindings() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct S {
-        @Init(escaping: true)
-        let v, r: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let v, r: T
-
-        internal init(
-          v: @escaping T,
-          r: @escaping T
-        ) {
-          self.v = v
-          self.r = r
+    #if canImport(SwiftSyntax510)
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init(escaping: true)
+          let v, r: T
         }
+        """
+      } expansion: {
+        """
+        struct S {
+          let v, r: T
+
+          internal init(
+            v: @escaping T,
+            r: @escaping T
+          ) {
+            self.v = v
+            self.r = r
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init(escaping: true)
+          ┬────────────────────
+          ╰─ 🛑 peer macro can only be applied to a single variable
+          let v, r: T
+        }
+        """
       }
-      """
-    }
+    #elseif canImport(SwfitSyntax509)
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init(escaping: true)
+          let v, r: T
+        }
+        """
+      } expansion: {
+        """
+        struct S {
+          let v, r: T
+
+          internal init(
+            v: @escaping T,
+            r: @escaping T
+          ) {
+            self.v = v
+            self.r = r
+          }
+        }
+        """
+      }
+    #endif
   }
 
+  // TODO: Consider regressing MemberwiseInit to match swift-syntax 5.10 limitation (or leave redundant error, but that has a fix-it)
   func testCustomLabelWithMultipleBindings_FailsWithDiagnostic() {
-    assertMacro {
-      """
-      @MemberwiseInit(.public)
-      public struct Person {
-        @Init(label: "with") public let firstName, lastName: String
-      }
-      """
-    } expansion: {
-      """
-      public struct Person {
-        public let firstName, lastName: String
-
-        public init() {
+    #if canImport(SwiftSyntax510)
+      assertMacro {
+        """
+        @MemberwiseInit(.public)
+        public struct Person {
+          @Init(label: "with") public let firstName, lastName: String
         }
+        """
+      } expansion: {
+        """
+        public struct Person {
+          public let firstName, lastName: String
+
+          public init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit(.public)
+        public struct Person {
+          @Init(label: "with") public let firstName, lastName: String
+                ┬────────────
+          │     ╰─ 🛑 Custom 'label' can't be applied to multiple bindings
+          ┬───────────────────
+          ╰─ 🛑 peer macro can only be applied to a single variable
+        }
+        """
       }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(.public)
-      public struct Person {
-        @Init(label: "with") public let firstName, lastName: String
-              ┬────────────
-              ╰─ 🛑 Custom 'label' can't be applied to multiple bindings
+    #elseif canImport(SwfitSyntax509)
+      assertMacro {
+        """
+        @MemberwiseInit(.public)
+        public struct Person {
+          @Init(label: "with") public let firstName, lastName: String
+        }
+        """
+      } expansion: {
+        """
+        public struct Person {
+          public let firstName, lastName: String
+
+          public init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit(.public)
+        public struct Person {
+          @Init(label: "with") public let firstName, lastName: String
+                ┬────────────
+                ╰─ 🛑 Custom 'label' can't be applied to multiple bindings
+        }
+        """
       }
-      """
-    }
+    #endif
   }
 
+  // TODO: Consider regressing MemberwiseInit to match swift-syntax 5.10 limitation (or leave redundant error, but that has a fix-it)
   func testLabellessCustomInitForMultipleBindings() {
-    assertMacro {
-      """
-      @MemberwiseInit(.public)
-      public struct Person {
-        @Init(label: "_") public let firstName, lastName: String
-      }
-      """
-    } expansion: {
-      """
-      public struct Person {
-        public let firstName, lastName: String
-
-        public init(
-          _ firstName: String,
-          _ lastName: String
-        ) {
-          self.firstName = firstName
-          self.lastName = lastName
+    #if canImport(SwiftSyntax510)
+      assertMacro {
+        """
+        @MemberwiseInit(.public)
+        public struct Person {
+          @Init(label: "_") public let firstName, lastName: String
         }
+        """
+      } expansion: {
+        """
+        public struct Person {
+          public let firstName, lastName: String
+
+          public init(
+            _ firstName: String,
+            _ lastName: String
+          ) {
+            self.firstName = firstName
+            self.lastName = lastName
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit(.public)
+        public struct Person {
+          @Init(label: "_") public let firstName, lastName: String
+          ┬────────────────
+          ╰─ 🛑 peer macro can only be applied to a single variable
+        }
+        """
       }
-      """
-    }
+    #elseif canImport(SwfitSyntax509)
+      assertMacro {
+        """
+        @MemberwiseInit(.public)
+        public struct Person {
+          @Init(label: "_") public let firstName, lastName: String
+        }
+        """
+      } expansion: {
+        """
+        public struct Person {
+          public let firstName, lastName: String
+
+          public init(
+            _ firstName: String,
+            _ lastName: String
+          ) {
+            self.firstName = firstName
+            self.lastName = lastName
+          }
+        }
+        """
+      }
+    #endif
   }
 
   func testCustomInitIgnore() {
