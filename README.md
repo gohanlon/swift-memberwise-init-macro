@@ -45,7 +45,7 @@ To use MemberwiseInit:
 
    ```swift
    dependencies: [
-     .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", from: "0.3.0")
+     .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", from: "0.4.0")
    ]
    ```
 
@@ -65,6 +65,9 @@ To use MemberwiseInit:
      private var age: Int? = nil
    //┬──────
    //╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+   //   ✏️ Add '@Init(.public)'
+   //   ✏️ Replace 'private' access with 'public'
+   //   ✏️ Add '@Init(.ignore)'
    }
    ```
 
@@ -229,6 +232,7 @@ Customize your initializer parameter labels with `@Init(label: String)`:
 Explicit type annotations are not required when properties are initialized with an expression whose syntax implies type information, e.g., most Swift literals:
 
 ```swift
+@MemberwiseInit
 struct Example {
   var count = 0  // 👈 `Int` is inferred
 }
@@ -661,7 +665,7 @@ The default behavior of MemberwiseInit regarding optional properties aligns with
 * `let` optional properties are never automatically defaulted to `nil`. Setting `_optionalsDefaultNil` to `true` is the only way to cause them to default to `nil`.
 
 > **Note**
-> Use `@Init(default:)` to generally specify default values — it’s a safer, more explicit alternative to `_optionalsDefaultNil`.
+> Use [`@Init(default:)`](#default-values-even-for-let-properties) to generally specify default values — it’s a safer, more explicit alternative to `_optionalsDefaultNil`.
 
 #### Explanation
 
@@ -703,7 +707,7 @@ public struct User {
 }
 ```
 
-While MemberwiseInit doesn’t (yet) solve for default values of `let` properties, `_optionalsDefaultNil` serves the specific case of defaulting optional properties to `nil`:
+Where appriopriate, `_optionalsDefaultNil` can be a convenient way to default optional properties to `nil` in the generated initializer:
 
 ```swift
 @MemberwiseInit(.public, _optionalsDefaultNil: true)
@@ -819,6 +823,10 @@ public struct Person {
   private var age: Int?
 //┬──────
 //╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+//   ✏️ Add '@Init(.public)'
+//   ✏️ Replace 'private' access with 'public'
+//   ✏️ Add '@Init(.ignore)' and an initializer
+}
 ```
 
 > **Note**
