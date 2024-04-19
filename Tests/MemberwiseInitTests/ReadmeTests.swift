@@ -447,7 +447,7 @@ final class ReadmeTests: XCTestCase {
       }
       """
     }
-    
+
     assertMacro {
       """
       public typealias CompletionHandler = @Sendable () -> Void
