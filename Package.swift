@@ -8,6 +8,7 @@ let package = Package(
   name: "MemberwiseInit",
   platforms: [
     .iOS(.v13),
+    .macCatalyst(.v13),
     .macOS(.v10_15),
     .tvOS(.v13),
     .watchOS(.v6),
