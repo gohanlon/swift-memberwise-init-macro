@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 
 import CompilerPluginSupport
 import Foundation
@@ -24,14 +24,13 @@ let package = Package(
     ),
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.17.1"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.15.0"),
     //.conditionalPackage(url: "https://github.com/apple/swift-syntax", envVar: "SWIFT_SYNTAX_VERSION", default: "509.0.0..<510.0.0")
     //.conditionalPackage(url: "https://github.com/apple/swift-syntax", envVar: "SWIFT_SYNTAX_VERSION", default: "510.0.0..<511.0.0")
-    //.conditionalPackage(url: "https://github.com/apple/swift-syntax", envVar: "SWIFT_SYNTAX_VERSION", default: "511.0.0..<601.0.0-prerelease")
     .conditionalPackage(
       url: "https://github.com/apple/swift-syntax",
       envVar: "SWIFT_SYNTAX_VERSION",
-      default: "509.0.0..<601.0.0-prerelease"
+      default: "509.0.0..<511.0.0"
     ),
   ],
   targets: [
