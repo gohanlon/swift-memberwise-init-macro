@@ -6,12 +6,15 @@ on:
       - main
   pull_request:
     branches:
-      - '*'
+      - "*"
   workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  SNAPSHOT_TESTING_RECORD: "never"
 
 jobs:
   macos:
@@ -19,7 +22,7 @@ jobs:
     runs-on: macos-13
     strategy:
       matrix:
-        swift-syntax-version: ['509.0.0..<510.0.0', '510.0.0..<511.0.0']
+        swift-syntax-version: ["509.0.0..<510.0.0", "510.0.0..<511.0.0"]
 
     steps:
       - uses: actions/checkout@v4
