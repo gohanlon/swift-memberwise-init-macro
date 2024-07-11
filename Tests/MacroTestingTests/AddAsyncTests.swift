@@ -9,60 +9,119 @@ final class AddAsyncMacroTests: BaseTestCase {
   }
 
   func testExpansionTransformsFunctionWithResultCompletionToAsyncThrows() {
-    assertMacro {
-      #"""
-      @AddAsync
-      func c(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Result<String, Error>) -> Void) -> Void {
-        completionBlock(.success("a: \(a), b: \(b), value: \(value)"))
-      }
-      """#
-    } expansion: {
-      #"""
-      func c(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Result<String, Error>) -> Void) -> Void {
-        completionBlock(.success("a: \(a), b: \(b), value: \(value)"))
-      }
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        #"""
+        @AddAsync
+        func c(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Result<String, Error>) -> Void) -> Void {
+          completionBlock(.success("a: \(a), b: \(b), value: \(value)"))
+        }
+        """#
+      } expansion: {
+        #"""
+        func c(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Result<String, Error>) -> Void) -> Void {
+          completionBlock(.success("a: \(a), b: \(b), value: \(value)"))
+        }
 
-      func c(a: Int, for b: String, _ value: Double) async throws -> String {
-        try await withCheckedThrowingContinuation { continuation in
-          c(a: a, for: b, value) { returnValue in
+        func c(a: Int, for b: String, _ value: Double) async throws -> String {
+          try await withCheckedThrowingContinuation { continuation in
+            c(a: a, for: b, value) { returnValue in
 
-            switch returnValue {
-            case .success(let value):
-              continuation.resume(returning: value)
-            case .failure(let error):
-              continuation.resume(throwing: error)
+              switch returnValue {
+              case .success(let value):
+                continuation.resume(returning: value)
+              case .failure(let error):
+                continuation.resume(throwing: error)
+              }
+            }
+          }
+
+        }
+        """#
+      }
+    #else
+      assertMacro {
+        #"""
+        @AddAsync
+        func c(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Result<String, Error>) -> Void) -> Void {
+          completionBlock(.success("a: \(a), b: \(b), value: \(value)"))
+        }
+        """#
+      } expansion: {
+        #"""
+        func c(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Result<String, Error>) -> Void) -> Void {
+          completionBlock(.success("a: \(a), b: \(b), value: \(value)"))
+        }
+
+        func c(a: Int, for b: String, _ value: Double) async throws -> String {
+          try await withCheckedThrowingContinuation { continuation in
+            c(a: a, for: b, value) { returnValue in
+
+              switch returnValue {
+              case .success(let value):
+                continuation.resume(returning: value)
+              case .failure(let error):
+                continuation.resume(throwing: error)
+              }
             }
           }
         }
+        """#
       }
-      """#
-    }
+    #endif
   }
 
   func testExpansionTransformsFunctionWithBoolCompletionToAsync() {
-    assertMacro {
-      """
-      @AddAsync
-      func d(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Bool) -> Void) -> Void {
-        completionBlock(true)
-      }
-      """
-    } expansion: {
-      """
-      func d(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Bool) -> Void) -> Void {
-        completionBlock(true)
-      }
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        @AddAsync
+        func d(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Bool) -> Void) -> Void {
+          completionBlock(true)
+        }
+        """
+      } expansion: {
+        """
+        func d(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Bool) -> Void) -> Void {
+          completionBlock(true)
+        }
 
-      func d(a: Int, for b: String, _ value: Double) async -> Bool {
-        await withCheckedContinuation { continuation in
-          d(a: a, for: b, value) { returnValue in
+        func d(a: Int, for b: String, _ value: Double) async -> Bool {
+          await withCheckedContinuation { continuation in
+            d(a: a, for: b, value) { returnValue in
 
-            continuation.resume(returning: returnValue)
+              continuation.resume(returning: returnValue)
+            }
+          }
+
+        }
+        """
+      }
+    #else
+      assertMacro {
+        """
+        @AddAsync
+        func d(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Bool) -> Void) -> Void {
+          completionBlock(true)
+        }
+        """
+      } expansion: {
+        """
+        func d(a: Int, for b: String, _ value: Double, completionBlock: @escaping (Bool) -> Void) -> Void {
+          completionBlock(true)
+        }
+
+        func d(a: Int, for b: String, _ value: Double) async -> Bool {
+          await withCheckedContinuation { continuation in
+            d(a: a, for: b, value) { returnValue in
+
+              continuation.resume(returning: returnValue)
+            }
           }
         }
+        """
       }
-      """
-    }
+    #endif
   }
 
   func testExpansionOnStoredPropertyEmitsError() {

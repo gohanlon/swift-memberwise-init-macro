@@ -82,31 +82,55 @@ final class ReadmeTests: XCTestCase {
     }
   }
 
-  // FIXME: What's causing bad formatting of the expansion? swift-syntax 5.10 related?
   func testIgnoreAge() {
-    assertMacro {
-      """
-        @MemberwiseInit(.public)
-        public struct Person {
-          public let name: String
-          @Init(.ignore) private var age: Int? = nil
-        }
-      """
-    } expansion: {
-      """
-        
-        public struct Person {
-          public let name: String
-          private var age: Int? = nil
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+          @MemberwiseInit(.public)
+          public struct Person {
+            public let name: String
+            @Init(.ignore) private var age: Int? = nil
+          }
+        """
+      } expansion: {
+        """
+          public struct Person {
+            public let name: String
+            private var age: Int? = nil
 
-        public init(
-          name: String
-        ) {
-          self.name = name
-        }
-        }
-      """
-    }
+            public init(
+              name: String
+            ) {
+              self.name = name
+            }
+          }
+        """
+      }
+    #else
+      assertMacro {
+        """
+          @MemberwiseInit(.public)
+          public struct Person {
+            public let name: String
+            @Init(.ignore) private var age: Int? = nil
+          }
+        """
+      } expansion: {
+        """
+          
+          public struct Person {
+            public let name: String
+            private var age: Int? = nil
+
+          public init(
+            name: String
+          ) {
+            self.name = name
+          }
+          }
+        """
+      }
+    #endif
   }
 
   func testExposeAgePublically() {
@@ -365,32 +389,61 @@ final class ReadmeTests: XCTestCase {
       """
     }
 
-    assertMacro {
-      """
-      import SwiftUI
-      @MemberwiseInit(.internal)
-      struct MyView: View {
-        @Init @State var isOn: Bool  // 👈 `@Init`
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        import SwiftUI
+        @MemberwiseInit(.internal)
+        struct MyView: View {
+          @Init @State var isOn: Bool  // 👈 `@Init`
 
-        var body: some View { EmptyView() }
-      }
-      """
-    } expansion: {
-      """
-      import SwiftUI
-      struct MyView: View {@State 
-        var isOn: Bool  // 👈 `@Init`
-
-        var body: some View { EmptyView() }
-
-        internal init(
-          isOn: Bool
-        ) {
-          self.isOn = isOn
+          var body: some View { EmptyView() }
         }
+        """
+      } expansion: {
+        """
+        import SwiftUI
+        struct MyView: View {
+          @State var isOn: Bool  // 👈 `@Init`
+
+          var body: some View { EmptyView() }
+
+          internal init(
+            isOn: Bool
+          ) {
+            self.isOn = isOn
+          }
+        }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        """
+        import SwiftUI
+        @MemberwiseInit(.internal)
+        struct MyView: View {
+          @Init @State var isOn: Bool  // 👈 `@Init`
+
+          var body: some View { EmptyView() }
+        }
+        """
+      } expansion: {
+        """
+        import SwiftUI
+        struct MyView: View {@State 
+          var isOn: Bool  // 👈 `@Init`
+
+          var body: some View { EmptyView() }
+
+          internal init(
+            isOn: Bool
+          ) {
+            self.isOn = isOn
+          }
+        }
+        """
+      }
+    #endif
   }
 
   func testSupportForPropertyWrappers() {
