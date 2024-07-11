@@ -246,11 +246,19 @@ public func assertMacro(
           origSourceFile: .init(moduleName: "TestModule", fullFilePath: "Test.swift")
         ]
       )
-      let expandedSourceFile = origSourceFile.expand(
-        macros: macros,
-        in: context,
-        indentationWidth: indentationWidth
-      )
+      #if canImport(SwiftSyntax600)
+        let expandedSourceFile = origSourceFile.expand(
+          macros: macros,
+          contextGenerator: { _ in context },
+          indentationWidth: indentationWidth
+        )
+      #else
+        let expandedSourceFile = origSourceFile.expand(
+          macros: macros,
+          in: context,
+          indentationWidth: indentationWidth
+        )
+      #endif
 
       var offset = 0
 

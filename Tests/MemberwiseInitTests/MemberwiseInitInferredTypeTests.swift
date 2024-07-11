@@ -306,7 +306,9 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
   func testVarPropertyWithInitializerAs() {
     assertMacro {
       """
-      enum T { case foo }
+      enum T {
+        case foo
+      }
       @MemberwiseInit
       public struct S {
         var value = .foo as T
@@ -314,7 +316,9 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       """
     } expansion: {
       """
-      enum T { case foo }
+      enum T {
+        case foo
+      }
       public struct S {
         var value = .foo as T
 
@@ -513,26 +517,49 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
   // NB: Xcode and SwiftSyntax prefer `[T] ()`, but swift-format prefers `[T]()`.
   // The node is copied unchanged from the property declaration and SwiftSyntax is adding trivia.
   func testArrayWithExplicitTypeInitializer() {
-    assertMacro {
-      ##"""
-      @MemberwiseInit
-      public struct S {
-        var array = [String]()
-      }
-      """##
-    } expansion: {
-      """
-      public struct S {
-        var array = [String]()
-
-        internal init(
-          array: [String] = [String] ()
-        ) {
-          self.array = array
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        ##"""
+        @MemberwiseInit
+        public struct S {
+          var array = [String]()
         }
+        """##
+      } expansion: {
+        """
+        public struct S {
+          var array = [String]()
+
+          internal init(
+            array: [String] = [String]()
+          ) {
+            self.array = array
+          }
+        }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        ##"""
+        @MemberwiseInit
+        public struct S {
+          var array = [String]()
+        }
+        """##
+      } expansion: {
+        """
+        public struct S {
+          var array = [String]()
+
+          internal init(
+            array: [String] = [String] ()
+          ) {
+            self.array = array
+          }
+        }
+        """
+      }
+    #endif
   }
 
   // FIXME: Diagnostic is excessive on already invalid syntax, but we can only detect special cases.
@@ -761,26 +788,49 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
   // The node is copied unchanged from the property declaration and SwiftSyntax is adding trivia.
   // I tried detaching the syntax node, to no effect.
   func testDictionaryWithExplicitTypeInitializer() {
-    assertMacro {
-      ##"""
-      @MemberwiseInit
-      public struct S {
-        var dictionary = [String: Int]()
-      }
-      """##
-    } expansion: {
-      """
-      public struct S {
-        var dictionary = [String: Int]()
-
-        internal init(
-          dictionary: [String: Int] = [String: Int] ()
-        ) {
-          self.dictionary = dictionary
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        ##"""
+        @MemberwiseInit
+        public struct S {
+          var dictionary = [String: Int]()
         }
+        """##
+      } expansion: {
+        """
+        public struct S {
+          var dictionary = [String: Int]()
+
+          internal init(
+            dictionary: [String: Int] = [String: Int]()
+          ) {
+            self.dictionary = dictionary
+          }
+        }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        ##"""
+        @MemberwiseInit
+        public struct S {
+          var dictionary = [String: Int]()
+        }
+        """##
+      } expansion: {
+        """
+        public struct S {
+          var dictionary = [String: Int]()
+
+          internal init(
+            dictionary: [String: Int] = [String: Int] ()
+          ) {
+            self.dictionary = dictionary
+          }
+        }
+        """
+      }
+    #endif
   }
 
   // FIXME: Diagnostic is excessive on already invalid syntax.

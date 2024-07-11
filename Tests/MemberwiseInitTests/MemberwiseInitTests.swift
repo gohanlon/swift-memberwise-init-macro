@@ -869,67 +869,133 @@ final class MemberwiseInitTests: XCTestCase {
   }
 
   func testInitAndInit_FailsWithDiagnostic() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct S {
-        @Init @Init
-        let value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let value: T
-
-        internal init() {
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init @Init
+          let value: T
         }
+        """
+      } expansion: {
+        """
+        struct S {
+
+          let value: T
+
+          internal init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init @Init
+                ┬────
+                ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+          let value: T
+        }
+        """
       }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit
-      struct S {
-        @Init @Init
-              ┬────
-              ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
-        let value: T
+    #else
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init @Init
+          let value: T
+        }
+        """
+      } expansion: {
+        """
+        struct S {
+          let value: T
+
+          internal init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init @Init
+                ┬────
+                ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+          let value: T
+        }
+        """
       }
-      """
-    }
+    #endif
   }
 
   func testInitInitWrapperInitRaw_FailsWithDiagnostics() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct S {
-        @Init @InitWrapper @InitRaw
-        let value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {@InitWrapper @InitRaw
-        let value: T
-
-        internal init() {
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init @InitWrapper @InitRaw
+          let value: T
         }
+        """
+      } expansion: {
+        """
+        struct S {
+          @InitWrapper @InitRaw
+          let value: T
+
+          internal init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init @InitWrapper @InitRaw
+                             ┬───────
+                │            ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+                ┬───────────
+                ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+          let value: T
+        }
+        """
       }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit
-      struct S {
-        @Init @InitWrapper @InitRaw
-                           ┬───────
-              │            ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
-              ┬───────────
-              ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
-        let value: T
+    #else
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init @InitWrapper @InitRaw
+          let value: T
+        }
+        """
+      } expansion: {
+        """
+        struct S {@InitWrapper @InitRaw
+          let value: T
+
+          internal init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @Init @InitWrapper @InitRaw
+                             ┬───────
+                │            ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+                ┬───────────
+                ╰─ 🛑 Multiple @Init configurations are not supported by @MemberwiseInit
+          let value: T
+        }
+        """
       }
-      """
-    }
+    #endif
   }
 
   // MARK: - Test invalid syntax

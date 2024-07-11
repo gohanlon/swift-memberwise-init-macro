@@ -9,104 +9,205 @@ final class OptionSetMacroTests: BaseTestCase {
   }
 
   func testExpansionOnStructWithNestedEnumAndStatics() {
-    assertMacro {
-      """
-      @MyOptionSet<UInt8>
-      struct ShippingOptions {
-        private enum Options: Int {
-          case nextDay
-          case secondDay
-          case priority
-          case standard
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        @MyOptionSet<UInt8>
+        struct ShippingOptions {
+          private enum Options: Int {
+            case nextDay
+            case secondDay
+            case priority
+            case standard
+          }
+
+          static let express: ShippingOptions = [.nextDay, .secondDay]
+          static let all: ShippingOptions = [.express, .priority, .standard]
+        }
+        """
+      } expansion: {
+        """
+        struct ShippingOptions {
+          private enum Options: Int {
+            case nextDay
+            case secondDay
+            case priority
+            case standard
+          }
+
+          static let express: ShippingOptions = [.nextDay, .secondDay]
+          static let all: ShippingOptions = [.express, .priority, .standard]
+
+          typealias RawValue = UInt8
+
+          var rawValue: RawValue
+
+          init() {
+            self.rawValue = 0
+          }
+
+          init(rawValue: RawValue) {
+            self.rawValue = rawValue
+          }
+
+          static let nextDay: Self =
+            Self(rawValue: 1 << Options.nextDay.rawValue)
+
+          static let secondDay: Self =
+            Self(rawValue: 1 << Options.secondDay.rawValue)
+
+          static let priority: Self =
+            Self(rawValue: 1 << Options.priority.rawValue)
+
+          static let standard: Self =
+            Self(rawValue: 1 << Options.standard.rawValue)
         }
 
-        static let express: ShippingOptions = [.nextDay, .secondDay]
-        static let all: ShippingOptions = [.express, .priority, .standard]
+        extension ShippingOptions: OptionSet {
+        }
+        """
       }
-      """
-    } expansion: {
-      """
-      struct ShippingOptions {
-        private enum Options: Int {
-          case nextDay
-          case secondDay
-          case priority
-          case standard
+    #else
+      assertMacro {
+        """
+        @MyOptionSet<UInt8>
+        struct ShippingOptions {
+          private enum Options: Int {
+            case nextDay
+            case secondDay
+            case priority
+            case standard
+          }
+
+          static let express: ShippingOptions = [.nextDay, .secondDay]
+          static let all: ShippingOptions = [.express, .priority, .standard]
+        }
+        """
+      } expansion: {
+        """
+        struct ShippingOptions {
+          private enum Options: Int {
+            case nextDay
+            case secondDay
+            case priority
+            case standard
+          }
+
+          static let express: ShippingOptions = [.nextDay, .secondDay]
+          static let all: ShippingOptions = [.express, .priority, .standard]
+
+          typealias RawValue = UInt8
+
+          var rawValue: RawValue
+
+          init() {
+            self.rawValue = 0
+          }
+
+          init(rawValue: RawValue) {
+            self.rawValue = rawValue
+          }
+
+          static let nextDay: Self =
+            Self (rawValue: 1 << Options.nextDay.rawValue)
+
+          static let secondDay: Self =
+            Self (rawValue: 1 << Options.secondDay.rawValue)
+
+          static let priority: Self =
+            Self (rawValue: 1 << Options.priority.rawValue)
+
+          static let standard: Self =
+            Self (rawValue: 1 << Options.standard.rawValue)
         }
 
-        static let express: ShippingOptions = [.nextDay, .secondDay]
-        static let all: ShippingOptions = [.express, .priority, .standard]
-
-        typealias RawValue = UInt8
-
-        var rawValue: RawValue
-
-        init() {
-          self.rawValue = 0
+        extension ShippingOptions: OptionSet {
         }
-
-        init(rawValue: RawValue) {
-          self.rawValue = rawValue
-        }
-
-        static let nextDay: Self =
-          Self (rawValue: 1 << Options.nextDay.rawValue)
-
-        static let secondDay: Self =
-          Self (rawValue: 1 << Options.secondDay.rawValue)
-
-        static let priority: Self =
-          Self (rawValue: 1 << Options.priority.rawValue)
-
-        static let standard: Self =
-          Self (rawValue: 1 << Options.standard.rawValue)
+        """
       }
-
-      extension ShippingOptions: OptionSet {
-      }
-      """
-    }
+    #endif
   }
 
   func testExpansionOnPublicStructWithExplicitOptionSetConformance() {
-    assertMacro {
-      """
-      @MyOptionSet<UInt8>
-      public struct ShippingOptions: OptionSet {
-        private enum Options: Int {
-          case nextDay
-          case standard
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        @MyOptionSet<UInt8>
+        public struct ShippingOptions: OptionSet {
+          private enum Options: Int {
+            case nextDay
+            case standard
+          }
         }
+        """
+      } expansion: {
+        """
+        public struct ShippingOptions: OptionSet {
+          private enum Options: Int {
+            case nextDay
+            case standard
+          }
+
+          public typealias RawValue = UInt8
+
+          public var rawValue: RawValue
+
+          public init() {
+            self.rawValue = 0
+          }
+
+          public init(rawValue: RawValue) {
+            self.rawValue = rawValue
+          }
+
+          public  static let nextDay: Self =
+            Self(rawValue: 1 << Options.nextDay.rawValue)
+
+          public  static let standard: Self =
+            Self(rawValue: 1 << Options.standard.rawValue)
+        }
+        """
       }
-      """
-    } expansion: {
-      """
-      public struct ShippingOptions: OptionSet {
-        private enum Options: Int {
-          case nextDay
-          case standard
+    #else
+      assertMacro {
+        """
+        @MyOptionSet<UInt8>
+        public struct ShippingOptions: OptionSet {
+          private enum Options: Int {
+            case nextDay
+            case standard
+          }
         }
+        """
+      } expansion: {
+        """
+        public struct ShippingOptions: OptionSet {
+          private enum Options: Int {
+            case nextDay
+            case standard
+          }
 
-        public typealias RawValue = UInt8
+          public typealias RawValue = UInt8
 
-        public var rawValue: RawValue
+          public var rawValue: RawValue
 
-        public init() {
-          self.rawValue = 0
+          public init() {
+            self.rawValue = 0
+          }
+
+          public init(rawValue: RawValue) {
+            self.rawValue = rawValue
+          }
+
+          public  static let nextDay: Self =
+            Self (rawValue: 1 << Options.nextDay.rawValue)
+
+          public  static let standard: Self =
+            Self (rawValue: 1 << Options.standard.rawValue)
         }
-
-        public init(rawValue: RawValue) {
-          self.rawValue = rawValue
-        }
-
-        public  static let nextDay: Self =
-          Self (rawValue: 1 << Options.nextDay.rawValue)
-
-        public  static let standard: Self =
-          Self (rawValue: 1 << Options.standard.rawValue)
+        """
       }
-      """
-    }
+    #endif
   }
 
   func testExpansionFailsOnEnumType() {

@@ -9,26 +9,50 @@ final class AddCompletionHandlerTests: BaseTestCase {
   }
 
   func testExpansionTransformsAsyncFunctionToCompletion() {
-    assertMacro {
-      """
-      @AddCompletionHandler
-      func f(a: Int, for b: String, _ value: Double) async -> String {
-        return b
-      }
-      """
-    } expansion: {
-      """
-      func f(a: Int, for b: String, _ value: Double) async -> String {
-        return b
-      }
-
-      func f(a: Int, for b: String, _ value: Double, completionHandler: @escaping (String) -> Void) {
-        Task {
-          completionHandler(await f(a: a, for: b, value))
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        @AddCompletionHandler
+        func f(a: Int, for b: String, _ value: Double) async -> String {
+          return b
         }
+        """
+      } expansion: {
+        """
+        func f(a: Int, for b: String, _ value: Double) async -> String {
+          return b
+        }
+
+        func f(a: Int, for b: String, _ value: Double, completionHandler: @escaping (String) -> Void) {
+          Task {
+            completionHandler(await f(a: a, for: b, value))
+          }
+
+        }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        """
+        @AddCompletionHandler
+        func f(a: Int, for b: String, _ value: Double) async -> String {
+          return b
+        }
+        """
+      } expansion: {
+        """
+        func f(a: Int, for b: String, _ value: Double) async -> String {
+          return b
+        }
+
+        func f(a: Int, for b: String, _ value: Double, completionHandler: @escaping (String) -> Void) {
+          Task {
+            completionHandler(await f(a: a, for: b, value))
+          }
+        }
+        """
+      }
+    #endif
   }
 
   func testExpansionOnStoredPropertyEmitsError() {

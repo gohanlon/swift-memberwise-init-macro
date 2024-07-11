@@ -1,5 +1,10 @@
 import SwiftOperators
-import SwiftSyntax
+
+#if canImport(SwiftSyntax600)
+  @_spi(ExperimentalLanguageFeatures) import SwiftSyntax
+#else
+  import SwiftSyntax
+#endif
 
 // Potential future enhancements:
 // - .ternaryExpr having "then" and "else" expressions as inferrable types
@@ -261,12 +266,30 @@ extension ExprSyntax {
         return nil
     #endif
 
+    #if !canImport(SwiftSyntax600)
+      case .canImportExpr, .canImportVersionInfo:
+        return nil
+    #endif
+
+    #if canImport(SwiftSyntax600)
+      case ._canImportExpr,
+        ._canImportVersionInfo,
+        .doExpr,
+        .lifetimeSpecifierArgumentList,
+        .lifetimeSpecifierArgument,
+        .lifetimeTypeSpecifier,
+        .simpleTypeSpecifier,
+        .throwsClause,
+        .typeSpecifierList:
+        return nil
+    #endif
+
     case .token, .accessorBlock, .accessorDeclList, .accessorDecl, .accessorEffectSpecifiers,
       .accessorParameters, .actorDecl, .arrayElementList, .arrayElement, .arrayType, .arrowExpr,
       .assignmentExpr, .associatedTypeDecl, .attributeList, .attribute, .attributedType,
       .availabilityArgumentList, .availabilityArgument, .availabilityCondition,
       .availabilityLabeledArgument, .awaitExpr, .backDeployedAttributeArguments,
-      .binaryOperatorExpr, .borrowExpr, .breakStmt, .canImportExpr, .canImportVersionInfo,
+      .binaryOperatorExpr, .borrowExpr, .breakStmt,
       .catchClauseList, .catchClause, .catchItemList, .catchItem, .classDecl, .classRestrictionType,
       .closureCaptureClause, .closureCaptureList, .closureCaptureSpecifier, .closureCapture,
       .closureExpr, .closureParameterClause, .closureParameterList, .closureParameter,
