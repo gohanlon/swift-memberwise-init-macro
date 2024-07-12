@@ -278,17 +278,22 @@ public func assertMacro(
       // TODO: write a test where didExpand returns false
       // For now, covered in MemberwiseInitTests.testAppliedToEnum_FailsWithDiagnostic
       var didExpand: Bool {
-        let origSourceWithMacroAttributesRemoved = MacroTesting.AttributeRemover509(
-          removingWhere: {
-            guard let name = $0.attributeName.as(IdentifierTypeSyntax.self)?.name.text
-            else { return false }
-            return macros.keys.contains(name)
-          }
-        ).rewrite(origSourceFile)
+        let removingWhere: (AttributeSyntax) -> Bool = {
+          guard let name = $0.attributeName.as(IdentifierTypeSyntax.self)?.name.text
+          else { return false }
+          return macros.keys.contains(name)
+        }
+
+        #if canImport(SwiftSyntax600)
+          let remover = MacroTesting.AttributeRemover600(removingWhere: removingWhere)
+        #else
+          let remover = MacroTesting.AttributeRemover509(removingWhere: removingWhere)
+        #endif
+
+        let removedSource = remover.rewrite(origSourceFile)
 
         return expandedSourceFile.description.trimmingCharacters(in: .newlines)
-          != origSourceWithMacroAttributesRemoved.description.trimmingCharacters(
-            in: .newlines)
+          != removedSource.description.trimmingCharacters(in: .newlines)
       }
 
       if didExpand {
