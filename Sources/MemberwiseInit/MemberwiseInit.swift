@@ -30,6 +30,27 @@ public macro MemberwiseInit(
     type: "MemberwiseInitMacro"
   )
 
+@attached(member, names: named(init))
+public macro _UncheckedMemberwiseInit(
+  _deunderscoreParameters: Bool? = nil,
+  _optionalsDefaultNil: Bool? = nil
+) =
+  #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "UncheckedMemberwiseInitMacro"
+  )
+
+@attached(member, names: named(init))
+public macro _UncheckedMemberwiseInit(
+  _ accessLevel: AccessLevelConfig,
+  _deunderscoreParameters: Bool? = nil,
+  _optionalsDefaultNil: Bool? = nil
+) =
+  #externalMacro(
+    module: "MemberwiseInitMacros",
+    type: "UncheckedMemberwiseInitMacro"
+  )
+
 // MARK: @Init macro
 
 public enum IgnoreConfig {

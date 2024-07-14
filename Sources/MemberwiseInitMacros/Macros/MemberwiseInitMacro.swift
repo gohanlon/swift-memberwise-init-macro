@@ -47,44 +47,14 @@ public struct MemberwiseInitMacro: MemberMacro {
     )
     diagnostics.forEach { context.diagnose($0) }
 
-    func formatParameters() -> String {
-      guard !properties.isEmpty else { return "" }
-
-      return "\n"
-        + properties
-        .map { property in
-          formatParameter(
-            for: property,
-            considering: properties,
-            deunderscoreParameters: deunderscoreParameters,
-            optionalsDefaultNil: optionalsDefaultNil
-              ?? defaultOptionalsDefaultNil(
-                for: property.keywordToken,
-                initAccessLevel: accessLevel
-              )
-          )
-        }
-        .joined(separator: ",\n")
-        + "\n"
-    }
-
-    let formattedInitSignature = "\n\(accessLevel) init(\(formatParameters()))"
     return [
       DeclSyntax(
-        try InitializerDeclSyntax(SyntaxNodeString(stringLiteral: formattedInitSignature)) {
-          CodeBlockItemListSyntax(
-            properties
-              .map { property in
-                CodeBlockItemSyntax(
-                  stringLiteral: formatInitializerAssignmentStatement(
-                    for: property,
-                    considering: properties,
-                    deunderscoreParameters: deunderscoreParameters
-                  )
-                )
-              }
-          )
-        }
+        MemberwiseInitFormatter.formatInitializer(
+          properties: properties,
+          accessLevel: accessLevel,
+          deunderscoreParameters: deunderscoreParameters,
+          optionalsDefaultNil: optionalsDefaultNil
+        )
       )
     ]
   }
@@ -107,7 +77,7 @@ public struct MemberwiseInitMacro: MemberMacro {
     return nil
   }
 
-  private static func extractLabeledBoolArgument(
+  static func extractLabeledBoolArgument(
     _ label: String,
     from node: AttributeSyntax
   ) -> Bool? {
@@ -269,7 +239,7 @@ public struct MemberwiseInitMacro: MemberMacro {
     }
   }
 
-  private static func extractVariableCustomSettings(
+  static func extractVariableCustomSettings(
     from variable: VariableDeclSyntax
   ) -> VariableCustomSettings? {
     guard let customConfigurationAttribute = variable.customConfigurationAttribute else {
@@ -342,7 +312,7 @@ public struct MemberwiseInitMacro: MemberMacro {
     )
   }
 
-  private static func defaultOptionalsDefaultNil(
+  static func defaultOptionalsDefaultNil(
     for bindingKeyword: TokenKind,
     initAccessLevel: AccessLevelModifier
   ) -> Bool {
