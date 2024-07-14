@@ -6,5 +6,6 @@ struct MemberwiseInitPlugin: CompilerPlugin {
   let providingMacros: [Macro.Type] = [
     InitMacro.self,
     MemberwiseInitMacro.self,
+    UncheckedMemberwiseInitMacro.self,
   ]
 }
