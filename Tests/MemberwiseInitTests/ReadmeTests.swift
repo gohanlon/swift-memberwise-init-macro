@@ -11,6 +11,7 @@ final class ReadmeTests: XCTestCase {
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,
+        "_UncheckedMemberwiseInit": UncheckedMemberwiseInitMacro.self,
       ]
     ) {
       super.invokeTest()
@@ -521,6 +522,41 @@ final class ReadmeTests: XCTestCase {
         ) {
           self.onCompletion = onCompletion
         }
+      }
+      """
+    }
+  }
+
+  func testUncheckedMemberwiseInit() {
+    assertMacro {
+      """
+      @_UncheckedMemberwiseInit(.internal)
+      public struct APIResponse: Codable {
+        public let id: String
+        @Monitored internal var statusCode: Int
+        private var rawResponse: Data
+      
+        // Computed properties and methods...
+      }
+      """
+    } expansion: {
+      """
+      public struct APIResponse: Codable {
+        public let id: String
+        @Monitored internal var statusCode: Int
+        private var rawResponse: Data
+
+        internal init(
+          id: String,
+          statusCode: Int,
+          rawResponse: Data
+        ) {
+          self.id = id
+          self.statusCode = statusCode
+          self.rawResponse = rawResponse
+        }
+      
+        // Computed properties and methods...
       }
       """
     }

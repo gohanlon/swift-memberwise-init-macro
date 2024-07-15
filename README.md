@@ -26,6 +26,7 @@ Informed by explicit developer cues, MemberwiseInit can more often automatically
   * [Attributed properties are ignored by default, but includable](#attributed-properties-are-ignored-by-default-but-includable)
   * [Support for property wrappers](#support-for-property-wrappers)
   * [Automatic `@escaping` for closure types (usually)](#automatic-escaping-for-closure-types-usually)
+  * [Experimental: Unchecked memberwise initialization](#experimental-unchecked-memberwise-initialization)
   * [Experimental: Deunderscore parameter names](#experimental-deunderscore-parameter-names)
   * [Experimental: Defaulting optionals to nil](#experimental-defaulting-optionals-to-nil)
   * [Tuple destructuring in property declarations isn’t supported (yet)](#tuple-destructuring-in-property-declarations-isnt-supported-yet)
@@ -45,7 +46,7 @@ To use MemberwiseInit:
 
    ```swift
    dependencies: [
-     .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", from: "0.4.0")
+     .package(url: "https://github.com/gohanlon/swift-memberwise-init-macro", from: "0.5.0")
    ]
    ```
 
@@ -175,6 +176,9 @@ Attach to the property declarations of a struct that `@MemberwiseInit` is provid
 
 * `@MemberwiseInit` on  `actor`, `class` *(experimental)*
   <br> Attachable to actor and class.
+
+* `@_UncheckedMemberwiseInit` *(experimental)*
+  <br> Generate a memberwise initializer for all properties, regardless of access level, with reduced compile-time safety checks (compared to `@MemberwiseInit`).
 
 ## Features and limitations
 
@@ -595,6 +599,43 @@ public init(
   onCompletion: @escaping CompletionHandler  // 🎉 Correctly `@escaping`
 ) {
   self.onCompletion = onCompletion
+}
+```
+
+### Experimental: Unchecked memberwise initialization
+
+`@_UncheckedMemberwiseInit` is an experimental macro that bypasses compile-time safety checks and strict access control enforcement. It generates an initializer for all properties of a type, regardless of their declared access levels. Use it judiciously.
+
+Key characteristics:
+
+- Generates an initializer that includes all properties, regardless of their declared access levels
+- Includes attributed properties by default (differs from `@MemberwiseInit`)
+- Follows the same usage pattern as `@MemberwiseInit`
+
+Example:
+
+```swift
+@_UncheckedMemberwiseInit(.public)
+public struct APIResponse: Codable {
+  public let id: String
+  @Monitored internal var statusCode: Int
+  private var rawResponse: Data
+
+  // Computed properties and methods...
+}
+```
+
+This yields a public initializer that includes all properties, regardless of their access level or attributes. Unlike `@MemberwiseInit`, this macro doesn't require `@Init` annotations or any other explicit opt-ins. The resulting initializer is:
+
+```swift
+public init(
+  id: String,
+  statusCode: Int,
+  rawResponse: Data
+) {
+  self.id = id
+  self.statusCode = statusCode
+  self.rawResponse = rawResponse
 }
 ```
 
