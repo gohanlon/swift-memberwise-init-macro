@@ -535,7 +535,7 @@ final class ReadmeTests: XCTestCase {
         public let id: String
         @Monitored internal var statusCode: Int
         private var rawResponse: Data
-      
+
         // Computed properties and methods...
       }
       """
@@ -555,7 +555,7 @@ final class ReadmeTests: XCTestCase {
           self.statusCode = statusCode
           self.rawResponse = rawResponse
         }
-      
+
         // Computed properties and methods...
       }
       """
