@@ -12,7 +12,7 @@ test-swift-syntax-versions:
 	@for version in \
 		"509.0.0..<510.0.0" \
 		"510.0.0..<511.0.0" \
-		"511.0.0..<601.0.0-prerelease"; \
+		"511.0.0..<601.0.0"; \
 	do \
 		echo "\n## Testing SwiftSyntax version $$version"; \
 		$(MAKE) clean; \
