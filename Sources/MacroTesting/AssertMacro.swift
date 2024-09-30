@@ -9,6 +9,10 @@ import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 import XCTest
 
+#if canImport(Testing)
+  import Testing
+#endif
+
 //let compilableUsages = {
 //  assertMacro { "" }
 //  assertMacro { "" } expansion: { "" }
@@ -190,8 +194,32 @@ public func assertMacro(
   line: UInt = #line,
   column: UInt = #column
 ) {
-  withSnapshotTesting(record: record ?? SnapshotTestingConfiguration.current?.record) {
-    let macros = macros ?? MacroTestingConfiguration.current.macros
+  var indentationWidth =
+    indentationWidth
+    ?? MacroTestingConfiguration.current.indentationWidth
+  var macros =
+    macros
+    ?? MacroTestingConfiguration.current.macros
+  var record =
+    record
+    ?? SnapshotTestingConfiguration.current?.record
+  #if canImport(Testing)
+    indentationWidth =
+      indentationWidth
+      ?? Test.current?.indentationWidth
+    macros =
+      macros
+      ?? Test.current?.macros
+    record =
+      record
+      ?? Test.current?.record
+  #endif
+  withMacroTesting(indentationWidth: indentationWidth, record: record, macros: macros) {
+    #if canImport(Testing)
+      let macros = macros ?? MacroTestingConfiguration.current.macros ?? Test.current?.macros
+    #else
+      let macros = macros ?? MacroTestingConfiguration.current.macros
+    #endif
     guard let macros, !macros.isEmpty else {
       recordIssue(
         """
@@ -249,7 +277,10 @@ public func assertMacro(
       #if canImport(SwiftSyntax600)
         let expandedSourceFile = origSourceFile.expand(
           macros: macros,
-          contextGenerator: { _ in context },
+          contextGenerator: { syntax in
+            BasicMacroExpansionContext(
+              sharingWith: context, lexicalContext: syntax.allMacroLexicalContexts())
+          },
           indentationWidth: indentationWidth
         )
       #else
@@ -311,6 +342,7 @@ public func assertMacro(
             trailingClosureOffset: offset
           ),
           matches: expandedSource,
+          fileID: fileID,
           file: filePath,
           function: function,
           line: line,
@@ -666,13 +698,13 @@ public func withMacroTesting<R>(
   record: SnapshotTestingConfiguration.Record? = nil,
   macros: [String: Macro.Type]? = nil,
   operation: () async throws -> R
-) async rethrows {
+) async rethrows -> R {
   var configuration = MacroTestingConfiguration.current
-  if let indentationWidth = indentationWidth { configuration.indentationWidth = indentationWidth }
-  if let macros = macros { configuration.macros = macros }
+  if let indentationWidth { configuration.indentationWidth = indentationWidth }
+  if let macros { configuration.macros = macros }
   return try await withSnapshotTesting(record: record) {
     try await MacroTestingConfiguration.$current.withValue(configuration) {
-      _ = try await operation()
+      try await operation()
     }
   }
 }
@@ -694,13 +726,13 @@ public func withMacroTesting<R>(
   record: SnapshotTestingConfiguration.Record? = nil,
   macros: [String: Macro.Type]? = nil,
   operation: () throws -> R
-) rethrows {
+) rethrows -> R {
   var configuration = MacroTestingConfiguration.current
-  if let indentationWidth = indentationWidth { configuration.indentationWidth = indentationWidth }
-  if let macros = macros { configuration.macros = macros }
+  if let indentationWidth { configuration.indentationWidth = indentationWidth }
+  if let macros { configuration.macros = macros }
   return try withSnapshotTesting(record: record) {
     try MacroTestingConfiguration.$current.withValue(configuration) {
-      _ = try operation()
+      try operation()
     }
   }
 }
@@ -722,7 +754,7 @@ public func withMacroTesting<R>(
   record: SnapshotTestingConfiguration.Record? = nil,
   macros: [Macro.Type],
   operation: () async throws -> R
-) async rethrows {
+) async rethrows -> R {
   try await withMacroTesting(
     indentationWidth: indentationWidth,
     record: record,
@@ -748,7 +780,7 @@ public func withMacroTesting<R>(
   record: SnapshotTestingConfiguration.Record? = nil,
   macros: [Macro.Type],
   operation: () throws -> R
-) rethrows {
+) rethrows -> R {
   try withMacroTesting(
     indentationWidth: indentationWidth,
     record: record,
