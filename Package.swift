@@ -5,7 +5,7 @@ import Foundation
 import PackageDescription
 
 let package = Package(
-  name: "MemberwiseInit",
+  name: "swift-memberwise-init-macro",
   platforms: [
     .iOS(.v13),
     .macOS(.v10_15),
