@@ -289,16 +289,26 @@ public struct MemberwiseInitMacro: MemberMacro {
       .expression
       .trimmedStringLiteral
 
-    let configuredType =
+    let typeExpr =
       customConfiguration?
       .firstWhereLabel("type")?
       .expression
-      .trimmedDescription
 
-    // TODO: Is it possible for invalid type syntax to be provided for an `Any.Type` parameter?
-    // NB: All expressions satisfying the `Any.Type` parameter type are parsable to TypeSyntax.
+    let typeString: String? = typeExpr.flatMap { expr -> String? in
+      // For Swift 6 style with .self suffix
+      if let memberAccess = expr.as(MemberAccessExprSyntax.self),
+        memberAccess.declName.baseName.text == "self",
+        let baseExpr = memberAccess.base
+      {
+        return baseExpr.trimmedDescription
+      }
+      // For Swift 5 style without .self suffix
+      return expr.trimmedDescription
+    }
+
+    // Create TypeSyntax from the string
     let configuredTypeSyntax =
-      configuredType.map(TypeSyntax.init(stringLiteral:))
+      typeString.map(TypeSyntax.init(stringLiteral:))
 
     return VariableCustomSettings(
       accessLevel: configuredAccessLevel,

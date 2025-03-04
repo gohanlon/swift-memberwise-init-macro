@@ -5,12 +5,12 @@ import XCTest
 
 final class ReadmeTests: XCTestCase {
   override func invokeTest() {
-    // NB: Waiting for swift-macro-testing PR to support explicit indentationWidth: https://github.com/pointfreeco/swift-macro-testing/pull/8
     withMacroTesting(
-      //indentationWidth: .spaces(2),
+      indentationWidth: .spaces(2),
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,
+        "InitWrapper": InitMacro.self,
         "_UncheckedMemberwiseInit": UncheckedMemberwiseInitMacro.self,
       ]
     ) {
@@ -162,32 +162,60 @@ final class ReadmeTests: XCTestCase {
   }
 
   func testBinding() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct CounterView: View {
-        @InitWrapper(type: Binding<Bool>)
-        @Binding var isOn: Bool
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct CounterView: View {
+          @InitWrapper(type: Binding<Bool>.self)
+          @Binding var isOn: Bool
 
-        var body: some View { EmptyView() }
-      }
-      """
-    } expansion: {
-      """
-      struct CounterView: View {
-        @InitWrapper(type: Binding<Bool>)
-        @Binding var isOn: Bool
-
-        var body: some View { EmptyView() }
-
-        internal init(
-          isOn: Binding<Bool>
-        ) {
-          self._isOn = isOn
+          var body: some View { EmptyView() }
         }
+        """
+      } expansion: {
+        """
+        struct CounterView: View {
+          @Binding var isOn: Bool
+
+          var body: some View { EmptyView() }
+
+          internal init(
+            isOn: Binding<Bool>
+          ) {
+            self._isOn = isOn
+          }
+        }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct CounterView: View {
+          @InitWrapper(type: Binding<Bool>.self)
+          @Binding var isOn: Bool
+
+          var body: some View { EmptyView() }
+        }
+        """
+      } expansion: {
+        """
+        struct CounterView: View {
+          @Binding 
+          var isOn: Bool
+
+          var body: some View { EmptyView() }
+
+          internal init(
+            isOn: Binding<Bool>
+          ) {
+            self._isOn = isOn
+          }
+        }
+        """
+      }
+    #endif
   }
 
   func testLabelessParmeters() {
@@ -448,35 +476,66 @@ final class ReadmeTests: XCTestCase {
   }
 
   func testSupportForPropertyWrappers() {
-    assertMacro {
-      """
-      import SwiftUI
+    #if canImport(SwiftSyntax600)
+      assertMacro {
+        """
+        import SwiftUI
 
-      @MemberwiseInit
-      struct CounterView: View {
-        @InitWrapper(type: Binding<Int>)
-        @Binding var count: Int
+        @MemberwiseInit
+        struct CounterView: View {
+          @InitWrapper(type: Binding<Int>.self)
+          @Binding var count: Int
 
-        var body: some View { EmptyView() }
-      }
-      """
-    } expansion: {
-      """
-      import SwiftUI
-      struct CounterView: View {
-        @InitWrapper(type: Binding<Int>)
-        @Binding var count: Int
-
-        var body: some View { EmptyView() }
-
-        internal init(
-          count: Binding<Int>
-        ) {
-          self._count = count
+          var body: some View { EmptyView() }
         }
+        """
+      } expansion: {
+        """
+        import SwiftUI
+        struct CounterView: View {
+          @Binding var count: Int
+
+          var body: some View { EmptyView() }
+
+          internal init(
+            count: Binding<Int>
+          ) {
+            self._count = count
+          }
+        }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        """
+        import SwiftUI
+
+        @MemberwiseInit
+        struct CounterView: View {
+          @InitWrapper(type: Binding<Int>.self)
+          @Binding var count: Int
+
+          var body: some View { EmptyView() }
+        }
+        """
+      } expansion: {
+        """
+        import SwiftUI
+        struct CounterView: View {
+          @Binding 
+          var count: Int
+
+          var body: some View { EmptyView() }
+
+          internal init(
+            count: Binding<Int>
+          ) {
+            self._count = count
+          }
+        }
+        """
+      }
+    #endif
   }
 
   func testAutomaticEscapingForClosureTypes() {
