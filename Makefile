@@ -5,8 +5,17 @@ test: test-swift
 test-swift:
 	swift test --parallel
 
+# Remove build artifacts while tolerating SourceKit-locked files
 clean:
-	rm -rf .build
+	@echo "Cleaning build artifacts..."
+	@rm -rf .build/* 2>&1 | grep -v "Permission denied" || true
+	@echo "Checking remaining build artifacts..."
+	@if [ -d .build ]; then \
+		ls -R .build 2>/dev/null || echo "Unable to list some directories"; \
+	else \
+		echo "Build directory completely removed"; \
+	fi
+	@echo "Build artifacts cleaned (ensure that any remaining files listed above won't affect new builds, e.g. SourceKit files)"
 
 test-swift-syntax-versions:
 	@for version in \
