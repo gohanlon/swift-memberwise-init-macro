@@ -23,7 +23,7 @@ let package = Package(
     ),
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.17.1"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.1"),
     //.conditionalPackage(url: "https://github.com/swiftlang/swift-syntax", envVar: "SWIFT_SYNTAX_VERSION", default: "509.0.0..<510.0.0")
     //.conditionalPackage(url: "https://github.com/swiftlang/swift-syntax", envVar: "SWIFT_SYNTAX_VERSION", default: "510.0.0..<511.0.0")
     //.conditionalPackage(url: "https://github.com/swiftlang/swift-syntax", envVar: "SWIFT_SYNTAX_VERSION", default: "511.0.0..<601.0.0-prerelease")
