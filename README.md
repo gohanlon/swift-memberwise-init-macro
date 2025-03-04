@@ -135,13 +135,13 @@ Attach to the property declarations of a struct that `@MemberwiseInit` is provid
 
 ### `@InitWrapper(type:)`
 
-* `@InitWrapper(type: Binding<String>)`
+* `@InitWrapper(type: Binding<String>.self)`
   <br> Apply this attribute to properties that are wrapped by a property wrapper and require direct initialization using the property wrapper’s type.
 
   ```swift
   @MemberwiseInit
   struct CounterView: View {
-    @InitWrapper(type: Binding<Bool>)
+    @InitWrapper(type: Binding<Bool>.self)
     @Binding var isOn: Bool
 
     var body: some View { … }
@@ -150,7 +150,7 @@ Attach to the property declarations of a struct that `@MemberwiseInit` is provid
 
   > **Note**
   > The above `@InitWrapper` is functionally equivalent to the following `@InitRaw` configuration:<br>
-  > `@InitRaw(assignee: "self._isOn", type: Binding<Bool>)`.
+  > `@InitRaw(assignee: "self._isOn", type: Binding<Bool>.self)`.
 
 ### Etcetera
 
@@ -476,7 +476,7 @@ import SwiftUI
 
 @MemberwiseInit
 struct CounterView: View {
-  @InitWrapper(type: Binding<Int>)
+  @InitWrapper(type: Binding<Int>.self)
   @Binding var count: Int
 
   var body: some View { … }

@@ -148,7 +148,7 @@ public struct Usage<T> {
 
   // Some property wrappers require initialization of the property wrapper
   // itself, hence `@InitWrapper`.
-  @InitWrapper(type: Logged<String>)
+  @InitWrapper(type: Logged<String>.self)
   @Logged
   public var nameWithWrapper: String
 
@@ -158,7 +158,7 @@ public struct Usage<T> {
     assignee: "self._nameWithWrapperRaw",
     escaping: false,
     label: "_",
-    type: Logged<String>
+    type: Logged<String>.self
   )
   @Logged
   var nameWithWrapperRaw: String

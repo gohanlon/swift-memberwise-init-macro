@@ -5,9 +5,8 @@ import XCTest
 
 final class CustomInitWrapperTests: XCTestCase {
   override func invokeTest() {
-    // NB: Waiting for swift-macro-testing PR to support explicit indentationWidth: https://github.com/pointfreeco/swift-macro-testing/pull/8
     withMacroTesting(
-      //indentationWidth: .spaces(2),
+      indentationWidth: .spaces(2),
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,
@@ -23,7 +22,7 @@ final class CustomInitWrapperTests: XCTestCase {
       """
       @MemberwiseInit
       struct S {
-        @InitWrapper(type: Q<T>)
+        @InitWrapper(type: Q<T>.self)
         var v: T
       }
       """
@@ -47,7 +46,7 @@ final class CustomInitWrapperTests: XCTestCase {
       """
       @MemberwiseInit
       struct S {
-        @InitWrapper(escaping: true, type: Q<T>)
+        @InitWrapper(escaping: true, type: Q<T>.self)
         var v: T
       }
       """
@@ -71,7 +70,7 @@ final class CustomInitWrapperTests: XCTestCase {
       """
       @MemberwiseInit
       struct S {
-        @InitWrapper(label: "_", type: Q<T>)
+        @InitWrapper(label: "_", type: Q<T>.self)
         var v: T
       }
       """
@@ -95,7 +94,7 @@ final class CustomInitWrapperTests: XCTestCase {
       """
       @MemberwiseInit(.public)
       public struct S {
-        @InitWrapper(.public, default: Q<T>(), escaping: true, label: "_", type: Q<T>)
+        @InitWrapper(.public, default: Q<T>(), escaping: true, label: "_", type: Q<T>.self)
         var v: T
       }
       """
