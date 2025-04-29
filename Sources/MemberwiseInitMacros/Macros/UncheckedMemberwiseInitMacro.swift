@@ -2,7 +2,6 @@ import SwiftCompilerPlugin
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 
 public struct UncheckedMemberwiseInitMacro: MemberMacro {

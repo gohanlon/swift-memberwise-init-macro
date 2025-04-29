@@ -1,6 +1,6 @@
 import SwiftDiagnostics
 import SwiftSyntax
-import SwiftSyntaxMacroExpansion
+import SwiftSyntaxMacros
 
 func deprecationDiagnostics(
   node: AttributeSyntax,
