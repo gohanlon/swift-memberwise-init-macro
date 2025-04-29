@@ -7,11 +7,17 @@ public enum AccessLevelConfig {
   case `open`
 }
 
+public enum InlinabilityConfig {
+  case usableFromInline
+  case inlinable
+}
+
 // MARK: @MemberwiseInit macro
 
 @attached(member, names: named(init))
 public macro MemberwiseInit(
   _ accessLevel: AccessLevelConfig,
+  _ inlinability: InlinabilityConfig? = nil,
   _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
@@ -22,6 +28,7 @@ public macro MemberwiseInit(
 
 @attached(member, names: named(init))
 public macro MemberwiseInit(
+  _ inlinability: InlinabilityConfig? = nil,
   _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
@@ -32,6 +39,7 @@ public macro MemberwiseInit(
 
 @attached(member, names: named(init))
 public macro _UncheckedMemberwiseInit(
+  _ inlinability: InlinabilityConfig? = nil,
   _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
@@ -43,6 +51,7 @@ public macro _UncheckedMemberwiseInit(
 @attached(member, names: named(init))
 public macro _UncheckedMemberwiseInit(
   _ accessLevel: AccessLevelConfig,
+  _ inlinability: InlinabilityConfig? = nil,
   _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =

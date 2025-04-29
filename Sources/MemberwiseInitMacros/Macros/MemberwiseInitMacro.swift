@@ -36,6 +36,8 @@ public struct MemberwiseInitMacro: MemberMacro {
       .forEach(context.diagnose)
 
     let configuredAccessLevel: AccessLevelModifier? = extractConfiguredAccessLevel(from: node)
+    let inlinability: InlinabilityAttribute? = extractInlinabilityAttribute(from: node)
+
     let optionalsDefaultNil: Bool? =
       extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
     let deunderscoreParameters: Bool =
@@ -47,37 +49,66 @@ public struct MemberwiseInitMacro: MemberMacro {
       targetAccessLevel: accessLevel
     )
     diagnostics.forEach { context.diagnose($0) }
+    if let incompatibilityDiagnostic = incompatibilityDiagnosticBetween(
+      accessLevel: accessLevel,
+      inlinability: inlinability,
+      in: node
+    ) {
+      context.diagnose(incompatibilityDiagnostic)
+    }
 
     return [
       DeclSyntax(
         MemberwiseInitFormatter.formatInitializer(
           properties: properties,
           accessLevel: accessLevel,
+          inlinability: inlinability,
           deunderscoreParameters: deunderscoreParameters,
           optionalsDefaultNil: optionalsDefaultNil
         )
       )
     ]
   }
-
+  
   static func extractConfiguredAccessLevel(
     from node: AttributeSyntax
   ) -> AccessLevelModifier? {
-    guard let arguments = node.arguments?.as(LabeledExprListSyntax.self)
-    else { return nil }
-
-    // NB: Search for the first argument whose name matches an access level name
-    for labeledExprSyntax in arguments {
-      if let identifier = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self)?.declName,
-        let accessLevel = AccessLevelModifier(rawValue: identifier.baseName.trimmedDescription)
-      {
-        return accessLevel
-      }
-    }
-
-    return nil
+    node.firstUnlabeledValue(interpretableAs: AccessLevelModifier.self)
   }
-
+  
+  static func extractInlinabilityAttribute(
+    from node: AttributeSyntax
+  ) -> InlinabilityAttribute? {
+    node.firstUnlabeledValue(interpretableAs: InlinabilityAttribute.self)
+  }
+  
+  static func incompatibilityDiagnosticBetween(
+    accessLevel: AccessLevelModifier,
+    inlinability: InlinabilityAttribute?,
+    in node: AttributeSyntax
+  ) -> Diagnostic? {
+    guard let inlinability else { return nil }
+    switch (accessLevel, inlinability) {
+    case
+      (.open, .inlinable),
+      (.public, .inlinable),
+      (.package, .inlinable),
+      (.package, .usableFromInline),
+      (.internal, .inlinable),
+      (.internal, .usableFromInline):
+      return nil
+    default:
+      return Diagnostic(
+        node: node,
+        message: MacroExpansionErrorMessage(
+        """
+        Inlinability `@\(inlinability.rawValue)` is incompatible-with access-level `\(accessLevel)`!
+        """
+        )
+      )
+    }
+  }
+  
   static func extractLabeledBoolArgument(
     _ label: String,
     from node: AttributeSyntax

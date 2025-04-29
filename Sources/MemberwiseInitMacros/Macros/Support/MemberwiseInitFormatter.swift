@@ -5,6 +5,7 @@ struct MemberwiseInitFormatter {
   static func formatInitializer(
     properties: [MemberProperty],
     accessLevel: AccessLevelModifier,
+    inlinability: InlinabilityAttribute?,
     deunderscoreParameters: Bool,
     optionalsDefaultNil: Bool?
   ) -> InitializerDeclSyntax {
@@ -14,8 +15,19 @@ struct MemberwiseInitFormatter {
       optionalsDefaultNil: optionalsDefaultNil,
       accessLevel: accessLevel
     )
+    
+    var modifierComponents: [String] = []
+    if let inlinability = inlinability {
+      modifierComponents.append("@\(inlinability.rawValue)")
+    }
+    modifierComponents.append("\(accessLevel.rawValue)")
+    let modifiers = modifierComponents.joined(separator: "\n")
+    // goal:
+    //
+    // @inlinable
+    // public foo
 
-    let formattedInitSignature = "\n\(accessLevel) init(\(formattedParameters))"
+    let formattedInitSignature = "\n\(modifiers) init(\(formattedParameters))"
 
     return try! InitializerDeclSyntax(SyntaxNodeString(stringLiteral: formattedInitSignature)) {
       CodeBlockItemListSyntax(
