@@ -1,5 +1,24 @@
 import SwiftSyntax
 
+extension AttributeSyntax {
+  
+  func firstUnlabeledValue<T>(interpretableAs type: T.Type) -> T? where T: RawRepresentable<String> {
+    guard let arguments = arguments?.as(LabeledExprListSyntax.self)
+    else { return nil }
+    
+    // NB: Search for the first argument whose name matches an access level name
+    for labeledExprSyntax in arguments {
+      if let identifier = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self)?.declName,
+         let accessLevel = T(rawValue: identifier.baseName.trimmedDescription)
+      {
+        return accessLevel
+      }
+    }
+    
+    return nil
+  }
+}
+
 extension VariableDeclSyntax {
   func modifiersExclude(_ keywords: [Keyword]) -> Bool {
     return !self.modifiers.containsAny(of: keywords.map { TokenSyntax.keyword($0) })
@@ -63,7 +82,7 @@ extension VariableDeclSyntax {
   var isComputedProperty: Bool {
     guard
       self.bindings.count == 1,
-      let binding = self.bindings.first?.as(PatternBindingSyntax.self)
+      let binding = self.bindings.first
     else { return false }
 
     return self.bindingSpecifier.tokenKind == .keyword(.var) && binding.isComputedProperty
