@@ -2,20 +2,87 @@ import SwiftSyntax
 
 extension AttributeSyntax {
   
-  func firstUnlabeledValue<T>(interpretableAs type: T.Type) -> T? where T: RawRepresentable<String> {
-    guard let arguments = arguments?.as(LabeledExprListSyntax.self)
-    else { return nil }
+  func firstArgumentValue<T>(interpretableAs type: T.Type) -> T? where T: RawRepresentable<String> {
+    guard case .argumentList(let arguments) = arguments else { return nil }
     
     // NB: Search for the first argument whose name matches an access level name
     for labeledExprSyntax in arguments {
-      if let identifier = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self)?.declName,
-         let accessLevel = T(rawValue: identifier.baseName.trimmedDescription)
-      {
-        return accessLevel
+      if let interpretedValue = labeledExprSyntax.value(interpretedAs: type) {
+        return interpretedValue
       }
     }
     
     return nil
+  }
+}
+
+extension LabeledExprSyntax {
+  
+  func value<T>(interpretedAs type: T.Type) -> T? where T: RawRepresentable<String> {
+    guard let identifier = expression.as(MemberAccessExprSyntax.self)?.declName else {
+      return nil
+    }
+    
+    return T(rawValue: identifier.baseName.trimmedDescription)
+  }
+}
+
+extension LabeledExprListSyntax {
+
+  func removingFirstArgumentValue<T>(interpretableAs type: T.Type) -> Self where T: RawRepresentable<String> {
+    removingFirstItem { labeledExprSyntax in
+      labeledExprSyntax.value(interpretedAs: type) != nil
+    }
+  }
+
+  func replacingFirstArgument<T>(
+    interpretableAs type: T.Type,
+    with value: LabeledExprSyntax
+  ) -> Self where T: RawRepresentable<String> {
+    var result = Self()
+    var hasFoundItemToReplace = false
+    for node in self {
+      if !hasFoundItemToReplace, let _ = node.value(interpretedAs: type) {
+        hasFoundItemToReplace = true
+        result.append(value)
+      } else {
+        result.append(node)
+      }
+    }
+    
+    return result.withFixedInterItemCommas()
+  }
+
+  func removingFirstItem(where predicate: (Element) throws -> Bool) rethrows -> Self {
+    var result = Self()
+    var hasFoundItemToRemove = false
+    for node in self {
+      if !hasFoundItemToRemove, try predicate(node) {
+        hasFoundItemToRemove = true
+        continue
+      }
+      result.append(node)
+    }
+    
+    return result.withFixedInterItemCommas()
+  }
+  
+  func withFixedInterItemCommas() -> LabeledExprListSyntax {
+    guard !isEmpty else {
+      return self
+    }
+    
+    let finalIndex = count - 1
+    var result = Self()
+    for (index, node) in enumerated() {
+      if index == finalIndex {
+        result.append(node.with(\.trailingComma, nil))
+      } else {
+        result.append(node.with(\.trailingComma, .commaToken(trailingTrivia: Trivia.spaces(1))))
+      }
+    }
+    
+    return result    
   }
 }
 

@@ -31,7 +31,7 @@ public struct MemberwiseInitMacro: MemberMacro {
         """
       )
     }
-
+    
     deprecationDiagnostics(node: node, declaration: decl)
       .forEach(context.diagnose)
 
@@ -52,7 +52,8 @@ public struct MemberwiseInitMacro: MemberMacro {
     if let incompatibilityDiagnostic = incompatibilityDiagnosticBetween(
       accessLevel: accessLevel,
       inlinability: inlinability,
-      in: node
+      in: node,
+      typeAccessLevel: decl.declAccessLevel
     ) {
       context.diagnose(incompatibilityDiagnostic)
     }
@@ -73,24 +74,24 @@ public struct MemberwiseInitMacro: MemberMacro {
   static func extractConfiguredAccessLevel(
     from node: AttributeSyntax
   ) -> AccessLevelModifier? {
-    node.firstUnlabeledValue(interpretableAs: AccessLevelModifier.self)
+    node.firstArgumentValue(interpretableAs: AccessLevelModifier.self)
   }
   
   static func extractInlinabilityAttribute(
     from node: AttributeSyntax
   ) -> InlinabilityAttribute? {
-    node.firstUnlabeledValue(interpretableAs: InlinabilityAttribute.self)
+    node.firstArgumentValue(interpretableAs: InlinabilityAttribute.self)
   }
   
   static func incompatibilityDiagnosticBetween(
     accessLevel: AccessLevelModifier,
     inlinability: InlinabilityAttribute?,
-    in node: AttributeSyntax
+    in node: AttributeSyntax,
+    typeAccessLevel: AccessLevelModifier
   ) -> Diagnostic? {
     guard let inlinability else { return nil }
     switch (accessLevel, inlinability) {
     case
-      (.open, .inlinable),
       (.public, .inlinable),
       (.package, .inlinable),
       (.package, .usableFromInline),
@@ -98,13 +99,17 @@ public struct MemberwiseInitMacro: MemberMacro {
       (.internal, .usableFromInline):
       return nil
     default:
+      // NOTE:
+      // the real issue with (.open, .inlinable) is specific
+      // to init: `init` can't be `open`.
       return Diagnostic(
         node: node,
         message: MacroExpansionErrorMessage(
-        """
-        Inlinability `@\(inlinability.rawValue)` is incompatible-with access-level `\(accessLevel)`!
-        """
-        )
+          """
+          Inlinability '.\(inlinability.rawValue)' is incompatible-with access-level '.\(accessLevel)'!
+          """
+        ),
+        fixIts: node.allInlinabilityFixIts(typeAccessLevel: typeAccessLevel)
       )
     }
   }

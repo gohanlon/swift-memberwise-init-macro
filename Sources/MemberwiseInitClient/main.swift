@@ -122,6 +122,43 @@ public struct InferType<T: CaseIterable> {
   var dictionaryAs = ["foo": 1, 3: "bar"] as [AnyHashable: Any]
 }
 
+@MemberwiseInit(.inlinable)
+public struct InlinableInit_Default {
+  public let foo: String
+  
+  @Init(.ignore)
+  private var ignored: Int = 7
+}
+let _ = InlinableInit_Default(foo: "bar")
+
+@MemberwiseInit(.internal, .inlinable)
+public struct InlinableInit_Internal {
+  public let foo: String
+  
+  @Init(.ignore)
+  private var ignored: Int = 7
+}
+let _ = InlinableInit_Internal(foo: "bar")
+
+//@MemberwiseInit(.fileprivate, .inlinable)
+//internal struct InlinableInit_FilePrivate {
+//  fileprivate let foo: String
+//  
+//  @Init(.ignore)
+//  private var ignored: Int = 7
+//}
+////let _ = InlinableInit_FilePrivate(foo: "bar")
+
+@MemberwiseInit(.package, .usableFromInline)
+public struct InlinableInit_Package {
+  public let foo: String
+  
+  @Init(.ignore)
+  private var ignored: Int = 7
+}
+let _ = InlinableInit_Package(foo: "bar")
+
+
 // - MARK: Usage tour
 
 public typealias SimpleClosure = () -> Void
