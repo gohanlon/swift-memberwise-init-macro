@@ -549,14 +549,14 @@ public func assertMacro(
   }
 }
 
-// From: https://github.com/apple/swift-syntax/blob/d647052/Sources/SwiftSyntaxMacrosTestSupport/Assertions.swift
-extension FixIt.Change {
+// From: https://github.com/swiftlang/swift-syntax/blob/601.0.1/Sources/SwiftSyntaxMacrosGenericTestSupport/Assertions.swift
+fileprivate extension FixIt.Change {
   /// Returns the edit for this change, translating positions from detached nodes
   /// to the corresponding locations in the original source file based on
   /// `expansionContext`.
   ///
   /// - SeeAlso: `FixIt.Change.edit`
-  fileprivate func edit(in expansionContext: BasicMacroExpansionContext) -> SourceEdit {
+  func edit(in expansionContext: BasicMacroExpansionContext) -> SourceEdit {
     switch self {
     case .replace(let oldNode, let newNode):
       let start = expansionContext.position(of: oldNode.position, anchoredAt: oldNode)
@@ -568,21 +568,30 @@ extension FixIt.Change {
 
     case .replaceLeadingTrivia(let token, let newTrivia):
       let start = expansionContext.position(of: token.position, anchoredAt: token)
-      let end = expansionContext.position(
-        of: token.positionAfterSkippingLeadingTrivia, anchoredAt: token)
+      let end = expansionContext.position(of: token.positionAfterSkippingLeadingTrivia, anchoredAt: token)
       return SourceEdit(
         range: start..<end,
         replacement: newTrivia.description
       )
 
     case .replaceTrailingTrivia(let token, let newTrivia):
-      let start = expansionContext.position(
-        of: token.endPositionBeforeTrailingTrivia, anchoredAt: token)
+      let start = expansionContext.position(of: token.endPositionBeforeTrailingTrivia, anchoredAt: token)
       let end = expansionContext.position(of: token.endPosition, anchoredAt: token)
       return SourceEdit(
         range: start..<end,
         replacement: newTrivia.description
       )
+
+#if canImport(SwiftSyntax601)
+    case .replaceChild(let replacingChildData):
+      let range = replacingChildData.replacementRange
+      let start = expansionContext.position(of: range.lowerBound, anchoredAt: replacingChildData.parent)
+      let end = expansionContext.position(of: range.upperBound, anchoredAt: replacingChildData.parent)
+      return SourceEdit(
+        range: start..<end,
+        replacement: replacingChildData.newChild.description
+      )
+#endif
     }
   }
 }

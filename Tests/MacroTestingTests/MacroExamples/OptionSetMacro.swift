@@ -129,7 +129,7 @@ public struct OptionSetMacro {
     guard
       let genericArgs = attribute.attributeName.as(IdentifierTypeSyntax.self)?
         .genericArgumentClause,
-      let rawType = genericArgs.arguments.first?.argument
+      let rawType = genericArgs.arguments.first?.argumentCompat600
     else {
       context.diagnose(OptionSetMacroDiagnostic.requiresOptionsEnumRawType.diagnose(at: attribute))
       return nil
