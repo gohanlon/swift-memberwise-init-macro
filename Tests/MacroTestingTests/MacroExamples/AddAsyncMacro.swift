@@ -74,7 +74,8 @@ public struct AddAsyncMacro: PeerMacro {
     let isResultReturn = returnType?.children(viewMode: .all).first?.description == "Result"
     let successReturnType =
       isResultReturn
-      ? returnType!.as(IdentifierTypeSyntax.self)!.genericArgumentClause?.arguments.first!.argumentCompat600
+      ? returnType!.as(IdentifierTypeSyntax.self)!.genericArgumentClause?.arguments.first!
+        .argumentCompat600
       : returnType
 
     // Remove completionHandler and comma from the previous parameter
