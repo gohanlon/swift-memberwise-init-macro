@@ -2,8 +2,9 @@ import SwiftCompilerPlugin
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
+
+
 
 public struct InitMacro: PeerMacro {
   public static func expansion(
@@ -30,11 +31,13 @@ public struct MemberwiseInitMacro: MemberMacro {
         """
       )
     }
-
+    
     deprecationDiagnostics(node: node, declaration: decl)
       .forEach(context.diagnose)
 
     let configuredAccessLevel: AccessLevelModifier? = extractConfiguredAccessLevel(from: node)
+    let inlinability: InlinabilityAttribute? = extractInlinabilityAttribute(from: node)
+
     let optionalsDefaultNil: Bool? =
       extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
     let deunderscoreParameters: Bool =
@@ -46,37 +49,71 @@ public struct MemberwiseInitMacro: MemberMacro {
       targetAccessLevel: accessLevel
     )
     diagnostics.forEach { context.diagnose($0) }
+    if let incompatibilityDiagnostic = incompatibilityDiagnosticBetween(
+      accessLevel: accessLevel,
+      inlinability: inlinability,
+      in: node,
+      typeAccessLevel: decl.declAccessLevel
+    ) {
+      context.diagnose(incompatibilityDiagnostic)
+    }
 
     return [
       DeclSyntax(
         MemberwiseInitFormatter.formatInitializer(
           properties: properties,
           accessLevel: accessLevel,
+          inlinability: inlinability,
           deunderscoreParameters: deunderscoreParameters,
           optionalsDefaultNil: optionalsDefaultNil
         )
       )
     ]
   }
-
+  
   static func extractConfiguredAccessLevel(
     from node: AttributeSyntax
   ) -> AccessLevelModifier? {
-    guard let arguments = node.arguments?.as(LabeledExprListSyntax.self)
-    else { return nil }
-
-    // NB: Search for the first argument whose name matches an access level name
-    for labeledExprSyntax in arguments {
-      if let identifier = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self)?.declName,
-        let accessLevel = AccessLevelModifier(rawValue: identifier.baseName.trimmedDescription)
-      {
-        return accessLevel
-      }
-    }
-
-    return nil
+    node.firstArgumentValue(interpretableAs: AccessLevelModifier.self)
   }
-
+  
+  static func extractInlinabilityAttribute(
+    from node: AttributeSyntax
+  ) -> InlinabilityAttribute? {
+    node.firstArgumentValue(interpretableAs: InlinabilityAttribute.self)
+  }
+  
+  static func incompatibilityDiagnosticBetween(
+    accessLevel: AccessLevelModifier,
+    inlinability: InlinabilityAttribute?,
+    in node: AttributeSyntax,
+    typeAccessLevel: AccessLevelModifier
+  ) -> Diagnostic? {
+    guard let inlinability else { return nil }
+    switch (accessLevel, inlinability) {
+    case
+      (.public, .inlinable),
+      (.package, .inlinable),
+      (.package, .usableFromInline),
+      (.internal, .inlinable),
+      (.internal, .usableFromInline):
+      return nil
+    default:
+      // NOTE:
+      // the real issue with (.open, .inlinable) is specific
+      // to init: `init` can't be `open`.
+      return Diagnostic(
+        node: node,
+        message: MacroExpansionErrorMessage(
+          """
+          Inlinability '.\(inlinability.rawValue)' is incompatible-with access-level '.\(accessLevel)'!
+          """
+        ),
+        fixIts: node.allInlinabilityFixIts(typeAccessLevel: typeAccessLevel)
+      )
+    }
+  }
+  
   static func extractLabeledBoolArgument(
     _ label: String,
     from node: AttributeSyntax

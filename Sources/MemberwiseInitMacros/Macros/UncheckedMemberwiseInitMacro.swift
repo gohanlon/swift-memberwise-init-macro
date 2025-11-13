@@ -2,7 +2,6 @@ import SwiftCompilerPlugin
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 
 public struct UncheckedMemberwiseInitMacro: MemberMacro {
@@ -23,6 +22,8 @@ public struct UncheckedMemberwiseInitMacro: MemberMacro {
 
     let accessLevel =
       MemberwiseInitMacro.extractConfiguredAccessLevel(from: node) ?? .internal
+    let inlinability =
+    MemberwiseInitMacro.extractInlinabilityAttribute(from: node)
     let optionalsDefaultNil: Bool? =
       MemberwiseInitMacro.extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
     let deunderscoreParameters: Bool =
@@ -37,6 +38,7 @@ public struct UncheckedMemberwiseInitMacro: MemberMacro {
         MemberwiseInitFormatter.formatInitializer(
           properties: properties,
           accessLevel: accessLevel,
+          inlinability: inlinability,
           deunderscoreParameters: deunderscoreParameters,
           optionalsDefaultNil: optionalsDefaultNil
         )

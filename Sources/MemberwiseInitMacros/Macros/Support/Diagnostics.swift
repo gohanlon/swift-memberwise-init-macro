@@ -1,6 +1,7 @@
 import SwiftDiagnostics
 import SwiftSyntax
-import SwiftSyntaxMacroExpansion
+import SwiftSyntaxBuilder
+import SwiftSyntaxMacros
 
 // MARK: - Diagnose VariableDeclSyntax
 
@@ -100,7 +101,8 @@ private func diagnoseMemberModifiers(
     return Diagnostic(
       node: modifier,
       message: MacroExpansionWarningMessage(
-        "@\(attributeName) can't be applied to 'static' members"),
+        "@\(attributeName) can't be applied to 'static' members"
+      ),
       fixIts: [variable.fixItRemoveCustomInit].compactMap { $0 }
     )
   }
@@ -255,10 +257,12 @@ private func diagnoseAccessibilityLeak(
 
     return FixIt(
       message: MacroExpansionFixItMessage(
-        "Add '@\(customAttribute.attributeName.trimmedDescription)(.\(targetAccessLevel))'"),
+        "Add '@\(customAttribute.attributeName.trimmedDescription)(.\(targetAccessLevel))'"
+      ),
       changes: [
         FixIt.Change.replace(
-          oldNode: Syntax(variable), newNode: Syntax(newVariable)
+          oldNode: Syntax(variable),
+          newNode: Syntax(newVariable)
         )
       ]
     )
@@ -314,7 +318,8 @@ private func diagnoseAccessibilityLeak(
       message: MacroExpansionFixItMessage(message),
       changes: [
         FixIt.Change.replace(
-          oldNode: Syntax(variable), newNode: Syntax(newVariable)
+          oldNode: Syntax(variable),
+          newNode: Syntax(newVariable)
         )
       ]
     )
@@ -355,7 +360,8 @@ private func diagnoseAccessibilityLeak(
       message: MacroExpansionFixItMessage(message),
       changes: [
         FixIt.Change.replace(
-          oldNode: Syntax(variable), newNode: Syntax(newVariable)
+          oldNode: Syntax(variable),
+          newNode: Syntax(newVariable)
         )
       ]
     )
@@ -457,7 +463,8 @@ extension VariableDeclSyntax {
       changes: [
         FixIt.Change.replace(
           oldNode: Syntax(customAttribute),
-          newNode: Syntax(newAttribute))
+          newNode: Syntax(newAttribute)
+        )
       ]
     )
   }
@@ -475,7 +482,8 @@ extension VariableDeclSyntax {
       message: MacroExpansionFixItMessage("Remove '\(customAttribute.trimmedDescription)'"),
       changes: [
         FixIt.Change.replace(
-          oldNode: Syntax(self), newNode: Syntax(newVariable)
+          oldNode: Syntax(self),
+          newNode: Syntax(newVariable)
         )
       ]
     )
@@ -496,8 +504,9 @@ extension VariableDeclSyntax {
       newFirstBinding.typeAnnotation = TypeAnnotationSyntax(
         colon: .colonToken(trailingTrivia: .space),
         type: inferredTypeSyntax
-          ?? MissingTypeSyntax(placeholder: TokenSyntax(stringLiteral: "\u{3C}#Type#\u{3E}"))
-          .as(TypeSyntax.self)!
+          ?? TypeSyntax.self(
+            MissingTypeSyntax(placeholder: TokenSyntax(stringLiteral: "\u{3C}#Type#\u{3E}"))
+          )!
       )
       newFirstBinding.pattern = newFirstBinding.pattern.trimmed
     }
@@ -511,7 +520,8 @@ extension VariableDeclSyntax {
       ),
       changes: [
         FixIt.Change.replace(
-          oldNode: Syntax(self), newNode: Syntax(newNode)
+          oldNode: Syntax(self),
+          newNode: Syntax(newNode)
         )
       ]
     )
@@ -538,4 +548,140 @@ extension LabeledExprListSyntax {
       return modifiedSyntaxList
     }
   }
+}
+
+// MARK: - Diagnose AttributeSyntax
+
+extension AttributeSyntax {
+
+  func allInlinabilityFixIts(typeAccessLevel: AccessLevelModifier) -> [FixIt] {
+    // NB: returning nil when empty to be consistent with Diagnostic's choice of default argument value
+    var result: [FixIt] = []
+    if let fixItRemoveInlinability {
+      result.append(fixItRemoveInlinability)
+    }
+    if let fixItReplaceUsableFromInlineWithInlinable {
+      result.append(fixItReplaceUsableFromInlineWithInlinable)
+    }
+    if let fixItsMakeAccessLevelCompatibleWithInlinabilityChoice = fixItsMakeAccessLevelCompatibleWithInlinabilityChoice(typeAccessLevel: typeAccessLevel) {
+      result.append(contentsOf: fixItsMakeAccessLevelCompatibleWithInlinabilityChoice)
+    }
+
+    return result
+  }
+
+  var fixItRemoveInlinability: FixIt? {
+    guard
+      let inlinability = firstArgumentValue(
+        interpretableAs: InlinabilityAttribute.self
+      ),
+      case .argumentList(let originalArgumentList) = arguments
+    else {
+      return nil
+    }
+
+    return FixIt(
+      message: MacroExpansionFixItMessage("Remove '.\(inlinability)'."),
+      changes: [
+        .replace(
+          oldNode: Syntax(self),
+          newNode: Syntax(
+            self.with(
+              \.arguments,
+              .argumentList(
+                originalArgumentList.removingFirstArgumentValue(
+                  interpretableAs: InlinabilityAttribute.self
+                )
+              )
+            )
+          )
+        )
+      ]
+    )
+  }
+
+  var fixItReplaceUsableFromInlineWithInlinable: FixIt? {
+    guard
+      let inlinability = firstArgumentValue(
+        interpretableAs: InlinabilityAttribute.self
+      ),
+      inlinability == .usableFromInline,
+      let accessLevel = firstArgumentValue(interpretableAs: AccessLevelModifier.self),
+      [.public, .open].contains(accessLevel),
+      case .argumentList(let originalArgumentList) = arguments
+    else {
+      return nil
+    }
+
+    return FixIt(
+      message: MacroExpansionFixItMessage(
+        "Change '.\(inlinability)' to '.inlinable'."
+      ),
+      changes: [
+        .replace(
+          oldNode: Syntax(self),
+          newNode: Syntax(
+            self.with(
+              \.arguments,
+              .argumentList(
+                originalArgumentList.replacingFirstArgument(
+                  interpretableAs: InlinabilityAttribute.self,
+                  with: LabeledExprSyntax(expression: ExprSyntax(".inlinable"))
+                )
+              )
+            )
+          )
+        )
+      ]
+    )
+  }
+
+  func fixItsMakeAccessLevelCompatibleWithInlinabilityChoice(typeAccessLevel: AccessLevelModifier) -> [FixIt]? {
+    guard
+      let inlinability = firstArgumentValue(interpretableAs: InlinabilityAttribute.self),
+      let originalAccessLevel = firstArgumentValue(
+        interpretableAs: AccessLevelModifier.self
+      ),
+      [.private, .fileprivate].contains(originalAccessLevel),
+      case .argumentList(let originalArgumentList) = arguments
+    else {
+      return nil
+    }
+
+    let accessLevels: [AccessLevelModifier]
+    switch inlinability {
+    case .usableFromInline:
+      accessLevels = [.internal, .package]
+    case .inlinable:
+      accessLevels = [.internal, .package, .public, .open]
+    }
+
+    return accessLevels
+      .lazy
+      .filter { $0 <= typeAccessLevel }
+      .map { accessLevel in
+        FixIt(
+          message: MacroExpansionFixItMessage(
+            "Change '.\(originalAccessLevel)' to '.\(accessLevel)'."
+          ),
+          changes: [
+            .replace(
+              oldNode: Syntax(self),
+              newNode: Syntax(
+                self.with(
+                  \.arguments,
+                  .argumentList(
+                    originalArgumentList.replacingFirstArgument(
+                      interpretableAs: AccessLevelModifier.self,
+                      with: LabeledExprSyntax(expression: ExprSyntax(".\(raw: accessLevel)"))
+                    )
+                  )
+                )
+              )
+            )
+          ]
+        )
+      }
+  }
+
 }
