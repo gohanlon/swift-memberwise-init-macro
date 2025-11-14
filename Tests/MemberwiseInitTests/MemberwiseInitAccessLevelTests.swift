@@ -307,8 +307,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       private struct S {
 
-          private init() {
-          }
+        private init() {
+        }
       }
       """
     }
@@ -601,8 +601,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       struct S {
 
-          private init() {
-          }
+        private init() {
+        }
       }
       """
     }
@@ -895,8 +895,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       public struct S {
 
-          private init() {
-          }
+        private init() {
+        }
       }
       """
     }
@@ -922,12 +922,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.internal) private let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         private let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -953,12 +963,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.internal, ) private let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         private let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1031,12 +1051,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.internal) let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1062,12 +1092,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.internal, ) let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1162,12 +1202,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.internal, ) public let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         public let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1231,8 +1281,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       private struct S {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
@@ -1258,12 +1308,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.internal) private let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         private let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1289,12 +1349,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.internal, ) private let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         private let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1389,12 +1459,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.internal, ) let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1489,12 +1569,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.internal, ) public let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         public let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1558,8 +1648,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       struct S {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
@@ -1585,12 +1675,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      public struct S {
+        @Init(.internal) private let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         private let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1616,12 +1716,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      public struct S {
+        @Init(.internal, ) private let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         private let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1716,12 +1826,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      public struct S {
+        @Init(.internal, ) let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1816,12 +1936,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      public struct S {
+        @Init(.internal, ) public let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         public let v: T
-      
-        internal init() {
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1885,8 +2015,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       public struct S {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
@@ -1912,12 +2042,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public) private let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         private let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1943,12 +2083,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         private let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -1974,12 +2124,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         private let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2029,12 +2189,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public) let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2060,12 +2230,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2091,12 +2271,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2168,12 +2358,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         public let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2199,12 +2399,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
     } expansion: {
       """
       private struct S {
         public let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2245,8 +2455,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       private struct S {
 
-          public init() {
-          }
+        public init() {
+        }
       }
       """
     }
@@ -2272,12 +2482,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public) private let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         private let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2303,12 +2523,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         private let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2334,12 +2564,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         private let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2389,12 +2629,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public) let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2420,12 +2670,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2451,12 +2711,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2528,12 +2798,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         public let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2559,12 +2839,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
     } expansion: {
       """
       struct S {
         public let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2605,8 +2895,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       struct S {
 
-          public init() {
-          }
+        public init() {
+        }
       }
       """
     }
@@ -2632,12 +2922,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public) private let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         private let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2663,12 +2963,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         private let v: T
-      
-        public init() {
+
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2694,12 +3004,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         private let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2749,12 +3069,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public) let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2780,12 +3110,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2811,12 +3151,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2888,12 +3238,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         public let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2919,12 +3279,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
     } expansion: {
       """
       public struct S {
         public let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
       }
       """
@@ -2965,8 +3335,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       public struct S {
 
-          public init() {
-          }
+        public init() {
+        }
       }
       """
     }
