@@ -84,20 +84,9 @@ final class CustomInitRawTests: XCTestCase {
       """
     } fixes: {
       """
-      @InitRaw(default: 42) let number = 0
-               ┬──────────
-               ╰─ 🛑 @InitRaw can't be applied to already initialized constant
-
-      ✏️ Remove '@InitRaw(default: 42)'
       @MemberwiseInit
       struct S {
         let number = 0
-      }
-
-      ✏️ Remove '= 0'
-      @MemberwiseInit
-      struct S {
-        @InitRaw(default: 42) let number: Int
       }
       """
     } expansion: {

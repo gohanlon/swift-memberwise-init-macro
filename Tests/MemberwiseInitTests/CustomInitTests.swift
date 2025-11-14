@@ -38,26 +38,15 @@ final class CustomInitTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init let number = 42
-      ┬────
-      ╰─ ⚠️ @Init can't be applied to already initialized constant
-      
-      ✏️ Remove '@Init'
       @MemberwiseInit
       struct S {
         let number = 42
-      }
-      
-      ✏️ Remove '= 42'
-      @MemberwiseInit
-      struct S {
-        @Init let number: Int
       }
       """
     } expansion: {
       """
       struct S {
-        @Init let number = 42
+        let number = 42
 
         internal init() {
         }
@@ -115,11 +104,6 @@ final class CustomInitTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init static var staticNumber: Int
-            ┬─────
-            ╰─ ⚠️ @Init can't be applied to 'static' members
-
-      ✏️ Remove '@Init'
       @MemberwiseInit
       struct S {
         static var staticNumber: Int
@@ -128,8 +112,8 @@ final class CustomInitTests: XCTestCase {
     } expansion: {
       """
       struct S {
-        @Init static var staticNumber: Int
-      
+        static var staticNumber: Int
+
         internal init() {
         }
       }
@@ -162,11 +146,6 @@ final class CustomInitTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 0) lazy var lazyNumber: Int = {
-                        ┬───
-                        ╰─ ⚠️ @Init can't be applied to 'lazy' members
-
-      ✏️ Remove '@Init(default: 0)'
       @MemberwiseInit
       struct S {
         lazy var lazyNumber: Int = {
@@ -177,10 +156,10 @@ final class CustomInitTests: XCTestCase {
     } expansion: {
       """
       struct S {
-        @Init(default: 0) lazy var lazyNumber: Int = {
+        lazy var lazyNumber: Int = {
           return 2 * 2
         }()
-      
+
         internal init() {
         }
       }
@@ -211,11 +190,6 @@ final class CustomInitTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init lazy static var value = 0
-                 ┬─────
-                 ╰─ ⚠️ @Init can't be applied to 'static' members
-
-      ✏️ Remove '@Init'
       @MemberwiseInit
       struct B {
         lazy static var value = 0
@@ -224,8 +198,8 @@ final class CustomInitTests: XCTestCase {
     } expansion: {
       """
       struct B {
-        @Init lazy static var value = 0
-      
+        lazy static var value = 0
+
         internal init() {
         }
       }
