@@ -86,27 +86,16 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42) let number = 0
-            ┬──────────
-            ╰─ 🛑 @Init can't be applied to already initialized constant
-
-      ✏️ Remove '@Init(default: 42)'
       @MemberwiseInit
       struct S {
         let number = 0
-      }
-
-      ✏️ Remove '= 0'
-      @MemberwiseInit
-      struct S {
-        @Init(default: 42) let number: Int
       }
       """
     } expansion: {
       """
       struct S {
-        @Init(default: 42) let number = 0
-      
+        let number = 0
+
         internal init() {
         }
       }
@@ -135,27 +124,16 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42, label: "_") let number = 0
-            ┬───────────
-            ╰─ 🛑 @Init can't be applied to already initialized constant
-
-      ✏️ Remove '@Init(default: 42, label: "_")'
       @MemberwiseInit
       struct S {
         let number = 0
-      }
-
-      ✏️ Remove '= 0'
-      @MemberwiseInit
-      struct S {
-        @Init(default: 42, label: "_") let number: Int
       }
       """
     } expansion: {
       """
       struct S {
-        @Init(default: 42, label: "_") let number = 0
-      
+        let number = 0
+
         internal init() {
         }
       }
@@ -184,28 +162,20 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42) var number = 0
-            ┬──────────
-            ╰─ 🛑 Custom 'default' can't be applied to already initialized variable
-
-      ✏️ Remove '@Init(default: 42)'
       @MemberwiseInit
       struct S {
         var number = 0
-      }
-
-      ✏️ Remove '= 0'
-      @MemberwiseInit
-      struct S {
-        @Init(default: 42) var number: Int
       }
       """
     } expansion: {
       """
       struct S {
-        @Init(default: 42) var number = 0
+        var number = 0
 
-        internal init() {
+        internal init(
+          number: Int = 0
+        ) {
+          self.number = number
         }
       }
       """
@@ -233,26 +203,15 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Binding @Init(default: 42) let number = 0
-                     ┬──────────
-                     ╰─ 🛑 @Init can't be applied to already initialized constant
-
-      ✏️ Remove '@Init(default: 42)'
       @MemberwiseInit
       struct S {
         @Binding let number = 0
-      }
-
-      ✏️ Remove '= 0'
-      @MemberwiseInit
-      struct S {
-        @Binding @Init(default: 42) let number: Int
       }
       """
     } expansion: {
       """
       struct S {
-        @Binding @Init(default: 42) let number = 0
+        @Binding let number = 0
 
         internal init() {
         }
@@ -282,26 +241,15 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Binding @Init(default: T.q) let number = T.t
-                     ┬───────────
-                     ╰─ 🛑 @Init can't be applied to already initialized constant
-
-      ✏️ Remove '@Init(default: T.q)'
       @MemberwiseInit
       struct S {
         @Binding let number = T.t
-      }
-
-      ✏️ Remove '= T.t'
-      @MemberwiseInit
-      struct S {
-        @Binding @Init(default: T.q) let number: <#Type#>
       }
       """
     } expansion: {
       """
       struct S {
-        @Binding @Init(default: T.q) let number = T.t
+        @Binding let number = T.t
 
         internal init() {
         }
@@ -331,28 +279,20 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Binding @Init(default: 42) var number = 0
-                     ┬──────────
-                     ╰─ 🛑 Custom 'default' can't be applied to already initialized variable
-
-      ✏️ Remove 'default: 42'
       @MemberwiseInit
       struct S {
         @Binding @Init var number = 0
-      }
-
-      ✏️ Remove '= 0'
-      @MemberwiseInit
-      struct S {
-        @Binding @Init(default: 42) var number: Int
       }
       """
     } expansion: {
       """
       struct S {
-        @Binding @Init(default: 42) var number = 0
+        @Binding @Init var number = 0
 
-        internal init() {
+        internal init(
+          number: Int = 0
+        ) {
+          self.number = number
         }
       }
       """
@@ -380,32 +320,12 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Binding @Init(default: T.q) var number = T.t
-                     ┬───────────
-                     ╰─ 🛑 Custom 'default' can't be applied to already initialized variable
-
-      ✏️ Remove 'default: T.q'
       @MemberwiseInit
       struct S {
         @Binding @Init var number = T.t
       }
-
-      ✏️ Remove '= T.t'
-      @MemberwiseInit
-      struct S {
-        @Binding @Init(default: T.q) var number: <#Type#>
-      }
       """
-    } expansion: {
-      """
-      struct S {
-        @Binding @Init(default: T.q) var number = T.t
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   // TODO: This test doesn't fit perfectly here because it touches on label
@@ -430,28 +350,20 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42, label: "_") var number = 0
-            ┬───────────
-            ╰─ 🛑 Custom 'default' can't be applied to already initialized variable
-
-      ✏️ Remove 'default: 42'
       @MemberwiseInit
       struct S {
         @Init(label: "_") var number = 0
-      }
-
-      ✏️ Remove '= 0'
-      @MemberwiseInit
-      struct S {
-        @Init(default: 42, label: "_") var number: Int
       }
       """
     } expansion: {
       """
       struct S {
-        @Init(default: 42, label: "_") var number = 0
+        @Init(label: "_") var number = 0
 
-        internal init() {
+        internal init(
+          _ number: Int = 0
+        ) {
+          self.number = number
         }
       }
       """
@@ -478,11 +390,6 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42) let x, y: Int
-            ┬──────────
-            ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
-
-      ✏️ Remove '@Init(default: 42)'
       @MemberwiseInit
       struct S {
         let x, y: Int
@@ -491,9 +398,14 @@ final class CustomInitDefaultTests: XCTestCase {
     } expansion: {
       """
       struct S {
-        @Init(default: 42) let x, y: Int
+        let x, y: Int
 
-        internal init() {
+        internal init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
         }
       }
       """
@@ -534,11 +446,6 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42) var x, y: Int
-            ┬──────────
-            ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
-
-      ✏️ Remove '@Init(default: 42)'
       @MemberwiseInit
       struct S {
         var x, y: Int
@@ -547,9 +454,14 @@ final class CustomInitDefaultTests: XCTestCase {
     } expansion: {
       """
       struct S {
-        @Init(default: 42) var x, y: Int
+        var x, y: Int
 
-        internal init() {
+        internal init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
         }
       }
       """
@@ -590,11 +502,6 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42) let x = 0, y: Int
-            ┬──────────
-            ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
-
-      ✏️ Remove '@Init(default: 42)'
       @MemberwiseInit
       struct S {
         let x = 0, y: Int
@@ -603,9 +510,12 @@ final class CustomInitDefaultTests: XCTestCase {
     } expansion: {
       """
       struct S {
-        @Init(default: 42) let x = 0, y: Int
+        let x = 0, y: Int
 
-        internal init() {
+        internal init(
+          y: Int
+        ) {
+          self.y = y
         }
       }
       """
@@ -644,11 +554,6 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42) var x = 0, y: Int
-            ┬──────────
-            ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
-
-      ✏️ Remove '@Init(default: 42)'
       @MemberwiseInit
       struct S {
         var x = 0, y: Int
@@ -657,9 +562,14 @@ final class CustomInitDefaultTests: XCTestCase {
     } expansion: {
       """
       struct S {
-        @Init(default: 42) var x = 0, y: Int
+        var x = 0, y: Int
 
-        internal init() {
+        internal init(
+          x: Int = 0,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
         }
       }
       """
@@ -700,11 +610,6 @@ final class CustomInitDefaultTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(default: 42) let x: Int, isOn: Bool
-            ┬──────────
-            ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
-
-      ✏️ Remove '@Init(default: 42)'
       @MemberwiseInit
       struct S {
         let x: Int, isOn: Bool
@@ -713,9 +618,14 @@ final class CustomInitDefaultTests: XCTestCase {
     } expansion: {
       """
       struct S {
-        @Init(default: 42) let x: Int, isOn: Bool
+        let x: Int, isOn: Bool
 
-        internal init() {
+        internal init(
+          x: Int,
+          isOn: Bool
+        ) {
+          self.x = x
+          self.isOn = isOn
         }
       }
       """
