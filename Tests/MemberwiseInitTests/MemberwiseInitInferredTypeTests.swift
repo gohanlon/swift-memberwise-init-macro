@@ -6,6 +6,8 @@ import XCTest
 final class MemberwiseInitInferredTypeTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
+      indentationWidth: .spaces(2),
+      record: .missing,
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,
@@ -26,16 +28,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var stepsToday = number
       }
       """
-    } expansion: {
-      """
-      let number = 0
-      public struct Pedometer {
-        var stepsToday = number
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       let number = 0
@@ -44,6 +36,16 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var stepsToday = number
             ┬──────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      let number = 0
+      public struct Pedometer {
+        var stepsToday = number
+
+        internal init() {
+        }
       }
       """
     }
@@ -438,15 +440,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var array = [1 as Int, 2 as Double]
       }
       """##
-    } expansion: {
-      """
-      struct S {
-        var array = [1 as Int, 2 as Double]
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -454,6 +447,15 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var array = [1 as Int, 2 as Double]
             ┬──────────────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        var array = [1 as Int, 2 as Double]
+
+        internal init() {
+        }
       }
       """
     }
@@ -491,16 +493,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var array = [1, number, 3]
       }
       """##
-    } expansion: {
-      """
-      let number = 2
-      public struct S {
-        var array = [1, number, 3]
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       let number = 2
@@ -509,6 +501,16 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var array = [1, number, 3]
             ┬─────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      let number = 2
+      public struct S {
+        var array = [1, number, 3]
+
+        internal init() {
+        }
       }
       """
     }
@@ -571,15 +573,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var array = [1, "foo", 3]
       }
       """##
-    } expansion: {
-      """
-      public struct S {
-        var array = [1, "foo", 3]
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -587,6 +580,15 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var array = [1, "foo", 3]
             ┬────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        var array = [1, "foo", 3]
+
+        internal init() {
+        }
       }
       """
     }
@@ -650,17 +652,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var dictionary = ["key1": foo, "key2": bar]
       }
       """##
-    } expansion: {
-      """
-      let foo = "foo"
-      let bar = "bar"
-      public struct S {
-        var dictionary = ["key1": foo, "key2": bar]
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       let foo = "foo"
@@ -670,6 +661,17 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var dictionary = ["key1": foo, "key2": bar]
             ┬──────────────────────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      let foo = "foo"
+      let bar = "bar"
+      public struct S {
+        var dictionary = ["key1": foo, "key2": bar]
+
+        internal init() {
+        }
       }
       """
     }
@@ -684,16 +686,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var dictionary = ["foo": 1, bar: 2]
       }
       """##
-    } expansion: {
-      """
-      let bar = "bar"
-      public struct S {
-        var dictionary = ["foo": 1, bar: 2]
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       let bar = "bar"
@@ -702,6 +694,16 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var dictionary = ["foo": 1, bar: 2]
             ┬──────────────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      let bar = "bar"
+      public struct S {
+        var dictionary = ["foo": 1, bar: 2]
+
+        internal init() {
+        }
       }
       """
     }
@@ -763,15 +765,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var array = [1 as Int: 2 as Double, 1.0: 2]
       }
       """##
-    } expansion: {
-      """
-      struct S {
-        var array = [1 as Int: 2 as Double, 1.0: 2]
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -779,6 +772,15 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var array = [1 as Int: 2 as Double, 1.0: 2]
             ┬──────────────────────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        var array = [1 as Int: 2 as Double, 1.0: 2]
+
+        internal init() {
+        }
       }
       """
     }
@@ -843,15 +845,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var dictionary = ["foo": 1, 3: "bar"]
       }
       """##
-    } expansion: {
-      """
-      public struct S {
-        var dictionary = ["foo": 1, 3: "bar"]
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -859,6 +852,15 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var dictionary = ["foo": 1, 3: "bar"]
             ┬────────────────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        var dictionary = ["foo": 1, 3: "bar"]
+
+        internal init() {
+        }
       }
       """
     }
@@ -921,16 +923,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var tuple = (1, name, true)
       }
       """##
-    } expansion: {
-      """
-      let name = "Blob"
-      public struct S {
-        var tuple = (1, name, true)
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       let name = "Blob"
@@ -939,6 +931,16 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var tuple = (1, name, true)
             ┬──────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      let name = "Blob"
+      public struct S {
+        var tuple = (1, name, true)
+
+        internal init() {
+        }
       }
       """
     }
@@ -1154,16 +1156,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var range = start...5
       }
       """##
-    } expansion: {
-      """
-      let start = 0
-      public struct S {
-        var range = start...5
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       let start = 0
@@ -1172,6 +1164,16 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var range = start...5
             ┬────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      let start = 0
+      public struct S {
+        var range = start...5
+
+        internal init() {
+        }
       }
       """
     }
@@ -1225,15 +1227,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var bitwiseAnd = 0b1010 & 1.0
       }
       """##
-    } expansion: {
-      """
-      public struct S {
-        var bitwiseAnd = 0b1010 & 1.0
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -1241,6 +1234,15 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var bitwiseAnd = 0b1010 & 1.0
             ┬────────────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        var bitwiseAnd = 0b1010 & 1.0
+
+        internal init() {
+        }
       }
       """
     }
@@ -1345,15 +1347,6 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var modulo = 10 % 3.0
       }
       """##
-    } expansion: {
-      """
-      public struct S {
-        var modulo = 10 % 3.0
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -1361,6 +1354,15 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
         var modulo = 10 % 3.0
             ┬────────────────
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        var modulo = 10 % 3.0
+
+        internal init() {
+        }
       }
       """
     }
@@ -1648,3 +1650,4 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
   }
 
 }
+

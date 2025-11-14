@@ -7,6 +7,7 @@ final class ReadmeTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
       indentationWidth: .spaces(2),
+      record: .missing,
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,

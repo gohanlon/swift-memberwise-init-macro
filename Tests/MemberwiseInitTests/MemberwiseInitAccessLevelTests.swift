@@ -8,10 +8,9 @@ import XCTest
 
 final class MemberwiseInitAccessLevelTests: XCTestCase {
   override func invokeTest() {
-    // NB: Waiting for swift-macro-testing PR to support explicit indentationWidth: https://github.com/pointfreeco/swift-macro-testing/pull/8
     withMacroTesting(
-      //indentationWidth: .spaces(2),
-      //isRecording: true,
+      indentationWidth: .spaces(2),
+      record: .missing,
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,

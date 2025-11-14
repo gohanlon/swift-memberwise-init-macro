@@ -6,6 +6,8 @@ import XCTest
 final class UncheckedMemberwiseInitTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
+      indentationWidth: .spaces(2),
+      record: .missing,
       macros: [
         "_UncheckedMemberwiseInit": UncheckedMemberwiseInitMacro.self
       ]
