@@ -14,7 +14,7 @@ A Swift Macro for enhanced automatic memberwise initializers, greatly reducing m
 Informed by explicit developer cues, MemberwiseInit can more often automatically provide your intended memberwise `init`, while maintaining a safe-by-default standard in line with [Swift’s memberwise initializers][swifts-memberwise-init].
 
 > [!IMPORTANT]
-> `@MemberwiseInit` is a Swift Macro requiring **swift-tools-version: 5.9** or later (**Xcode 15** onwards).
+> `@MemberwiseInit` is a Swift Macro requiring **swift-tools-version: 6.0** or later (**Xcode 16** onwards).
 
 * [Quick start](#quick-start)
 * [Quick reference](#quick-reference)
