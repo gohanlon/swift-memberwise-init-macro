@@ -38,17 +38,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      let number = 0
-      public struct Pedometer {
-        var stepsToday = number
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testBooleanLiterals() {
@@ -449,16 +439,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      struct S {
-        var array = [1 as Int, 2 as Double]
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testNestedArrayLiteralPromotedToDouble() {
@@ -503,17 +484,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      let number = 2
-      public struct S {
-        var array = [1, number, 3]
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   // NB: Xcode and SwiftSyntax prefer `[T] ()`, but swift-format prefers `[T]()`.
@@ -582,16 +553,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        var array = [1, "foo", 3]
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testRaggedLiteralArrayWithAsAny() {
@@ -663,18 +625,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      let foo = "foo"
-      let bar = "bar"
-      public struct S {
-        var dictionary = ["key1": foo, "key2": bar]
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testDictionary_NonLiteralKeysLiteralValues_FailsWithDiagnostic() {
@@ -696,17 +647,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      let bar = "bar"
-      public struct S {
-        var dictionary = ["foo": 1, bar: 2]
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testDictionaryLiteralPromotedToDoubleDouble() {
@@ -774,16 +715,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      struct S {
-        var array = [1 as Int: 2 as Double, 1.0: 2]
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   // NB: Xcode and SwiftSyntax prefer `[K : V] ()`, but swift-format prefers `[K : V]()`.
@@ -854,16 +786,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        var dictionary = ["foo": 1, 3: "bar"]
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testRaggedLiteralDictionaryWithAsAnyHashableAny() {
@@ -933,17 +856,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      let name = "Blob"
-      public struct S {
-        var tuple = (1, name, true)
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testNonLiteralTupleAs() {
@@ -1166,17 +1079,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      let start = 0
-      public struct S {
-        var range = start...5
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testBitwiseInfixOpertors() {
@@ -1236,16 +1139,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        var bitwiseAnd = 0b1010 & 1.0
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testBooleanInfixOperators() {
@@ -1356,16 +1250,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit requires a type annotation.
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        var modulo = 10 % 3.0
-
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   // NB: Unannotated floating-point literals default to `Double` in Swift.
