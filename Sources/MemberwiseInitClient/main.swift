@@ -64,14 +64,6 @@ public struct Job {
 }
 _ = Job(for: { print("Done!") })
 
-//@MemberwiseInit(.public)
-//public struct TaskRunner: Sendable {
-//  @Init(.escaping) public let onCompletion: CompletionHandler
-//  ┬─────────────────────────────
-//  ╰─ ⚠️ @Init(.escaping) is deprecated
-//     ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
-//}
-
 @MemberwiseInit
 struct Point2D {
   @Init(label: "_") let x: Int
