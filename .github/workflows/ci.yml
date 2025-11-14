@@ -18,7 +18,7 @@ env:
 
 jobs:
   macos:
-    name: macOS
+    name: macOS (Swift ${{ matrix.swift }})
     runs-on: macos-15
     strategy:
       fail-fast: false
