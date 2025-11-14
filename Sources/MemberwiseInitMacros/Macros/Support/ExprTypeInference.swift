@@ -1,10 +1,6 @@
 import SwiftOperators
 
-#if canImport(SwiftSyntax600)
-  @_spi(ExperimentalLanguageFeatures) import SwiftSyntax
-#else
-  import SwiftSyntax
-#endif
+@_spi(ExperimentalLanguageFeatures) import SwiftSyntax
 
 // Potential future enhancements:
 // - .ternaryExpr having "then" and "else" expressions as inferrable types
@@ -221,8 +217,8 @@ extension ExprSyntax {
     case .infixOperatorExpr:
       guard
         let infixOperatorExpr = self.as(InfixOperatorExprSyntax.self),
-        let lhsType = infixOperatorExpr.leftOperand.as(ExprSyntax.self)?.inferredType,
-        let rhsType = infixOperatorExpr.rightOperand.as(ExprSyntax.self)?.inferredType,
+        let lhsType = infixOperatorExpr.leftOperand.inferredType,
+        let rhsType = infixOperatorExpr.rightOperand.inferredType,
         let operation = InfixOperator(rawValue: infixOperatorExpr.operator.trimmedDescription),
         let inferredType = resultTypeOfInfixOperation(
           lhs: lhsType,
@@ -261,95 +257,7 @@ extension ExprSyntax {
       else { return nil }
       return .tuple(elementTypes)
 
-    #if canImport(SwiftSyntax510)
-      case .thenStmt:
-        return nil
-    #endif
-
-    #if !canImport(SwiftSyntax600)
-      case .canImportExpr, .canImportVersionInfo:
-        return nil
-    #endif
-
-    #if canImport(SwiftSyntax600)
-      case ._canImportExpr,
-        ._canImportVersionInfo,
-        .doExpr,
-        .lifetimeSpecifierArgumentList,
-        .lifetimeSpecifierArgument,
-        .lifetimeTypeSpecifier,
-        .simpleTypeSpecifier,
-        .throwsClause,
-        .typeSpecifierList:
-        return nil
-    #endif
-
-    case .token, .accessorBlock, .accessorDeclList, .accessorDecl, .accessorEffectSpecifiers,
-      .accessorParameters, .actorDecl, .arrayElementList, .arrayElement, .arrayType, .arrowExpr,
-      .assignmentExpr, .associatedTypeDecl, .attributeList, .attribute, .attributedType,
-      .availabilityArgumentList, .availabilityArgument, .availabilityCondition,
-      .availabilityLabeledArgument, .awaitExpr, .backDeployedAttributeArguments,
-      .binaryOperatorExpr, .borrowExpr, .breakStmt,
-      .catchClauseList, .catchClause, .catchItemList, .catchItem, .classDecl, .classRestrictionType,
-      .closureCaptureClause, .closureCaptureList, .closureCaptureSpecifier, .closureCapture,
-      .closureExpr, .closureParameterClause, .closureParameterList, .closureParameter,
-      .closureShorthandParameterList, .closureShorthandParameter, .closureSignature,
-      .codeBlockItemList, .codeBlockItem, .codeBlock, .compositionTypeElementList,
-      .compositionTypeElement, .compositionType, .conditionElementList, .conditionElement,
-      .conformanceRequirement, .consumeExpr, .continueStmt, .conventionAttributeArguments,
-      .conventionWitnessMethodAttributeArguments, .copyExpr, .declModifierDetail, .declModifierList,
-      .declModifier, .declNameArgumentList, .declNameArgument, .declNameArguments,
-      .declReferenceExpr, .deferStmt, .deinitializerDecl, .deinitializerEffectSpecifiers,
-      .derivativeAttributeArguments, .designatedTypeList, .designatedType, .dictionaryElementList,
-      .dictionaryElement, .dictionaryType, .differentiabilityArgumentList,
-      .differentiabilityArgument, .differentiabilityArguments,
-      .differentiabilityWithRespectToArgument, .differentiableAttributeArguments,
-      .discardAssignmentExpr, .discardStmt, .doStmt, .documentationAttributeArgumentList,
-      .documentationAttributeArgument, .dynamicReplacementAttributeArguments,
-      .editorPlaceholderDecl, .editorPlaceholderExpr, .effectsAttributeArgumentList, .enumCaseDecl,
-      .enumCaseElementList, .enumCaseElement, .enumCaseParameterClause, .enumCaseParameterList,
-      .enumCaseParameter, .enumDecl, .exposeAttributeArguments, .exprList, .expressionPattern,
-      .expressionSegment, .expressionStmt, .extensionDecl, .fallThroughStmt, .forStmt,
-      .forceUnwrapExpr, .functionDecl, .functionEffectSpecifiers, .functionParameterClause,
-      .functionParameterList, .functionParameter, .functionSignature, .functionType,
-      .genericArgumentClause, .genericArgumentList, .genericArgument, .genericParameterClause,
-      .genericParameterList, .genericParameter, .genericRequirementList, .genericRequirement,
-      .genericSpecializationExpr, .genericWhereClause, .guardStmt, .identifierPattern,
-      .identifierType, .ifConfigClauseList, .ifConfigClause, .ifConfigDecl, .ifExpr,
-      .implementsAttributeArguments, .implicitlyUnwrappedOptionalType, .importDecl,
-      .importPathComponentList, .importPathComponent, .inOutExpr, .inheritanceClause,
-      .inheritedTypeList, .inheritedType, .initializerClause, .initializerDecl, .isExpr,
-      .isTypePattern, .keyPathComponentList, .keyPathComponent, .keyPathExpr,
-      .keyPathOptionalComponent, .keyPathPropertyComponent, .keyPathSubscriptComponent,
-      .labeledExprList, .labeledExpr, .labeledSpecializeArgument, .labeledStmt, .layoutRequirement,
-      .macroDecl, .macroExpansionDecl, .macroExpansionExpr, .matchingPatternCondition,
-      .memberAccessExpr, .memberBlockItemList, .memberBlockItem, .memberBlock, .memberType,
-      .metatypeType, .missingDecl, .missingExpr, .missingPattern, .missingStmt, .missing,
-      .missingType, .multipleTrailingClosureElementList, .multipleTrailingClosureElement,
-      .namedOpaqueReturnType, .nilLiteralExpr, .objCSelectorPieceList, .objCSelectorPiece,
-      .opaqueReturnTypeOfAttributeArguments, .operatorDecl, .operatorPrecedenceAndTypes,
-      .optionalBindingCondition, .optionalChainingExpr, .optionalType,
-      .originallyDefinedInAttributeArguments, .packElementExpr, .packElementType,
-      .packExpansionExpr, .packExpansionType, .patternBindingList, .patternBinding, .patternExpr,
-      .platformVersionItemList, .platformVersionItem, .platformVersion, .postfixIfConfigExpr,
-      .postfixOperatorExpr, .poundSourceLocationArguments, .poundSourceLocation,
-      .precedenceGroupAssignment, .precedenceGroupAssociativity, .precedenceGroupAttributeList,
-      .precedenceGroupDecl, .precedenceGroupNameList, .precedenceGroupName,
-      .precedenceGroupRelation, .primaryAssociatedTypeClause, .primaryAssociatedTypeList,
-      .primaryAssociatedType, .protocolDecl, .regexLiteralExpr, .repeatStmt, .returnClause,
-      .returnStmt, .sameTypeRequirement, .someOrAnyType, .sourceFile,
-      .specializeAttributeArgumentList, .specializeAvailabilityArgument,
-      .specializeTargetFunctionArgument, .stringSegment, .structDecl, .subscriptCallExpr,
-      .subscriptDecl, .superExpr, .suppressedType, .switchCaseItemList, .switchCaseItem,
-      .switchCaseLabel, .switchCaseList, .switchCase, .switchDefaultLabel, .switchExpr,
-      .ternaryExpr, .throwStmt, .tryExpr, .tuplePatternElementList, .tuplePatternElement,
-      .tuplePattern, .tupleTypeElementList, .tupleTypeElement, .tupleType, .typeAliasDecl,
-      .typeAnnotation, .typeEffectSpecifiers, .typeExpr, .typeInitializerClause,
-      .unavailableFromAsyncAttributeArguments, .underscorePrivateAttributeArguments,
-      .unexpectedNodes, .unresolvedAsExpr, .unresolvedIsExpr, .unresolvedTernaryExpr,
-      .valueBindingPattern, .variableDecl, .versionComponentList, .versionComponent, .versionTuple,
-      .whereClause, .whileStmt, .wildcardPattern, .yieldStmt, .yieldedExpressionList,
-      .yieldedExpression, .yieldedExpressionsClause:
+    default:
       return nil
     }
   }

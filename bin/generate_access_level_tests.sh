@@ -89,7 +89,7 @@ capitalize() {
           test_name="${test_name//__/_}"
 
           echo "  func $test_name() {"
-          echo "    assertMacro(applyFixIts: false) {"
+          echo "    assertMacro {"
           echo "      \"\"\""
           echo "      @MemberwiseInit${memberwise_str:+($memberwise_str)}"
           echo "      ${struct_str}${struct_str:+ }struct S {"

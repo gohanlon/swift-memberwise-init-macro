@@ -8,10 +8,9 @@ import XCTest
 
 final class MemberwiseInitAccessLevelTests: XCTestCase {
   override func invokeTest() {
-    // NB: Waiting for swift-macro-testing PR to support explicit indentationWidth: https://github.com/pointfreeco/swift-macro-testing/pull/8
     withMacroTesting(
-      //indentationWidth: .spaces(2),
-      //isRecording: true,
+      indentationWidth: .spaces(2),
+      record: .missing,
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,
@@ -22,7 +21,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -45,7 +44,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -68,7 +67,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -91,7 +90,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -114,7 +113,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -137,7 +136,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -160,7 +159,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -183,7 +182,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -206,7 +205,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -229,7 +228,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -252,7 +251,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -275,7 +274,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -298,7 +297,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PrivateStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       private struct S {
@@ -308,15 +307,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       private struct S {
 
-          private init() {
-          }
+        private init() {
+        }
       }
       """
     }
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -339,7 +338,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -362,7 +361,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -385,7 +384,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -408,7 +407,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -431,7 +430,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -454,7 +453,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -477,7 +476,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -500,7 +499,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -523,7 +522,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -546,7 +545,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -569,7 +568,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -592,7 +591,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_DefaultStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       struct S {
@@ -602,15 +601,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       struct S {
 
-          private init() {
-          }
+        private init() {
+        }
       }
       """
     }
   }
 
   func testMemberwiseInitPrivate_PublicStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -633,7 +632,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -656,7 +655,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -679,7 +678,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -702,7 +701,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -725,7 +724,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -748,7 +747,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -771,7 +770,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -794,7 +793,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -817,7 +816,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -840,7 +839,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -863,7 +862,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -886,7 +885,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPrivate_PublicStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.private)
       public struct S {
@@ -896,28 +895,19 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       public struct S {
 
-          private init() {
-          }
+        private init() {
+        }
       }
       """
     }
   }
 
   func testMemberwiseInitDefault_PrivateStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
         private let v: T
-      }
-      """
-    } expansion: {
-      """
-      private struct S {
-        private let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -932,15 +922,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitDefault_PrivateStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit
       private struct S {
-        @Init(.private) private let v: T
+        @Init(.internal) private let v: T
       }
       """
     } expansion: {
@@ -948,8 +934,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       private struct S {
         private let v: T
 
-        internal init() {
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitDefault_PrivateStruct_InitPrivate_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.private) private let v: T
       }
       """
     } diagnostics: {
@@ -963,11 +963,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.internal, ) private let v: T
+      }
+      """
+    } expansion: {
+      """
+      private struct S {
+        private let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_PrivateStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
@@ -990,7 +1009,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PrivateStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
@@ -1013,20 +1032,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PrivateStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
         let v: T
-      }
-      """
-    } expansion: {
-      """
-      private struct S {
-        let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1041,15 +1051,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitDefault_PrivateStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit
       private struct S {
-        @Init(.private) let v: T
+        @Init(.internal) let v: T
       }
       """
     } expansion: {
@@ -1057,8 +1063,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       private struct S {
         let v: T
 
-        internal init() {
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitDefault_PrivateStruct_InitPrivate_DefaultProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.private) let v: T
       }
       """
     } diagnostics: {
@@ -1072,11 +1092,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.internal, ) let v: T
+      }
+      """
+    } expansion: {
+      """
+      private struct S {
+        let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_PrivateStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
@@ -1099,7 +1138,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PrivateStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
@@ -1122,7 +1161,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PrivateStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
@@ -1145,20 +1184,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PrivateStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
         @Init(.private) public let v: T
-      }
-      """
-    } expansion: {
-      """
-      private struct S {
-        public let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1172,11 +1202,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      private struct S {
+        @Init(.internal, ) public let v: T
+      }
+      """
+    } expansion: {
+      """
+      private struct S {
+        public let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_PrivateStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
@@ -1199,7 +1248,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PrivateStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
@@ -1222,7 +1271,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PrivateStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct S {
@@ -1232,28 +1281,19 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       private struct S {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
   }
 
   func testMemberwiseInitDefault_DefaultStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
         private let v: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        private let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1268,15 +1308,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitDefault_DefaultStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit
       struct S {
-        @Init(.private) private let v: T
+        @Init(.internal) private let v: T
       }
       """
     } expansion: {
@@ -1284,8 +1320,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       struct S {
         private let v: T
 
-        internal init() {
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitDefault_DefaultStruct_InitPrivate_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.private) private let v: T
       }
       """
     } diagnostics: {
@@ -1299,11 +1349,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.internal, ) private let v: T
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        private let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_DefaultStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1326,7 +1395,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_DefaultStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1349,7 +1418,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_DefaultStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1372,20 +1441,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_DefaultStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
         @Init(.private) let v: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1399,11 +1459,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.internal, ) let v: T
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_DefaultStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1426,7 +1505,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_DefaultStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1449,7 +1528,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_DefaultStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1472,20 +1551,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_DefaultStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
         @Init(.private) public let v: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        public let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1499,11 +1569,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.internal, ) public let v: T
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        public let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_DefaultStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1526,7 +1615,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_DefaultStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1549,7 +1638,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_DefaultStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       struct S {
@@ -1559,28 +1648,19 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       struct S {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
   }
 
   func testMemberwiseInitDefault_PublicStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
         private let v: T
-      }
-      """
-    } expansion: {
-      """
-      public struct S {
-        private let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1595,15 +1675,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitDefault_PublicStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit
       public struct S {
-        @Init(.private) private let v: T
+        @Init(.internal) private let v: T
       }
       """
     } expansion: {
@@ -1611,8 +1687,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       public struct S {
         private let v: T
 
-        internal init() {
+        internal init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitDefault_PublicStruct_InitPrivate_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      public struct S {
+        @Init(.private) private let v: T
       }
       """
     } diagnostics: {
@@ -1626,11 +1716,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      public struct S {
+        @Init(.internal, ) private let v: T
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        private let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_PublicStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1653,7 +1762,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PublicStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1676,7 +1785,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PublicStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1699,20 +1808,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PublicStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
         @Init(.private) let v: T
-      }
-      """
-    } expansion: {
-      """
-      public struct S {
-        let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1726,11 +1826,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      public struct S {
+        @Init(.internal, ) let v: T
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_PublicStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1753,7 +1872,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PublicStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1776,7 +1895,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PublicStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1799,20 +1918,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PublicStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
         @Init(.private) public let v: T
-      }
-      """
-    } expansion: {
-      """
-      public struct S {
-        public let v: T
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1826,11 +1936,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit
+      public struct S {
+        @Init(.internal, ) public let v: T
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        public let v: T
+
+        internal init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitDefault_PublicStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1853,7 +1982,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PublicStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1876,7 +2005,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitDefault_PublicStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       public struct S {
@@ -1886,28 +2015,19 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       public struct S {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
   }
 
   func testMemberwiseInitPublic_PrivateStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       private struct S {
         private let v: T
-      }
-      """
-    } expansion: {
-      """
-      private struct S {
-        private let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -1922,15 +2042,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PrivateStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       private struct S {
-        @Init(.private) private let v: T
+        @Init(.public) private let v: T
       }
       """
     } expansion: {
@@ -1938,8 +2054,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       private struct S {
         private let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PrivateStruct_InitPrivate_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.private) private let v: T
       }
       """
     } diagnostics: {
@@ -1953,15 +2083,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PrivateStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       private struct S {
-        @Init(.internal) private let v: T
+        @Init(.public, ) private let v: T
       }
       """
     } expansion: {
@@ -1969,8 +2095,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       private struct S {
         private let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PrivateStruct_InitInternal_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.internal) private let v: T
       }
       """
     } diagnostics: {
@@ -1984,11 +2124,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
+    } expansion: {
+      """
+      private struct S {
+        private let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_PrivateStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       private struct S {
@@ -2011,20 +2170,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_PrivateStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       private struct S {
         let v: T
-      }
-      """
-    } expansion: {
-      """
-      private struct S {
-        let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -2039,15 +2189,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PrivateStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       private struct S {
-        @Init(.private) let v: T
+        @Init(.public) let v: T
       }
       """
     } expansion: {
@@ -2055,8 +2201,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       private struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PrivateStruct_InitPrivate_DefaultProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.private) let v: T
       }
       """
     } diagnostics: {
@@ -2070,15 +2230,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PrivateStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       private struct S {
-        @Init(.internal) let v: T
+        @Init(.public, ) let v: T
       }
       """
     } expansion: {
@@ -2086,8 +2242,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       private struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PrivateStruct_InitInternal_DefaultProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.internal) let v: T
       }
       """
     } diagnostics: {
@@ -2101,11 +2271,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) let v: T
+      }
+      """
+    } expansion: {
+      """
+      private struct S {
+        let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_PrivateStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       private struct S {
@@ -2128,7 +2317,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_PrivateStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       private struct S {
@@ -2151,20 +2340,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_PrivateStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       private struct S {
         @Init(.private) public let v: T
-      }
-      """
-    } expansion: {
-      """
-      private struct S {
-        public let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -2178,15 +2358,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PrivateStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       private struct S {
-        @Init(.internal) public let v: T
+        @Init(.public, ) public let v: T
       }
       """
     } expansion: {
@@ -2194,8 +2370,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       private struct S {
         public let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PrivateStruct_InitInternal_PublicProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.internal) public let v: T
       }
       """
     } diagnostics: {
@@ -2209,11 +2399,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      private struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
+    } expansion: {
+      """
+      private struct S {
+        public let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_PrivateStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       private struct S {
@@ -2236,7 +2445,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_PrivateStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       private struct S {
@@ -2246,28 +2455,19 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       private struct S {
 
-          public init() {
-          }
+        public init() {
+        }
       }
       """
     }
   }
 
   func testMemberwiseInitPublic_DefaultStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       struct S {
         private let v: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        private let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -2282,15 +2482,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_DefaultStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       struct S {
-        @Init(.private) private let v: T
+        @Init(.public) private let v: T
       }
       """
     } expansion: {
@@ -2298,8 +2494,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       struct S {
         private let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_DefaultStruct_InitPrivate_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.private) private let v: T
       }
       """
     } diagnostics: {
@@ -2313,15 +2523,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_DefaultStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       struct S {
-        @Init(.internal) private let v: T
+        @Init(.public, ) private let v: T
       }
       """
     } expansion: {
@@ -2329,8 +2535,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       struct S {
         private let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_DefaultStruct_InitInternal_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.internal) private let v: T
       }
       """
     } diagnostics: {
@@ -2344,11 +2564,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        private let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_DefaultStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       struct S {
@@ -2371,20 +2610,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_DefaultStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       struct S {
         let v: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -2399,15 +2629,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_DefaultStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       struct S {
-        @Init(.private) let v: T
+        @Init(.public) let v: T
       }
       """
     } expansion: {
@@ -2415,8 +2641,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_DefaultStruct_InitPrivate_DefaultProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.private) let v: T
       }
       """
     } diagnostics: {
@@ -2430,15 +2670,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_DefaultStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       struct S {
-        @Init(.internal) let v: T
+        @Init(.public, ) let v: T
       }
       """
     } expansion: {
@@ -2446,8 +2682,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_DefaultStruct_InitInternal_DefaultProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.internal) let v: T
       }
       """
     } diagnostics: {
@@ -2461,11 +2711,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) let v: T
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_DefaultStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       struct S {
@@ -2488,7 +2757,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_DefaultStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       struct S {
@@ -2511,20 +2780,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_DefaultStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       struct S {
         @Init(.private) public let v: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        public let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -2538,15 +2798,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_DefaultStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       struct S {
-        @Init(.internal) public let v: T
+        @Init(.public, ) public let v: T
       }
       """
     } expansion: {
@@ -2554,8 +2810,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       struct S {
         public let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_DefaultStruct_InitInternal_PublicProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.internal) public let v: T
       }
       """
     } diagnostics: {
@@ -2569,11 +2839,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        public let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_DefaultStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       struct S {
@@ -2596,7 +2885,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_DefaultStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       struct S {
@@ -2606,28 +2895,19 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       struct S {
 
-          public init() {
-          }
+        public init() {
+        }
       }
       """
     }
   }
 
   func testMemberwiseInitPublic_PublicStruct_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       public struct S {
         private let v: T
-      }
-      """
-    } expansion: {
-      """
-      public struct S {
-        private let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -2642,15 +2922,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PublicStruct_InitPrivate_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       public struct S {
-        @Init(.private) private let v: T
+        @Init(.public) private let v: T
       }
       """
     } expansion: {
@@ -2658,8 +2934,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       public struct S {
         private let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PublicStruct_InitPrivate_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.private) private let v: T
       }
       """
     } diagnostics: {
@@ -2673,15 +2963,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PublicStruct_InitInternal_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       public struct S {
-        @Init(.internal) private let v: T
+        @Init(.public, ) private let v: T
       }
       """
     } expansion: {
@@ -2689,8 +2975,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       public struct S {
         private let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PublicStruct_InitInternal_PrivateProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.internal) private let v: T
       }
       """
     } diagnostics: {
@@ -2704,11 +3004,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) private let v: T
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        private let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_PublicStruct_InitPublic_PrivateProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       public struct S {
@@ -2731,20 +3050,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_PublicStruct_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       public struct S {
         let v: T
-      }
-      """
-    } expansion: {
-      """
-      public struct S {
-        let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -2759,15 +3069,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PublicStruct_InitPrivate_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       public struct S {
-        @Init(.private) let v: T
+        @Init(.public) let v: T
       }
       """
     } expansion: {
@@ -2775,8 +3081,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       public struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PublicStruct_InitPrivate_DefaultProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.private) let v: T
       }
       """
     } diagnostics: {
@@ -2790,15 +3110,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PublicStruct_InitInternal_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       public struct S {
-        @Init(.internal) let v: T
+        @Init(.public, ) let v: T
       }
       """
     } expansion: {
@@ -2806,8 +3122,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       public struct S {
         let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PublicStruct_InitInternal_DefaultProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.internal) let v: T
       }
       """
     } diagnostics: {
@@ -2821,11 +3151,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) let v: T
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_PublicStruct_InitPublic_DefaultProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       public struct S {
@@ -2848,7 +3197,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_PublicStruct_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       public struct S {
@@ -2871,20 +3220,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_PublicStruct_InitPrivate_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       public struct S {
         @Init(.private) public let v: T
-      }
-      """
-    } expansion: {
-      """
-      public struct S {
-        public let v: T
-
-        public init() {
-        }
       }
       """
     } diagnostics: {
@@ -2898,15 +3238,11 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
-    }
-  }
-
-  func testMemberwiseInitPublic_PublicStruct_InitInternal_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    } fixes: {
       """
       @MemberwiseInit(.public)
       public struct S {
-        @Init(.internal) public let v: T
+        @Init(.public, ) public let v: T
       }
       """
     } expansion: {
@@ -2914,8 +3250,22 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       public struct S {
         public let v: T
 
-        public init() {
+        public init(
+          v: T
+        ) {
+          self.v = v
         }
+      }
+      """
+    }
+  }
+
+  func testMemberwiseInitPublic_PublicStruct_InitInternal_PublicProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.internal) public let v: T
       }
       """
     } diagnostics: {
@@ -2929,11 +3279,30 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
                  ✏️ Add '@Init(.ignore)' and an initializer
       }
       """
+    } fixes: {
+      """
+      @MemberwiseInit(.public)
+      public struct S {
+        @Init(.public, ) public let v: T
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        public let v: T
+
+        public init(
+          v: T
+        ) {
+          self.v = v
+        }
+      }
+      """
     }
   }
 
   func testMemberwiseInitPublic_PublicStruct_InitPublic_PublicProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       public struct S {
@@ -2956,7 +3325,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
   }
 
   func testMemberwiseInitPublic_PublicStruct_NoProperty() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit(.public)
       public struct S {
@@ -2966,8 +3335,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       public struct S {
 
-          public init() {
-          }
+        public init() {
+        }
       }
       """
     }

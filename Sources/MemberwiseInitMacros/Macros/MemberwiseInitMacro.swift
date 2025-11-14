@@ -31,9 +31,6 @@ public struct MemberwiseInitMacro: MemberMacro {
       )
     }
 
-    deprecationDiagnostics(node: node, declaration: decl)
-      .forEach(context.diagnose)
-
     let configuredAccessLevel: AccessLevelModifier? = extractConfiguredAccessLevel(from: node)
     let optionalsDefaultNil: Bool? =
       extractLabeledBoolArgument("_optionalsDefaultNil", from: node)

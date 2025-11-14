@@ -7,6 +7,7 @@ final class CustomInitRawTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
       indentationWidth: .spaces(2),
+      record: .missing,
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "InitRaw": InitMacro.self,
@@ -70,15 +71,6 @@ final class CustomInitRawTests: XCTestCase {
         @InitRaw(default: 42) let number = 0
       }
       """
-    } expansion: {
-      """
-      struct S {
-        let number = 0
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -92,20 +84,18 @@ final class CustomInitRawTests: XCTestCase {
       """
     } fixes: {
       """
-      @InitRaw(default: 42) let number = 0
-               ┬──────────
-               ╰─ 🛑 @InitRaw can't be applied to already initialized constant
-
-      ✏️ Remove '@InitRaw(default: 42)'
       @MemberwiseInit
       struct S {
         let number = 0
       }
-
-      ✏️ Remove '= 0'
-      @MemberwiseInit
+      """
+    } expansion: {
+      """
       struct S {
-        @InitRaw(default: 42) let number: Int
+        let number = 0
+      
+        internal init() {
+        }
       }
       """
     }

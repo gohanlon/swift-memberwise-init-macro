@@ -6,12 +6,12 @@ import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 
 public struct UncheckedMemberwiseInitMacro: MemberMacro {
-  public static func expansion<D, C>(
+  public static func expansion(
     of node: AttributeSyntax,
-    providingMembersOf decl: D,
-    in context: C
-  ) throws -> [SwiftSyntax.DeclSyntax]
-  where D: DeclGroupSyntax, C: MacroExpansionContext {
+    providingMembersOf decl: some DeclGroupSyntax,
+    conformingTo protocols: [TypeSyntax],
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
     guard [SwiftSyntax.SyntaxKind.classDecl, .structDecl, .actorDecl].contains(decl.kind) else {
       throw MacroExpansionErrorMessage(
         """

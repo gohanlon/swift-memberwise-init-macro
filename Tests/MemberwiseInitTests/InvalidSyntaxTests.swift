@@ -4,9 +4,9 @@ import XCTest
 
 final class InvalidSyntaxTests: XCTestCase {
   override func invokeTest() {
-    // NB: Waiting for swift-macro-testing PR to support explicit indentationWidth: https://github.com/pointfreeco/swift-macro-testing/pull/8
     withMacroTesting(
-      //indentationWidth: .spaces(2),
+      indentationWidth: .spaces(2),
+      record: .missing,
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "InitRaw": InitMacro.self,
@@ -77,21 +77,6 @@ final class InvalidSyntaxTests: XCTestCase {
         let x: T
       }
       """
-    } expansion: {
-      """
-      struct S {
-        @Init(label: "x") let x: T
-        let x: T
-
-        internal init(
-          x: T,
-          x: T
-        ) {
-          self.x = x
-          self.x = x
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -102,6 +87,6 @@ final class InvalidSyntaxTests: XCTestCase {
         let x: T
       }
       """
-    }
+    } 
   }
 }
