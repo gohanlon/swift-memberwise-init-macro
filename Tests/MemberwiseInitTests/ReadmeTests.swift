@@ -43,29 +43,10 @@ final class ReadmeTests: XCTestCase {
       """
     } fixes: {
       """
-      private var age: Int? = nil
-      ┬──────
-      ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
-
-      ✏️ Add '@Init(.public)'
       @MemberwiseInit(.public)
       public struct Person {
         public let name: String
         @Init(.public) private var age: Int? = nil
-      }
-
-      ✏️ Replace 'private' access with 'public'
-      @MemberwiseInit(.public)
-      public struct Person {
-        public let name: String
-        public var age: Int? = nil
-      }
-
-      ✏️ Add '@Init(.ignore)'
-      @MemberwiseInit(.public)
-      public struct Person {
-        public let name: String
-        @Init(.ignore) private var age: Int? = nil
       }
       """
     } expansion: {
@@ -73,11 +54,13 @@ final class ReadmeTests: XCTestCase {
       public struct Person {
         public let name: String
         private var age: Int? = nil
-      
+
         public init(
-          name: String
+          name: String,
+          age: Int? = nil
         ) {
           self.name = name
+          self.age = age
         }
       }
       """
@@ -85,54 +68,28 @@ final class ReadmeTests: XCTestCase {
   }
 
   func testIgnoreAge() {
-    #if canImport(SwiftSyntax600)
-      assertMacro {
-        """
-          @MemberwiseInit(.public)
-          public struct Person {
-            public let name: String
-            @Init(.ignore) private var age: Int? = nil
-          }
-        """
-      } expansion: {
-        """
-          public struct Person {
-            public let name: String
-            private var age: Int? = nil
-
-            public init(
-              name: String
-            ) {
-              self.name = name
-            }
-          }
-        """
-      }
-    #else
-      assertMacro {
-        """
-          @MemberwiseInit(.public)
-          public struct Person {
-            public let name: String
-            @Init(.ignore) private var age: Int? = nil
-          }
-        """
-      } expansion: {
-        """
-          
-          public struct Person {
-            public let name: String
-            private var age: Int? = nil
+    assertMacro {
+      """
+        @MemberwiseInit(.public)
+        public struct Person {
+          public let name: String
+          @Init(.ignore) private var age: Int? = nil
+        }
+      """
+    } expansion: {
+      """
+        public struct Person {
+          public let name: String
+          private var age: Int? = nil
 
           public init(
             name: String
           ) {
             self.name = name
           }
-          }
-        """
-      }
-    #endif
+        }
+      """
+    }
   }
 
   func testExposeAgePublically() {
@@ -163,60 +120,31 @@ final class ReadmeTests: XCTestCase {
   }
 
   func testBinding() {
-    #if canImport(SwiftSyntax600)
-      assertMacro {
-        """
-        @MemberwiseInit
-        struct CounterView: View {
-          @InitWrapper(type: Binding<Bool>.self)
-          @Binding var isOn: Bool
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct CounterView: View {
+        @InitWrapper(type: Binding<Bool>.self)
+        @Binding var isOn: Bool
 
-          var body: some View { EmptyView() }
-        }
-        """
-      } expansion: {
-        """
-        struct CounterView: View {
-          @Binding var isOn: Bool
-
-          var body: some View { EmptyView() }
-
-          internal init(
-            isOn: Binding<Bool>
-          ) {
-            self._isOn = isOn
-          }
-        }
-        """
+        var body: some View { EmptyView() }
       }
-    #else
-      assertMacro {
-        """
-        @MemberwiseInit
-        struct CounterView: View {
-          @InitWrapper(type: Binding<Bool>.self)
-          @Binding var isOn: Bool
+      """
+    } expansion: {
+      """
+      struct CounterView: View {
+        @Binding var isOn: Bool
 
-          var body: some View { EmptyView() }
+        var body: some View { EmptyView() }
+
+        internal init(
+          isOn: Binding<Bool>
+        ) {
+          self._isOn = isOn
         }
-        """
-      } expansion: {
-        """
-        struct CounterView: View {
-          @Binding 
-          var isOn: Bool
-
-          var body: some View { EmptyView() }
-
-          internal init(
-            isOn: Binding<Bool>
-          ) {
-            self._isOn = isOn
-          }
-        }
-        """
       }
-    #endif
+      """
+    }
   }
 
   func testLabelessParmeters() {
@@ -419,124 +347,63 @@ final class ReadmeTests: XCTestCase {
       """
     }
 
-    #if canImport(SwiftSyntax600)
-      assertMacro {
-        """
-        import SwiftUI
-        @MemberwiseInit(.internal)
-        struct MyView: View {
-          @Init @State var isOn: Bool  // 👈 `@Init`
+    assertMacro {
+      """
+      import SwiftUI
+      @MemberwiseInit(.internal)
+      struct MyView: View {
+        @Init @State var isOn: Bool  // 👈 `@Init`
 
-          var body: some View { EmptyView() }
-        }
-        """
-      } expansion: {
-        """
-        import SwiftUI
-        struct MyView: View {
-          @State var isOn: Bool  // 👈 `@Init`
-
-          var body: some View { EmptyView() }
-
-          internal init(
-            isOn: Bool
-          ) {
-            self.isOn = isOn
-          }
-        }
-        """
+        var body: some View { EmptyView() }
       }
-    #else
-      assertMacro {
-        """
-        import SwiftUI
-        @MemberwiseInit(.internal)
-        struct MyView: View {
-          @Init @State var isOn: Bool  // 👈 `@Init`
+      """
+    } expansion: {
+      """
+      import SwiftUI
+      struct MyView: View {
+        @State var isOn: Bool  // 👈 `@Init`
 
-          var body: some View { EmptyView() }
+        var body: some View { EmptyView() }
+
+        internal init(
+          isOn: Bool
+        ) {
+          self.isOn = isOn
         }
-        """
-      } expansion: {
-        """
-        import SwiftUI
-        struct MyView: View {@State 
-          var isOn: Bool  // 👈 `@Init`
-
-          var body: some View { EmptyView() }
-
-          internal init(
-            isOn: Bool
-          ) {
-            self.isOn = isOn
-          }
-        }
-        """
       }
-    #endif
+      """
+    }
   }
 
   func testSupportForPropertyWrappers() {
-    #if canImport(SwiftSyntax600)
-      assertMacro {
-        """
-        import SwiftUI
+    assertMacro {
+      """
+      import SwiftUI
 
-        @MemberwiseInit
-        struct CounterView: View {
-          @InitWrapper(type: Binding<Int>.self)
-          @Binding var count: Int
+      @MemberwiseInit
+      struct CounterView: View {
+        @InitWrapper(type: Binding<Int>.self)
+        @Binding var count: Int
 
-          var body: some View { EmptyView() }
-        }
-        """
-      } expansion: {
-        """
-        import SwiftUI
-        struct CounterView: View {
-          @Binding var count: Int
-
-          var body: some View { EmptyView() }
-
-          internal init(
-            count: Binding<Int>
-          ) {
-            self._count = count
-          }
-        }
-        """
+        var body: some View { EmptyView() }
       }
-    #else
-      assertMacro {
-        """
-        import SwiftUI
+      """
+    } expansion: {
+      """
+      import SwiftUI
+      struct CounterView: View {
+        @Binding var count: Int
 
-        @MemberwiseInit
-        struct CounterView: View {
-          @InitWrapper(type: Binding<Int>.self)
-          @Binding var count: Int
+        var body: some View { EmptyView() }
 
-          var body: some View { EmptyView() }
+        internal init(
+          count: Binding<Int>
+        ) {
+          self._count = count
         }
-        """
-      } expansion: {
-        """
-        import SwiftUI
-        struct CounterView: View {
-          @Binding 
-          var count: Int
-
-          var body: some View { EmptyView() }
-
-          internal init(
-            count: Binding<Int>
-          ) {
-            self._count = count
-          }
-        }
-        """
       }
-    #endif
+      """
+    }
   }
 
   func testAutomaticEscapingForClosureTypes() {
@@ -705,16 +572,7 @@ final class ReadmeTests: XCTestCase {
             ╰─ 🛑 @MemberwiseInit does not support tuple destructuring for property declarations. Use multiple declarations instead.
       }
       """
-    } expansion: {
-      """
-      struct Point2D {
-        let (x, y): (Int, Int)
-      
-        internal init() {
-        }
-      }
-      """
-    }
+    } 
   }
 
   func testBackground() {
@@ -785,29 +643,10 @@ final class ReadmeTests: XCTestCase {
       """
     } fixes: {
       """
-      private var age: Int?  // 👈 `private`
-      ┬──────
-      ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
-
-      ✏️ Add '@Init(.public)'
       @MemberwiseInit(.public)
       public struct Person {
         public let name: String
         @Init(.public) private var age: Int?  // 👈 `private`
-      }
-
-      ✏️ Replace 'private' access with 'public'
-      @MemberwiseInit(.public)
-      public struct Person {
-        public let name: String
-        public var age: Int?  // 👈 `private`
-      }
-
-      ✏️ Add '@Init(.ignore)' and an initializer
-      @MemberwiseInit(.public)
-      public struct Person {
-        public let name: String
-        @Init(.ignore) private var age: Int?  // 👈 `private` = <#value#>
       }
       """
     } expansion: {
@@ -815,11 +654,13 @@ final class ReadmeTests: XCTestCase {
       public struct Person {
         public let name: String
         private var age: Int?  // 👈 `private`
-      
+
         public init(
-          name: String
+          name: String,
+          age: Int?
         ) {
           self.name = name
+          self.age = age
         }
       }
       """

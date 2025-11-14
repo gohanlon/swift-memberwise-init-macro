@@ -490,49 +490,26 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
   // NB: Xcode and SwiftSyntax prefer `[T] ()`, but swift-format prefers `[T]()`.
   // The node is copied unchanged from the property declaration and SwiftSyntax is adding trivia.
   func testArrayWithExplicitTypeInitializer() {
-    #if canImport(SwiftSyntax600)
-      assertMacro {
-        ##"""
-        @MemberwiseInit
-        public struct S {
-          var array = [String]()
-        }
-        """##
-      } expansion: {
-        """
-        public struct S {
-          var array = [String]()
-
-          internal init(
-            array: [String] = [String]()
-          ) {
-            self.array = array
-          }
-        }
-        """
+    assertMacro {
+      ##"""
+      @MemberwiseInit
+      public struct S {
+        var array = [String]()
       }
-    #else
-      assertMacro {
-        ##"""
-        @MemberwiseInit
-        public struct S {
-          var array = [String]()
-        }
-        """##
-      } expansion: {
-        """
-        public struct S {
-          var array = [String]()
+      """##
+    } expansion: {
+      """
+      public struct S {
+        var array = [String]()
 
-          internal init(
-            array: [String] = [String] ()
-          ) {
-            self.array = array
-          }
+        internal init(
+          array: [String] = [String]()
+        ) {
+          self.array = array
         }
-        """
       }
-    #endif
+      """
+    }
   }
 
   // FIXME: Diagnostic is excessive on already invalid syntax, but we can only detect special cases.
@@ -722,49 +699,26 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
   // The node is copied unchanged from the property declaration and SwiftSyntax is adding trivia.
   // I tried detaching the syntax node, to no effect.
   func testDictionaryWithExplicitTypeInitializer() {
-    #if canImport(SwiftSyntax600)
-      assertMacro {
-        ##"""
-        @MemberwiseInit
-        public struct S {
-          var dictionary = [String: Int]()
-        }
-        """##
-      } expansion: {
-        """
-        public struct S {
-          var dictionary = [String: Int]()
-
-          internal init(
-            dictionary: [String: Int] = [String: Int]()
-          ) {
-            self.dictionary = dictionary
-          }
-        }
-        """
+    assertMacro {
+      ##"""
+      @MemberwiseInit
+      public struct S {
+        var dictionary = [String: Int]()
       }
-    #else
-      assertMacro {
-        ##"""
-        @MemberwiseInit
-        public struct S {
-          var dictionary = [String: Int]()
-        }
-        """##
-      } expansion: {
-        """
-        public struct S {
-          var dictionary = [String: Int]()
+      """##
+    } expansion: {
+      """
+      public struct S {
+        var dictionary = [String: Int]()
 
-          internal init(
-            dictionary: [String: Int] = [String: Int] ()
-          ) {
-            self.dictionary = dictionary
-          }
+        internal init(
+          dictionary: [String: Int] = [String: Int]()
+        ) {
+          self.dictionary = dictionary
         }
-        """
       }
-    #endif
+      """
+    }
   }
 
   // FIXME: Diagnostic is excessive on already invalid syntax.

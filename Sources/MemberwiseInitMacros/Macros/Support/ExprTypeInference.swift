@@ -1,10 +1,6 @@
 import SwiftOperators
 
-#if canImport(SwiftSyntax600)
-  @_spi(ExperimentalLanguageFeatures) import SwiftSyntax
-#else
-  import SwiftSyntax
-#endif
+@_spi(ExperimentalLanguageFeatures) import SwiftSyntax
 
 // Potential future enhancements:
 // - .ternaryExpr having "then" and "else" expressions as inferrable types
@@ -261,29 +257,23 @@ extension ExprSyntax {
       else { return nil }
       return .tuple(elementTypes)
 
-    #if canImport(SwiftSyntax510)
-      case .thenStmt:
+    case .thenStmt:
         return nil
-    #endif
 
-    #if !canImport(SwiftSyntax600)
-      case .canImportExpr, .canImportVersionInfo:
+    case .canImportExpr, .canImportVersionInfo:
         return nil
-    #endif
 
-    #if canImport(SwiftSyntax600)
-      case ._canImportExpr,
-        ._canImportVersionInfo,
-        .doExpr,
-        .lifetimeSpecifierArgumentList,
-        .lifetimeSpecifierArgument,
-        .lifetimeTypeSpecifier,
-        .simpleTypeSpecifier,
-        .throwsClause,
-        .typeSpecifierList:
-        return nil
-    #endif
-
+    case ._canImportExpr,
+      ._canImportVersionInfo,
+      .doExpr,
+      .lifetimeSpecifierArgumentList,
+      .lifetimeSpecifierArgument,
+      .lifetimeTypeSpecifier,
+      .simpleTypeSpecifier,
+      .throwsClause,
+      .typeSpecifierList:
+      return nil
+  
     case .token, .accessorBlock, .accessorDeclList, .accessorDecl, .accessorEffectSpecifiers,
       .accessorParameters, .actorDecl, .arrayElementList, .arrayElement, .arrayType, .arrowExpr,
       .assignmentExpr, .associatedTypeDecl, .attributeList, .attribute, .attributedType,

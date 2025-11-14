@@ -410,15 +410,15 @@ final class UncheckedMemberwiseInitTests: XCTestCase {
        let onFailure: @MainActor @Sendable (Error) -> Void
        @Init(escaping: true) var customEscaping: CompletionHandler
 
-       internal init(
-        onSuccess: @escaping (Data) -> Void,
-        onFailure: @escaping @MainActor @Sendable (Error) -> Void,
-        customEscaping: @escaping CompletionHandler
-       ) {
-        self.onSuccess = onSuccess
-        self.onFailure = onFailure
-        self.customEscaping = customEscaping
-       }
+        internal init(
+          onSuccess: @escaping (Data) -> Void,
+          onFailure: @escaping @MainActor @Sendable (Error) -> Void,
+          customEscaping: @escaping CompletionHandler
+        ) {
+          self.onSuccess = onSuccess
+          self.onFailure = onFailure
+          self.customEscaping = customEscaping
+        }
       }
       """
     }

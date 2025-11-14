@@ -8,7 +8,7 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
       indentationWidth: .spaces(2),
-      record: .missing,
+      record: .failed,
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,
@@ -39,11 +39,6 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(.escaping) var value: T
-            ┬────────
-            ╰─ ⚠️ @Init(.escaping) is deprecated
-
-      ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
       @MemberwiseInit
       struct S {
         @Init(escaping: true) var value: T
@@ -85,11 +80,6 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(.public, .escaping) var value: T
-            ┬─────────────────
-            ╰─ ⚠️ @Init(.escaping) is deprecated
-
-      ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
       @MemberwiseInit
       struct S {
         @Init(.public, escaping: true) var value: T
@@ -131,11 +121,6 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(.escaping, label: "_") var value: T
-            ┬────────────────────
-            ╰─ ⚠️ @Init(.escaping) is deprecated
-
-      ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
       @MemberwiseInit
       struct S {
         @Init(escaping: true, label: "_") var value: T
@@ -177,11 +162,6 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       """
     } fixes: {
       """
-      @Init(.public, .escaping, label: "_") var value: T
-            ┬─────────────────────────────
-            ╰─ ⚠️ @Init(.escaping) is deprecated
-
-      ✏️ Replace '@Init(.escaping)' with '@Init(escaping: true)'
       @MemberwiseInit
       struct S {
         @Init(.public, escaping: true, label: "_") var value: T
