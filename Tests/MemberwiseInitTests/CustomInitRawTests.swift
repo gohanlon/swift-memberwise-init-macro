@@ -71,15 +71,6 @@ final class CustomInitRawTests: XCTestCase {
         @InitRaw(default: 42) let number = 0
       }
       """
-    } expansion: {
-      """
-      struct S {
-        let number = 0
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -107,6 +98,15 @@ final class CustomInitRawTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @InitRaw(default: 42) let number: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let number = 0
+      
+        internal init() {
+        }
       }
       """
     }

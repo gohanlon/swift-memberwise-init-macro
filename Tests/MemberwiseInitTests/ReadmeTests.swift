@@ -28,19 +28,6 @@ final class ReadmeTests: XCTestCase {
         private var age: Int? = nil
       }
       """
-    } expansion: {
-      """
-      public struct Person {
-        public let name: String
-        private var age: Int? = nil
-
-        public init(
-          name: String
-        ) {
-          self.name = name
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -79,6 +66,19 @@ final class ReadmeTests: XCTestCase {
       public struct Person {
         public let name: String
         @Init(.ignore) private var age: Int? = nil
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        public let name: String
+        private var age: Int? = nil
+      
+        public init(
+          name: String
+        ) {
+          self.name = name
+        }
       }
       """
     }
@@ -696,15 +696,6 @@ final class ReadmeTests: XCTestCase {
         let (x, y): (Int, Int)
       }
       """
-    } expansion: {
-      """
-      struct Point2D {
-        let (x, y): (Int, Int)
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -712,6 +703,15 @@ final class ReadmeTests: XCTestCase {
         let (x, y): (Int, Int)
             ┬─────────────────
             ╰─ 🛑 @MemberwiseInit does not support tuple destructuring for property declarations. Use multiple declarations instead.
+      }
+      """
+    } expansion: {
+      """
+      struct Point2D {
+        let (x, y): (Int, Int)
+      
+        internal init() {
+        }
       }
       """
     }
@@ -770,19 +770,6 @@ final class ReadmeTests: XCTestCase {
         private var age: Int?  // 👈 `private`
       }
       """
-    } expansion: {
-      """
-      public struct Person {
-        public let name: String
-        private var age: Int?  // 👈 `private`
-
-        public init(
-          name: String
-        ) {
-          self.name = name
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -821,6 +808,19 @@ final class ReadmeTests: XCTestCase {
       public struct Person {
         public let name: String
         @Init(.ignore) private var age: Int?  // 👈 `private` = <#value#>
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        public let name: String
+        private var age: Int?  // 👈 `private`
+      
+        public init(
+          name: String
+        ) {
+          self.name = name
+        }
       }
       """
     }
