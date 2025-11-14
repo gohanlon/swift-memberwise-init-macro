@@ -27,18 +27,6 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
         @Init(.escaping) var value: T
       }
       """
-    } expansion: {
-      """
-      struct S {
-        var value: T
-
-        internal init(
-          value: @escaping T
-        ) {
-          self.value = value
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -61,6 +49,18 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
         @Init(escaping: true) var value: T
       }
       """
+    } expansion: {
+      """
+      struct S {
+        var value: T
+      
+        internal init(
+          value: @escaping T
+        ) {
+          self.value = value
+        }
+      }
+      """
     }
   }
 
@@ -71,18 +71,6 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Init(.public, .escaping) var value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var value: T
-
-        internal init(
-          value: @escaping T
-        ) {
-          self.value = value
-        }
       }
       """
     } diagnostics: {
@@ -107,6 +95,18 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
         @Init(.public, escaping: true) var value: T
       }
       """
+    } expansion: {
+      """
+      struct S {
+        var value: T
+      
+        internal init(
+          value: @escaping T
+        ) {
+          self.value = value
+        }
+      }
+      """
     }
   }
 
@@ -117,18 +117,6 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Init(.escaping, label: "_") var value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var value: T
-
-        internal init(
-          _ value: @escaping T
-        ) {
-          self.value = value
-        }
       }
       """
     } diagnostics: {
@@ -153,6 +141,18 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
         @Init(escaping: true, label: "_") var value: T
       }
       """
+    } expansion: {
+      """
+      struct S {
+        var value: T
+      
+        internal init(
+          _ value: @escaping T
+        ) {
+          self.value = value
+        }
+      }
+      """
     }
   }
 
@@ -163,18 +163,6 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Init(.public, .escaping, label: "_") var value: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var value: T
-
-        internal init(
-          _ value: @escaping T
-        ) {
-          self.value = value
-        }
       }
       """
     } diagnostics: {
@@ -197,6 +185,18 @@ final class MemberwiseInitDeprecationTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Init(.public, escaping: true, label: "_") var value: T
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        var value: T
+      
+        internal init(
+          _ value: @escaping T
+        ) {
+          self.value = value
+        }
       }
       """
     }

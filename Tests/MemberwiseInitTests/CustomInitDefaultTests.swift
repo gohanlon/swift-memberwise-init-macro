@@ -73,15 +73,6 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let number = 0
       }
       """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42) let number = 0
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -111,6 +102,15 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let number: Int
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42) let number = 0
+      
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -120,15 +120,6 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Init(default: 42, label: "_") let number = 0
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42, label: "_") let number = 0
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -160,6 +151,15 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42, label: "_") let number: Int
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42, label: "_") let number = 0
+      
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -169,15 +169,6 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Init(default: 42) var number = 0
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42) var number = 0
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -209,6 +200,15 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) var number: Int
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42) var number = 0
+
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -218,15 +218,6 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Binding @Init(default: 42) let number = 0
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Binding @Init(default: 42) let number = 0
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -258,6 +249,15 @@ final class CustomInitDefaultTests: XCTestCase {
         @Binding @Init(default: 42) let number: Int
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Binding @Init(default: 42) let number = 0
+
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -267,15 +267,6 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Binding @Init(default: T.q) let number = T.t
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Binding @Init(default: T.q) let number = T.t
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -307,6 +298,15 @@ final class CustomInitDefaultTests: XCTestCase {
         @Binding @Init(default: T.q) let number: <#Type#>
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Binding @Init(default: T.q) let number = T.t
+
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -316,15 +316,6 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Binding @Init(default: 42) var number = 0
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Binding @Init(default: 42) var number = 0
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -356,6 +347,15 @@ final class CustomInitDefaultTests: XCTestCase {
         @Binding @Init(default: 42) var number: Int
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Binding @Init(default: 42) var number = 0
+
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -365,15 +365,6 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Binding @Init(default: T.q) var number = T.t
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Binding @Init(default: T.q) var number = T.t
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -405,6 +396,15 @@ final class CustomInitDefaultTests: XCTestCase {
         @Binding @Init(default: T.q) var number: <#Type#>
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Binding @Init(default: T.q) var number = T.t
+
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -415,15 +415,6 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Init(default: 42, label: "_") var number = 0
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42, label: "_") var number = 0
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -455,6 +446,15 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42, label: "_") var number: Int
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42, label: "_") var number = 0
+
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -464,15 +464,6 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         @Init(default: 42) let x, y: Int
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42) let x, y: Int
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -495,6 +486,15 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         let x, y: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42) let x, y: Int
+
+        internal init() {
+        }
       }
       """
     }
@@ -522,15 +522,6 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) var x, y: Int
       }
       """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42) var x, y: Int
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -551,6 +542,15 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         var x, y: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42) var x, y: Int
+
+        internal init() {
+        }
       }
       """
     }
@@ -578,15 +578,6 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let x = 0, y: Int
       }
       """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42) let x = 0, y: Int
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -607,6 +598,15 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         let x = 0, y: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42) let x = 0, y: Int
+
+        internal init() {
+        }
       }
       """
     }
@@ -632,15 +632,6 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) var x = 0, y: Int
       }
       """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42) var x = 0, y: Int
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -661,6 +652,15 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         var x = 0, y: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42) var x = 0, y: Int
+
+        internal init() {
+        }
       }
       """
     }
@@ -688,15 +688,6 @@ final class CustomInitDefaultTests: XCTestCase {
         @Init(default: 42) let x: Int, isOn: Bool
       }
       """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 42) let x: Int, isOn: Bool
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -717,6 +708,15 @@ final class CustomInitDefaultTests: XCTestCase {
       @MemberwiseInit
       struct S {
         let x: Int, isOn: Bool
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 42) let x: Int, isOn: Bool
+
+        internal init() {
+        }
       }
       """
     }

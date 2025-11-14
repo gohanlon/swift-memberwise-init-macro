@@ -25,15 +25,6 @@ final class CustomInitTests: XCTestCase {
         @Init let number = 42
       }
       """
-    } expansion: {
-      """
-      struct S {
-        @Init let number = 42
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -50,17 +41,26 @@ final class CustomInitTests: XCTestCase {
       @Init let number = 42
       ┬────
       ╰─ ⚠️ @Init can't be applied to already initialized constant
-
+      
       ✏️ Remove '@Init'
       @MemberwiseInit
       struct S {
         let number = 42
       }
-
+      
       ✏️ Remove '= 42'
       @MemberwiseInit
       struct S {
         @Init let number: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Init let number = 42
+
+        internal init() {
+        }
       }
       """
     }
@@ -103,15 +103,6 @@ final class CustomInitTests: XCTestCase {
         @Init static var staticNumber: Int
       }
       """
-    } expansion: {
-      """
-      struct S {
-        @Init static var staticNumber: Int
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -134,6 +125,15 @@ final class CustomInitTests: XCTestCase {
         static var staticNumber: Int
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Init static var staticNumber: Int
+      
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -146,17 +146,6 @@ final class CustomInitTests: XCTestCase {
         @Init(default: 0) lazy var lazyNumber: Int = {
           return 2 * 2
         }()
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        @Init(default: 0) lazy var lazyNumber: Int = {
-          return 2 * 2
-        }()
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -185,6 +174,17 @@ final class CustomInitTests: XCTestCase {
         }()
       }
       """
+    } expansion: {
+      """
+      struct S {
+        @Init(default: 0) lazy var lazyNumber: Int = {
+          return 2 * 2
+        }()
+      
+        internal init() {
+        }
+      }
+      """
     }
   }
 
@@ -197,15 +197,6 @@ final class CustomInitTests: XCTestCase {
       @MemberwiseInit
       struct B {
         @Init lazy static var value = 0
-      }
-      """
-    } expansion: {
-      """
-      struct B {
-        @Init lazy static var value = 0
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -228,6 +219,15 @@ final class CustomInitTests: XCTestCase {
       @MemberwiseInit
       struct B {
         lazy static var value = 0
+      }
+      """
+    } expansion: {
+      """
+      struct B {
+        @Init lazy static var value = 0
+      
+        internal init() {
+        }
       }
       """
     }
