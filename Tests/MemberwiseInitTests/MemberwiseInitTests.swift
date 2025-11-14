@@ -137,15 +137,6 @@ final class MemberwiseInitTests: XCTestCase {
         @Init let name = "Earth"
       }
       """
-    } expansion: {
-      """
-      struct Earth {
-        let name = "Earth"
-
-        internal init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit
@@ -173,6 +164,15 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit
       struct Earth {
         @Init let name: String
+      }
+      """
+    } expansion: {
+      """
+      struct Earth {
+        let name = "Earth"
+      
+        internal init() {
+        }
       }
       """
     }
@@ -1117,7 +1117,7 @@ final class MemberwiseInitTests: XCTestCase {
   // NB: This is almost covered by the exhaustive AccessLevelTests. This test touches on all the
   // access levels (instead of a meaningful few).
   func testDefaultInitAccessLevels_FailsWithDiagnotics() {
-    assertMacro(applyFixIts: false) {
+    assertMacro {
       """
       @MemberwiseInit
       private struct Person {
@@ -1137,33 +1137,6 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit
       internal struct Person {
         fileprivate let name: String
-      }
-      """
-    } expansion: {
-      """
-      private struct Person {
-        private let name: String
-
-        internal init() {
-        }
-      }
-      fileprivate struct Person {
-        private let name: String
-
-        internal init() {
-        }
-      }
-      struct Person {
-        fileprivate let name: String
-
-        internal init() {
-        }
-      }
-      internal struct Person {
-        fileprivate let name: String
-
-        internal init() {
-        }
       }
       """
     } diagnostics: {
@@ -1206,6 +1179,33 @@ final class MemberwiseInitTests: XCTestCase {
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'fileprivate' access with 'internal'
            ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } expansion: {
+      """
+      private struct Person {
+        private let name: String
+      
+        internal init() {
+        }
+      }
+      fileprivate struct Person {
+        private let name: String
+      
+        internal init() {
+        }
+      }
+      struct Person {
+        fileprivate let name: String
+      
+        internal init() {
+        }
+      }
+      internal struct Person {
+        fileprivate let name: String
+      
+        internal init() {
+        }
       }
       """
     }
