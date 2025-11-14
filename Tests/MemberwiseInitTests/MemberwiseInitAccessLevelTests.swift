@@ -2548,15 +2548,6 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         @Init(.internal) public let v: T
       }
       """
-    } expansion: {
-      """
-      struct S {
-        public let v: T
-
-        public init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -2566,6 +2557,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
                  ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        public let v: T
+
+        public init() {
+        }
       }
       """
     }
@@ -2683,15 +2683,6 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         @Init(.internal) private let v: T
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        private let v: T
-
-        public init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -2701,6 +2692,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
                  ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        private let v: T
+
+        public init() {
+        }
       }
       """
     }
@@ -2737,15 +2737,6 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         let v: T
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        let v: T
-
-        public init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -2756,6 +2747,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
            ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        let v: T
+
+        public init() {
+        }
       }
       """
     }
@@ -2769,15 +2769,6 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         @Init(.private) let v: T
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        let v: T
-
-        public init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -2787,6 +2778,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
                  ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        let v: T
+
+        public init() {
+        }
       }
       """
     }
@@ -2800,15 +2800,6 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         @Init(.internal) let v: T
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        let v: T
-
-        public init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -2818,6 +2809,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
                  ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        let v: T
+
+        public init() {
+        }
       }
       """
     }
@@ -2877,15 +2877,6 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         @Init(.private) public let v: T
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        public let v: T
-
-        public init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -2895,6 +2886,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
                  ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        public let v: T
+
+        public init() {
+        }
       }
       """
     }
@@ -2908,15 +2908,6 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         @Init(.internal) public let v: T
       }
       """
-    } expansion: {
-      """
-      public struct S {
-        public let v: T
-
-        public init() {
-        }
-      }
-      """
     } diagnostics: {
       """
       @MemberwiseInit(.public)
@@ -2926,6 +2917,15 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
                  ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        public let v: T
+
+        public init() {
+        }
       }
       """
     }
