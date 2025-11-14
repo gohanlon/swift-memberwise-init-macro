@@ -6,7 +6,7 @@ final class InvalidSyntaxTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
       indentationWidth: .spaces(2),
-      record: .failed,
+      record: .missing,
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "InitRaw": InitMacro.self,
