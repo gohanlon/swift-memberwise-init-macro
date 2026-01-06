@@ -298,9 +298,13 @@ extension ExprSyntax {
         .memberBlockItemListFile,
         .nonisolatedSpecifierArgument,
         .nonisolatedTypeSpecifier,
-        .unsafeExpr,
         .usingDecl:
       return nil
+    case .unsafeExpr:
+      guard
+        let unsafeExpr = self.as(UnsafeExprSyntax.self)
+      else { return nil }
+      return unsafeExpr.expression.inferredType
     #else
       // deleted in 602
       case .conventionAttributeArguments,
