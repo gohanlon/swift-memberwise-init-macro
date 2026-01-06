@@ -30,7 +30,7 @@ let package = Package(
     .conditionalPackage(
       url: "https://github.com/swiftlang/swift-syntax",
       envVar: "SWIFT_SYNTAX_VERSION",
-      default: "509.0.0..<602.0.0"
+      default: "509.0.0..<603.0.0"
     ),
   ],
   targets: [
