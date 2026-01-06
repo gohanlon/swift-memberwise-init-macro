@@ -6,3 +6,5 @@
 /*.xcodeproj
 xcuserdata/
 tmp
+/.vscode
+
