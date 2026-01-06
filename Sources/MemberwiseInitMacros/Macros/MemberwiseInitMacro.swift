@@ -2,8 +2,10 @@ import SwiftCompilerPlugin
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
+#if !canImport(SwiftSyntax600)
+import SwiftSyntaxMacroExpansion
+#endif
 
 public struct InitMacro: PeerMacro {
   public static func expansion(
