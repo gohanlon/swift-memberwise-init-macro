@@ -1,6 +1,9 @@
 import SwiftDiagnostics
 import SwiftSyntax
+import SwiftSyntaxMacros
+#if !canImport(SwiftSyntax600)
 import SwiftSyntaxMacroExpansion
+#endif
 
 // MARK: - Diagnose VariableDeclSyntax
 
