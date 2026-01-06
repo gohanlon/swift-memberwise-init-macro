@@ -596,6 +596,13 @@ extension FixIt.Change {
           replacement: replacingChildData.newChild.description
         )
     #endif
+
+    #if canImport(SwiftSyntax602)
+      case .replaceText(let range, with: let newText, in: let syntax):
+        let start = expansionContext.position(of: range.lowerBound, anchoredAt: syntax)
+        let end = expansionContext.position(of: range.upperBound, anchoredAt: syntax)
+        return SourceEdit(range: start..<end, replacement: newText)
+    #endif
     }
   }
 }

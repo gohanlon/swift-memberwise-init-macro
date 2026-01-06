@@ -1,10 +1,12 @@
 import SwiftOperators
 
-#if canImport(SwiftSyntax600)
-  @_spi(ExperimentalLanguageFeatures) import SwiftSyntax
-#else
-  import SwiftSyntax
+#if canImport(SwiftSyntax602)
+  @_spi(Compiler)
 #endif
+#if canImport(SwiftSyntax600)
+  @_spi(ExperimentalLanguageFeatures)
+#endif
+import SwiftSyntax
 
 // Potential future enhancements:
 // - .ternaryExpr having "then" and "else" expressions as inferrable types
@@ -284,6 +286,32 @@ extension ExprSyntax {
         return nil
     #endif
 
+    #if canImport(SwiftSyntax602)
+      // added in 602
+      case .abiAttributeArguments,
+        .accessorBlockFile,
+        .attributeClauseFile,
+        .availabilityMacroDefinitionFile,
+        .codeBlockFile,
+        .inlineArrayType,
+        .keyPathMethodComponent,
+        .memberBlockItemListFile,
+        .nonisolatedSpecifierArgument,
+        .nonisolatedTypeSpecifier,
+        .unsafeExpr,
+        .usingDecl:
+      return nil
+    #else
+      // deleted in 602
+      case .conventionAttributeArguments,
+        .conventionWitnessMethodAttributeArguments,
+        .exposeAttributeArguments,
+        .opaqueReturnTypeOfAttributeArguments,
+        .unavailableFromAsyncAttributeArguments,
+        .underscorePrivateAttributeArguments:
+      return nil
+    #endif
+
     case .token, .accessorBlock, .accessorDeclList, .accessorDecl, .accessorEffectSpecifiers,
       .accessorParameters, .actorDecl, .arrayElementList, .arrayElement, .arrayType, .arrowExpr,
       .assignmentExpr, .associatedTypeDecl, .attributeList, .attribute, .attributedType,
@@ -296,8 +324,8 @@ extension ExprSyntax {
       .closureShorthandParameterList, .closureShorthandParameter, .closureSignature,
       .codeBlockItemList, .codeBlockItem, .codeBlock, .compositionTypeElementList,
       .compositionTypeElement, .compositionType, .conditionElementList, .conditionElement,
-      .conformanceRequirement, .consumeExpr, .continueStmt, .conventionAttributeArguments,
-      .conventionWitnessMethodAttributeArguments, .copyExpr, .declModifierDetail, .declModifierList,
+      .conformanceRequirement, .consumeExpr, .continueStmt,
+      .copyExpr, .declModifierDetail, .declModifierList,
       .declModifier, .declNameArgumentList, .declNameArgument, .declNameArguments,
       .declReferenceExpr, .deferStmt, .deinitializerDecl, .deinitializerEffectSpecifiers,
       .derivativeAttributeArguments, .designatedTypeList, .designatedType, .dictionaryElementList,
@@ -308,7 +336,7 @@ extension ExprSyntax {
       .documentationAttributeArgument, .dynamicReplacementAttributeArguments,
       .editorPlaceholderDecl, .editorPlaceholderExpr, .effectsAttributeArgumentList, .enumCaseDecl,
       .enumCaseElementList, .enumCaseElement, .enumCaseParameterClause, .enumCaseParameterList,
-      .enumCaseParameter, .enumDecl, .exposeAttributeArguments, .exprList, .expressionPattern,
+      .enumCaseParameter, .enumDecl, .exprList, .expressionPattern,
       .expressionSegment, .expressionStmt, .extensionDecl, .fallThroughStmt, .forStmt,
       .forceUnwrapExpr, .functionDecl, .functionEffectSpecifiers, .functionParameterClause,
       .functionParameterList, .functionParameter, .functionSignature, .functionType,
@@ -327,7 +355,7 @@ extension ExprSyntax {
       .metatypeType, .missingDecl, .missingExpr, .missingPattern, .missingStmt, .missing,
       .missingType, .multipleTrailingClosureElementList, .multipleTrailingClosureElement,
       .namedOpaqueReturnType, .nilLiteralExpr, .objCSelectorPieceList, .objCSelectorPiece,
-      .opaqueReturnTypeOfAttributeArguments, .operatorDecl, .operatorPrecedenceAndTypes,
+      .operatorDecl, .operatorPrecedenceAndTypes,
       .optionalBindingCondition, .optionalChainingExpr, .optionalType,
       .originallyDefinedInAttributeArguments, .packElementExpr, .packElementType,
       .packExpansionExpr, .packExpansionType, .patternBindingList, .patternBinding, .patternExpr,
@@ -345,7 +373,6 @@ extension ExprSyntax {
       .ternaryExpr, .throwStmt, .tryExpr, .tuplePatternElementList, .tuplePatternElement,
       .tuplePattern, .tupleTypeElementList, .tupleTypeElement, .tupleType, .typeAliasDecl,
       .typeAnnotation, .typeEffectSpecifiers, .typeExpr, .typeInitializerClause,
-      .unavailableFromAsyncAttributeArguments, .underscorePrivateAttributeArguments,
       .unexpectedNodes, .unresolvedAsExpr, .unresolvedIsExpr, .unresolvedTernaryExpr,
       .valueBindingPattern, .variableDecl, .versionComponentList, .versionComponent, .versionTuple,
       .whereClause, .whileStmt, .wildcardPattern, .yieldStmt, .yieldedExpressionList,
