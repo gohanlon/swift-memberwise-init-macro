@@ -14,10 +14,12 @@ private func diagnoseDotEscaping<D: DeclGroupSyntax>(_ decl: D) -> [Diagnostic] 
 
   return decl.memberBlock.members.compactMap { element -> Diagnostic? in
     guard
-      let configuration = element.decl
+      let oldConfiguration = element.decl
         .as(VariableDeclSyntax.self)?
         .customConfigurationArguments
     else { return nil }
+
+    var configuration = oldConfiguration
 
     let dotEscapingIndex = configuration.firstIndex(
       where: {
@@ -28,9 +30,10 @@ private func diagnoseDotEscaping<D: DeclGroupSyntax>(_ decl: D) -> [Diagnostic] 
     )
     guard let dotEscapingIndex else { return nil }
 
+    configuration.remove(at: dotEscapingIndex)
+
     let newIndex =
       configuration.firstIndex(where: { $0.label?.text == "label" })
-      .map { configuration.index(before: $0) }
       ?? configuration.endIndex
 
     let newEscaping = LabeledExprSyntax(
@@ -40,12 +43,10 @@ private func diagnoseDotEscaping<D: DeclGroupSyntax>(_ decl: D) -> [Diagnostic] 
       trailingComma: newIndex != configuration.endIndex ? .commaToken(trailingTrivia: .space) : nil
     )
 
-    var newConfiguration = configuration
-    newConfiguration.remove(at: dotEscapingIndex)
-    newConfiguration.insert(newEscaping, at: newIndex)
+    configuration.insert(newEscaping, at: newIndex)
 
     return Diagnostic(
-      node: configuration,
+      node: oldConfiguration,
       message: MacroExpansionWarningMessage(
         """
         @Init(.escaping) is deprecated
@@ -57,8 +58,8 @@ private func diagnoseDotEscaping<D: DeclGroupSyntax>(_ decl: D) -> [Diagnostic] 
         ),
         changes: [
           FixIt.Change.replace(
-            oldNode: Syntax(configuration),
-            newNode: Syntax(newConfiguration)
+            oldNode: Syntax(oldConfiguration),
+            newNode: Syntax(configuration)
           )
         ]
       )
