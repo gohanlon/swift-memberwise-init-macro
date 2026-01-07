@@ -12,6 +12,13 @@ set -euo pipefail
 
 readonly SWIFT_VERSIONS=(5.9 5.10 6.0 6.1 6.2)
 readonly SYNTAX_VERSIONS=(509 510 600 601 602)
+readonly MAX_RETRIES=2  # Retry transient compiler crashes
+
+# Check if output indicates a transient failure (compiler crash)
+is_transient_failure() {
+  local output_file="$1"
+  grep -q "error: fatalError" "$output_file" 2>/dev/null
+}
 
 # Map short syntax version to range
 syntax_range() {
@@ -159,8 +166,22 @@ if [[ "$dry_run" == true ]]; then
   exit 0
 fi
 
-# Prepare log directory
+# Pre-flight check: verify Podman is running
+if ! podman info &>/dev/null; then
+  echo "Error: Podman is not running." >&2
+  echo "" >&2
+  echo "Start Podman with:" >&2
+  echo "  podman machine start" >&2
+  echo "" >&2
+  echo "Or initialize a new VM with:" >&2
+  echo "  podman machine init && podman machine start" >&2
+  exit 1
+fi
+
+# Prepare log directory with timestamped subdirectory
 if [[ -n "$log_dir" ]]; then
+  timestamp=$(date +%Y-%m-%d_%H%M%S)
+  log_dir="$log_dir/$timestamp"
   mkdir -p "$log_dir"
   echo "Logging to: $log_dir"
 fi
@@ -186,11 +207,6 @@ run_sequential() {
     # Clean build artifacts to avoid workspace state conflicts between Swift versions
     rm -rf .build
 
-    log_file=""
-    if [[ -n "$log_dir" ]]; then
-      log_file="$log_dir/swift-${swift_ver}_syntax-${syntax_ver}.log"
-    fi
-
     # Run podman
     cmd=(
       podman run --rm
@@ -201,52 +217,108 @@ run_sequential() {
       swift test
     )
 
-    if [[ "$verbose" == true ]]; then
-      echo ""
-      if "${cmd[@]}"; then
-        echo "✓ $label passed"
-        ((passed++)) || true
-      else
-        echo "✗ $label FAILED"
-        ((failed++)) || true
-        failed_combos+=("$label")
-        if [[ "$continue_on_error" != true ]]; then
-          echo ""
-          echo "Stopping on first failure. Use --continue-on-error to run all."
+    # Retry loop for transient failures
+    local attempt=0
+    local test_passed=false
+
+    while [[ "$attempt" -lt "$MAX_RETRIES" ]]; do
+      ((attempt++)) || true
+
+      # Compute log file path with attempt number
+      local log_file=""
+      if [[ -n "$log_dir" ]]; then
+        log_file="$log_dir/swift-${swift_ver}_syntax-${syntax_ver}_attempt-${attempt}.log"
+      fi
+
+      if [[ "$verbose" == true ]]; then
+        if [[ "$attempt" -gt 1 ]]; then
+          printf "%s %s (retry %d/%d) ... " "$progress" "$label" "$attempt" "$MAX_RETRIES"
+        fi
+        echo ""
+        tmp_output=$(mktemp)
+        if "${cmd[@]}" 2>&1 | tee "$tmp_output"; then
+          echo "✓ $label passed"
+          test_passed=true
+          if [[ -n "$log_file" ]]; then
+            mv "$tmp_output" "$log_file"
+          else
+            rm -f "$tmp_output"
+          fi
           break
+        else
+          if is_transient_failure "$tmp_output" && [[ "$attempt" -lt "$MAX_RETRIES" ]]; then
+            echo "⟳ $label transient failure, retrying..."
+            if [[ -n "$log_file" ]]; then
+              mv "$tmp_output" "$log_file"
+            else
+              rm -f "$tmp_output"
+            fi
+            rm -rf .build  # Clean before retry
+          else
+            echo "✗ $label FAILED"
+            if [[ -n "$log_file" ]]; then
+              mv "$tmp_output" "$log_file"
+            else
+              rm -f "$tmp_output"
+            fi
+          fi
+        fi
+      else
+        # Quiet mode: capture output
+        tmp_output=$(mktemp)
+        if "${cmd[@]}" > "$tmp_output" 2>&1; then
+          if [[ "$attempt" -gt 1 ]]; then
+            echo "✓ (retry $attempt)"
+          else
+            echo "✓"
+          fi
+          test_passed=true
+          if [[ -n "$log_file" ]]; then
+            mv "$tmp_output" "$log_file"
+          else
+            rm "$tmp_output"
+          fi
+          break
+        else
+          if is_transient_failure "$tmp_output" && [[ "$attempt" -lt "$MAX_RETRIES" ]]; then
+            printf "⟳ retry %d... " "$((attempt + 1))"
+            if [[ -n "$log_file" ]]; then
+              mv "$tmp_output" "$log_file"
+            else
+              rm -f "$tmp_output"
+            fi
+            rm -rf .build  # Clean before retry
+          else
+            # Final failure
+            if [[ "$attempt" -gt 1 ]]; then
+              echo "✗ FAILED (after $attempt attempts)"
+            else
+              echo "✗ FAILED"
+            fi
+
+            if [[ -n "$log_file" ]]; then
+              mv "$tmp_output" "$log_file"
+              echo "  Log: $log_file"
+            else
+              # Show last part of output for context
+              echo "  Last 20 lines of output:"
+              tail -20 "$tmp_output" | sed 's/^/    /'
+              rm "$tmp_output"
+            fi
+          fi
         fi
       fi
+    done
+
+    if [[ "$test_passed" == true ]]; then
+      ((passed++)) || true
     else
-      # Quiet mode: capture output
-      tmp_output=$(mktemp)
-      if "${cmd[@]}" > "$tmp_output" 2>&1; then
-        echo "✓"
-        ((passed++)) || true
-        if [[ -n "$log_file" ]]; then
-          mv "$tmp_output" "$log_file"
-        else
-          rm "$tmp_output"
-        fi
-      else
-        echo "✗ FAILED"
-        ((failed++)) || true
-        failed_combos+=("$label")
-
-        if [[ -n "$log_file" ]]; then
-          mv "$tmp_output" "$log_file"
-          echo "  Log: $log_file"
-        else
-          # Show last part of output for context
-          echo "  Last 20 lines of output:"
-          tail -20 "$tmp_output" | sed 's/^/    /'
-          rm "$tmp_output"
-        fi
-
-        if [[ "$continue_on_error" != true ]]; then
-          echo ""
-          echo "Stopping on first failure. Use --continue-on-error to run all."
-          break
-        fi
+      ((failed++)) || true
+      failed_combos+=("$label")
+      if [[ "$continue_on_error" != true ]]; then
+        echo ""
+        echo "Stopping on first failure. Use --continue-on-error to run all."
+        break
       fi
     fi
   done
@@ -303,6 +375,28 @@ run_parallel() {
   declare -A job_combos=()
   declare -A job_outputs=()
 
+  # Retry tracking: combo -> attempt number (file-based for cross-process safety)
+  local retries_dir="$state_dir/retries"
+  mkdir -p "$retries_dir"
+
+  get_retry_count() {
+    local combo="$1"
+    local file="$retries_dir/${combo//:/_}"
+    if [[ -f "$file" ]]; then
+      cat "$file"
+    else
+      echo "1"
+    fi
+  }
+
+  increment_retry_count() {
+    local combo="$1"
+    local file="$retries_dir/${combo//:/_}"
+    local current
+    current=$(get_retry_count "$combo")
+    echo "$((current + 1))" > "$file"
+  }
+
   # Function to update and display status line
   update_status() {
     local running=${#job_pids[@]}
@@ -325,6 +419,8 @@ run_parallel() {
 
     IFS=: read -r swift_ver syntax_ver <<< "$combo"
     local label="Swift $swift_ver × swift-syntax $syntax_ver"
+    local attempt
+    attempt=$(get_retry_count "$combo")
 
     # Remove from running
     grep -v "^${combo}$" "$running_file" > "$running_file.tmp" 2>/dev/null || true
@@ -334,42 +430,76 @@ run_parallel() {
     printf "\r\033[K"
 
     if [[ "$exit_code" -eq 0 ]]; then
-      echo "✓ $label"
+      if [[ "$attempt" -gt 1 ]]; then
+        echo "✓ $label (retry $attempt)"
+      else
+        echo "✓ $label"
+      fi
       local passed=$(cat "$state_dir/passed")
       echo "$((passed + 1))" > "$state_dir/passed"
 
       # Handle log file
+      local log_file_name="swift-${swift_ver}_syntax-${syntax_ver}_attempt-${attempt}.log"
       if [[ -n "$log_dir" ]]; then
-        mv "$output_file" "$log_dir/swift-${swift_ver}_syntax-${syntax_ver}.log" 2>/dev/null || true
+        mv "$output_file" "$log_dir/$log_file_name" 2>/dev/null || true
       else
         rm -f "$output_file"
       fi
     else
-      echo "✗ $label FAILED"
-      local failed_count=$(cat "$state_dir/failed")
-      echo "$((failed_count + 1))" > "$state_dir/failed"
-      echo "$label" >> "$results_file"
+      # Check for transient failure and retry if possible
+      if is_transient_failure "$output_file" && [[ "$attempt" -lt "$MAX_RETRIES" ]]; then
+        echo "⟳ $label transient failure (attempt $attempt/$MAX_RETRIES), re-queuing..."
 
-      # Handle log/output
-      if [[ -n "$log_dir" ]]; then
-        mv "$output_file" "$log_dir/swift-${swift_ver}_syntax-${syntax_ver}.log" 2>/dev/null || true
-        echo "  Log: $log_dir/swift-${swift_ver}_syntax-${syntax_ver}.log"
-      else
-        if [[ -f "$output_file" ]]; then
-          echo "  Last 20 lines of output:"
-          tail -20 "$output_file" | sed 's/^/    /'
+        # Save log for failed attempt before re-queuing
+        local log_file_name="swift-${swift_ver}_syntax-${syntax_ver}_attempt-${attempt}.log"
+        if [[ -n "$log_dir" ]]; then
+          mv "$output_file" "$log_dir/$log_file_name" 2>/dev/null || true
+        else
+          rm -f "$output_file"
         fi
-        rm -f "$output_file"
-      fi
 
-      # Stop if not continue-on-error
-      if [[ "$continue_on_error" != true ]]; then
-        touch "$stop_file"
+        increment_retry_count "$combo"
+
+        # Re-queue the combination
+        echo "$combo" >> "$queue_file"
+
+        # Clean up build directory before retry
+        rm -rf ".build-${swift_ver}-${syntax_ver}" 2>/dev/null || true
+      else
+        # Final failure
+        if [[ "$attempt" -gt 1 ]]; then
+          echo "✗ $label FAILED (after $attempt attempts)"
+        else
+          echo "✗ $label FAILED"
+        fi
+        local failed_count=$(cat "$state_dir/failed")
+        echo "$((failed_count + 1))" > "$state_dir/failed"
+        echo "$label" >> "$results_file"
+
+        # Handle log/output
+        local log_file_name="swift-${swift_ver}_syntax-${syntax_ver}_attempt-${attempt}.log"
+        if [[ -n "$log_dir" ]]; then
+          mv "$output_file" "$log_dir/$log_file_name" 2>/dev/null || true
+          echo "  Log: $log_dir/$log_file_name"
+        else
+          if [[ -f "$output_file" ]]; then
+            echo "  Last 20 lines of output:"
+            tail -20 "$output_file" | sed 's/^/    /'
+          fi
+          rm -f "$output_file"
+        fi
+
+        # Stop if not continue-on-error
+        if [[ "$continue_on_error" != true ]]; then
+          touch "$stop_file"
+        fi
       fi
     fi
 
-    # Clean up per-combination build directory
-    rm -rf ".build-${swift_ver}-${syntax_ver}" 2>/dev/null || true
+    # Clean up per-combination build directory (unless re-queued)
+    if [[ "$exit_code" -eq 0 ]] || ! is_transient_failure "$output_file" 2>/dev/null || [[ "$attempt" -ge "$MAX_RETRIES" ]]; then
+      rm -rf ".build-${swift_ver}-${syntax_ver}" 2>/dev/null || true
+    fi
 
     # Clean up job tracking
     unset "job_pids[$pid]"
