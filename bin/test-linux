@@ -1,0 +1,232 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Test Swift × swift-syntax combinations on Linux via Podman.
+#
+# swift-syntax versions specify a minimum Swift version (swift-tools-version), not an
+# exclusive pairing. For example, swift-syntax 509.x requires Swift 5.7+, meaning it
+# can be used with Swift 5.9, 6.0, 6.1, etc. Users may pin to older swift-syntax
+# versions while using newer Swift compilers.
+#
+# To ensure compatibility for all users, we test the full matrix.
+
+readonly SWIFT_VERSIONS=(5.9 5.10 6.0 6.1 6.2)
+readonly SYNTAX_VERSIONS=(509 510 600 601 602)
+
+# Map short syntax version to range
+syntax_range() {
+  case "$1" in
+    509) echo "509.0.0..<510.0.0" ;;
+    510) echo "510.0.0..<511.0.0" ;;
+    600) echo "600.0.0..<601.0.0" ;;
+    601) echo "601.0.0..<602.0.0" ;;
+    602) echo "602.0.0..<603.0.0" ;;
+    *) echo "Unknown syntax version: $1" >&2; exit 1 ;;
+  esac
+}
+
+# Expand partial Swift version (6 → 6.0 6.1 6.2)
+expand_swift_version() {
+  local pattern="$1"
+  local matches=()
+  for v in "${SWIFT_VERSIONS[@]}"; do
+    if [[ "$v" == "$pattern"* ]]; then
+      matches+=("$v")
+    fi
+  done
+  if [[ ${#matches[@]} -eq 0 ]]; then
+    echo "No Swift versions match: $pattern" >&2
+    exit 1
+  fi
+  echo "${matches[@]}"
+}
+
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Test Swift × swift-syntax combinations on Linux via Podman.
+
+Options:
+  --swift VERSION        Swift version(s) to test (e.g., 5.9, 6, 6.1)
+                         Can be specified multiple times. Partial matching supported.
+  --swift-syntax VERSION swift-syntax version(s) to test (e.g., 509, 600)
+                         Can be specified multiple times.
+  --dry-run              Don't run tests, just show what would run
+  --verbose              Show full test output
+  --log-dir DIR          Write test output to files in DIR
+  --continue-on-error    Continue testing after failures
+  -h, --help             Show this help
+
+Examples:
+  $(basename "$0")                              # Full matrix (25 combinations)
+  $(basename "$0") --swift 5.9 --swift-syntax 509
+  $(basename "$0") --swift 6                    # All Swift 6.x versions
+  $(basename "$0") --dry-run                     # Preview without running
+
+Requires: podman machine start
+EOF
+}
+
+# Parse arguments
+swift_filters=()
+syntax_filters=()
+dry_run=false
+verbose=false
+log_dir=""
+continue_on_error=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --swift) swift_filters+=("$2"); shift 2 ;;
+    --swift-syntax) syntax_filters+=("$2"); shift 2 ;;
+    --dry-run) dry_run=true; shift ;;
+    --verbose) verbose=true; shift ;;
+    --log-dir) log_dir="$2"; shift 2 ;;
+    --continue-on-error) continue_on_error=true; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
+  esac
+done
+
+# Determine versions to test
+if [[ ${#swift_filters[@]} -eq 0 ]]; then
+  swift_to_test=("${SWIFT_VERSIONS[@]}")
+else
+  swift_to_test=()
+  for filter in "${swift_filters[@]}"; do
+    for v in $(expand_swift_version "$filter"); do
+      swift_to_test+=("$v")
+    done
+  done
+fi
+
+if [[ ${#syntax_filters[@]} -eq 0 ]]; then
+  syntax_to_test=("${SYNTAX_VERSIONS[@]}")
+else
+  syntax_to_test=("${syntax_filters[@]}")
+fi
+
+# Build combination list
+combinations=()
+for swift_ver in "${swift_to_test[@]}"; do
+  for syntax_ver in "${syntax_to_test[@]}"; do
+    combinations+=("${swift_ver}:${syntax_ver}")
+  done
+done
+
+total=${#combinations[@]}
+
+if [[ "$dry_run" == true ]]; then
+  echo "Would run $total combination(s):"
+  for combo in "${combinations[@]}"; do
+    IFS=: read -r swift_ver syntax_ver <<< "$combo"
+    echo "  Swift $swift_ver × swift-syntax $syntax_ver"
+  done
+  exit 0
+fi
+
+# Prepare log directory
+if [[ -n "$log_dir" ]]; then
+  mkdir -p "$log_dir"
+  echo "Logging to: $log_dir"
+fi
+
+# Run tests
+passed=0
+failed=0
+failed_combos=()
+
+for i in "${!combinations[@]}"; do
+  combo="${combinations[$i]}"
+  IFS=: read -r swift_ver syntax_ver <<< "$combo"
+  syntax_range_val=$(syntax_range "$syntax_ver")
+
+  progress="[$((i + 1))/$total]"
+  label="Swift $swift_ver × swift-syntax $syntax_ver"
+
+  printf "%s %s ... " "$progress" "$label"
+
+  # Clean build artifacts to avoid workspace state conflicts between Swift versions
+  rm -rf .build
+
+  log_file=""
+  if [[ -n "$log_dir" ]]; then
+    log_file="$log_dir/swift-${swift_ver}_syntax-${syntax_ver}.log"
+  fi
+
+  # Run podman
+  cmd=(
+    podman run --rm
+    -v "$(pwd)":/workspace
+    -w /workspace
+    -e "SWIFT_SYNTAX_VERSION=$syntax_range_val"
+    "swift:$swift_ver"
+    swift test
+  )
+
+  if [[ "$verbose" == true ]]; then
+    echo ""
+    if "${cmd[@]}"; then
+      echo "✓ $label passed"
+      ((passed++)) || true
+    else
+      echo "✗ $label FAILED"
+      ((failed++)) || true
+      failed_combos+=("$label")
+      if [[ "$continue_on_error" != true ]]; then
+        echo ""
+        echo "Stopping on first failure. Use --continue-on-error to run all."
+        break
+      fi
+    fi
+  else
+    # Quiet mode: capture output
+    tmp_output=$(mktemp)
+    if "${cmd[@]}" > "$tmp_output" 2>&1; then
+      echo "✓"
+      ((passed++)) || true
+      if [[ -n "$log_file" ]]; then
+        mv "$tmp_output" "$log_file"
+      else
+        rm "$tmp_output"
+      fi
+    else
+      echo "✗ FAILED"
+      ((failed++)) || true
+      failed_combos+=("$label")
+
+      if [[ -n "$log_file" ]]; then
+        mv "$tmp_output" "$log_file"
+        echo "  Log: $log_file"
+      else
+        # Show last part of output for context
+        echo "  Last 20 lines of output:"
+        tail -20 "$tmp_output" | sed 's/^/    /'
+        rm "$tmp_output"
+      fi
+
+      if [[ "$continue_on_error" != true ]]; then
+        echo ""
+        echo "Stopping on first failure. Use --continue-on-error to run all."
+        break
+      fi
+    fi
+  fi
+done
+
+# Summary
+echo ""
+echo "Results: $passed passed, $failed failed (of $total)"
+
+if [[ $failed -gt 0 ]]; then
+  echo ""
+  echo "Failed combinations:"
+  for combo in "${failed_combos[@]}"; do
+    echo "  - $combo"
+  done
+  echo ""
+  echo "Re-run a specific failure with:"
+  echo "  $(basename "$0") --swift <version> --swift-syntax <version> --verbose"
+  exit 1
+fi
