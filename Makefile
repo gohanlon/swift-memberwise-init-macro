@@ -21,12 +21,19 @@ test-swift-syntax-versions:
 	@for version in \
 		"509.0.0..<510.0.0" \
 		"510.0.0..<511.0.0" \
-		"511.0.0..<601.0.0"; \
+		"600.0.0..<601.0.0" \
+		"601.0.0..<602.0.0" \
+		"602.0.0..<603.0.0"; \
 	do \
 		echo "\n## Testing SwiftSyntax version $$version"; \
 		$(MAKE) clean; \
 		SWIFT_SYNTAX_VERSION="$$version" $(MAKE) test-swift || exit 1; \
 	done
+
+# Test Swift × swift-syntax combinations on Linux via Podman.
+# See bin/test-linux --help for options.
+test-linux-all:
+	./bin/test-linux
 
 format:
 	swift format \
@@ -35,4 +42,4 @@ format:
 		--recursive \
 		./Package.swift ./Sources ./Tests
 
-.PHONY: default test test-swift clean test-swift-syntax-versions format
+.PHONY: default test test-swift clean test-swift-syntax-versions test-linux-all format
