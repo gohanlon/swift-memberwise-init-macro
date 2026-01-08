@@ -20,6 +20,23 @@ is_transient_failure() {
   grep -q "error: fatalError" "$output_file" 2>/dev/null
 }
 
+# Detect optimal parallel jobs from Podman VM memory
+# Outputs: "jobs memory_gb" (e.g., "18 144")
+detect_parallel_jobs() {
+  local memory_mb
+  memory_mb=$(podman machine inspect --format '{{.Resources.Memory}}' 2>/dev/null) || return 1
+  if [[ -z "$memory_mb" || "$memory_mb" -lt 1 ]]; then
+    return 1
+  fi
+  local memory_gb=$((memory_mb / 1024))
+  # ~8 GB per concurrent Swift build
+  local jobs=$((memory_mb / 8192))
+  if [[ "$jobs" -lt 1 ]]; then
+    jobs=1
+  fi
+  echo "$jobs $memory_gb"
+}
+
 # Map short syntax version to range
 syntax_range() {
   case "$1" in
@@ -59,7 +76,8 @@ Options:
                          Can be specified multiple times. Partial matching supported.
   --swift-syntax VERSION swift-syntax version(s) to test (e.g., 509, 600)
                          Can be specified multiple times.
-  --parallel [N]         Run up to N tests concurrently (default: 4)
+  --parallel [N|auto]    Run up to N tests concurrently (default: auto)
+                         'auto' detects optimal parallelism from Podman VM memory
   --sequential           Run tests sequentially (default behavior)
   --dry-run              Don't run tests, just show what would run
   --verbose              Show full test output
@@ -72,9 +90,9 @@ Examples:
   $(basename "$0") --swift 5.9 --swift-syntax 509
   $(basename "$0") --swift 6                    # All Swift 6.x versions
   $(basename "$0") --dry-run                    # Preview without running
-  $(basename "$0") --parallel                   # 4 concurrent jobs
+  $(basename "$0") --parallel                   # Auto-detect parallelism
   $(basename "$0") --parallel 8                 # 8 concurrent jobs
-  $(basename "$0") --parallel --log-dir ./logs --continue-on-error
+  $(basename "$0") --parallel --continue-on-error
 
 Requires: podman machine start
 EOF
@@ -99,7 +117,7 @@ while [[ $# -gt 0 ]]; do
     --continue-on-error) continue_on_error=true; shift ;;
     --sequential) parallel_jobs=0; shift ;;
     --parallel)
-      # Check if next arg is a number
+      # Check if next arg is a number or "auto"
       if [[ $# -gt 1 && "$2" =~ ^[0-9]+$ ]]; then
         parallel_jobs="$2"
         if [[ "$parallel_jobs" -lt 1 ]]; then
@@ -107,8 +125,11 @@ while [[ $# -gt 0 ]]; do
           exit 1
         fi
         shift 2
+      elif [[ $# -gt 1 && "$2" == "auto" ]]; then
+        parallel_jobs="auto"
+        shift 2
       else
-        parallel_jobs=4  # default
+        parallel_jobs="auto"  # default to auto-detect
         shift
       fi
       ;;
@@ -118,7 +139,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Warn about verbose + parallel
-if [[ "$verbose" == true && "$parallel_jobs" -gt 0 ]]; then
+if [[ "$verbose" == true && "$parallel_jobs" != "0" ]]; then
   echo "Warning: --verbose with --parallel may produce interleaved output" >&2
 fi
 
@@ -156,12 +177,13 @@ if [[ "$dry_run" == true ]]; then
     IFS=: read -r swift_ver syntax_ver <<< "$combo"
     echo "  Swift $swift_ver × swift-syntax $syntax_ver"
   done
-  if [[ "$parallel_jobs" -gt 0 ]]; then
-    echo ""
-    echo "Mode: parallel ($parallel_jobs concurrent jobs)"
-  else
-    echo ""
+  echo ""
+  if [[ "$parallel_jobs" == "0" ]]; then
     echo "Mode: sequential"
+  elif [[ "$parallel_jobs" == "auto" ]]; then
+    echo "Mode: parallel (auto-detect)"
+  else
+    echo "Mode: parallel ($parallel_jobs concurrent jobs)"
   fi
   exit 0
 fi
@@ -176,6 +198,17 @@ if ! podman info &>/dev/null; then
   echo "Or initialize a new VM with:" >&2
   echo "  podman machine init && podman machine start" >&2
   exit 1
+fi
+
+# Resolve "auto" parallel jobs from Podman VM memory
+if [[ "$parallel_jobs" == "auto" ]]; then
+  if detected=$(detect_parallel_jobs); then
+    read -r parallel_jobs memory_gb <<< "$detected"
+    echo "Auto-detected $parallel_jobs parallel jobs (${memory_gb} GB Podman VM)"
+  else
+    parallel_jobs=4
+    echo "Could not detect Podman VM memory, defaulting to $parallel_jobs parallel jobs"
+  fi
 fi
 
 # Prepare log directory with timestamped subdirectory
