@@ -3,8 +3,9 @@ import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+
 #if !canImport(SwiftSyntax600)
-import SwiftSyntaxMacroExpansion
+  import SwiftSyntaxMacroExpansion
 #endif
 
 public struct UncheckedMemberwiseInitMacro: MemberMacro {

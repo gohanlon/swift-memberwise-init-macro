@@ -92,7 +92,7 @@ struct MemberwiseInitFormatter {
         "self.\(property.name)"
       case .wrapper:
         "self._\(property.name)"
-      case let .raw(assignee):
+      case .raw(let assignee):
         assignee
       }
 

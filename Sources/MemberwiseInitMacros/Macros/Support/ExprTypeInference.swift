@@ -1,12 +1,5 @@
 import SwiftOperators
-
-#if canImport(SwiftSyntax602)
-  @_spi(Compiler)
-#endif
-#if canImport(SwiftSyntax600)
-  @_spi(ExperimentalLanguageFeatures)
-#endif
-import SwiftSyntax
+#if canImport(SwiftSyntax602) @_spi(Compiler) #endif#if canImport(SwiftSyntax600) @_spi(ExperimentalLanguageFeatures) #endif import SwiftSyntax
 
 // Potential future enhancements:
 // - .ternaryExpr having "then" and "else" expressions as inferrable types
@@ -76,7 +69,7 @@ private indirect enum ExprInferrableType: Equatable, CustomStringConvertible {
 
   var unwrapSingleElementTuple: ExprInferrableType? {
     guard
-      case let .tuple(elementTypes) = self,
+      case .tuple(let elementTypes) = self,
       elementTypes.count == 1
     else { return nil }
     return elementTypes.first
@@ -299,12 +292,12 @@ extension ExprSyntax {
         .nonisolatedSpecifierArgument,
         .nonisolatedTypeSpecifier,
         .usingDecl:
-      return nil
-    case .unsafeExpr:
-      guard
-        let unsafeExpr = self.as(UnsafeExprSyntax.self)
-      else { return nil }
-      return unsafeExpr.expression.inferredType
+        return nil
+      case .unsafeExpr:
+        guard
+          let unsafeExpr = self.as(UnsafeExprSyntax.self)
+        else { return nil }
+        return unsafeExpr.expression.inferredType
     #else
       // deleted in 602
       case .conventionAttributeArguments,
@@ -313,7 +306,7 @@ extension ExprSyntax {
         .opaqueReturnTypeOfAttributeArguments,
         .unavailableFromAsyncAttributeArguments,
         .underscorePrivateAttributeArguments:
-      return nil
+        return nil
     #endif
 
     case .token, .accessorBlock, .accessorDeclList, .accessorDecl, .accessorEffectSpecifiers,
