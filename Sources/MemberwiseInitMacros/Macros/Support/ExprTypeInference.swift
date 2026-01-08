@@ -1,5 +1,13 @@
 import SwiftOperators
-#if canImport(SwiftSyntax602) @_spi(Compiler) #endif#if canImport(SwiftSyntax600) @_spi(ExperimentalLanguageFeatures) #endif import SwiftSyntax
+
+// swift-format-ignore
+#if canImport(SwiftSyntax602)
+@_spi(Compiler)
+#endif
+#if canImport(SwiftSyntax600)
+@_spi(ExperimentalLanguageFeatures)
+#endif
+import SwiftSyntax
 
 // Potential future enhancements:
 // - .ternaryExpr having "then" and "else" expressions as inferrable types
