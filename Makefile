@@ -31,9 +31,9 @@ test-swift-syntax-versions:
 	done
 
 # Test Swift × swift-syntax combinations on Linux via Podman.
-# See bin/test-linux --help for options.
-test-linux-all:
-	./bin/test-linux
+# Uses auto-detected parallelism. See bin/test-linux --help for options.
+test-linux:
+	./bin/test-linux --parallel --continue-on-error --log-dir ./tmp/logs
 
 format:
 	swift format \
@@ -42,4 +42,4 @@ format:
 		--recursive \
 		./Package.swift ./Sources ./Tests
 
-.PHONY: default test test-swift clean test-swift-syntax-versions test-linux-all format
+.PHONY: default test test-swift clean test-swift-syntax-versions test-linux format
