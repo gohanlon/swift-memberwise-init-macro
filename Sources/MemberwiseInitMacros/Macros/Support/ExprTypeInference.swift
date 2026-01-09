@@ -224,8 +224,8 @@ extension ExprSyntax {
     case .infixOperatorExpr:
       guard
         let infixOperatorExpr = self.as(InfixOperatorExprSyntax.self),
-        let lhsType = infixOperatorExpr.leftOperand.as(ExprSyntax.self)?.inferredType,
-        let rhsType = infixOperatorExpr.rightOperand.as(ExprSyntax.self)?.inferredType,
+        let lhsType = infixOperatorExpr.leftOperand.inferredType,
+        let rhsType = infixOperatorExpr.rightOperand.inferredType,
         let operation = InfixOperator(rawValue: infixOperatorExpr.operator.trimmedDescription),
         let inferredType = resultTypeOfInfixOperation(
           lhs: lhsType,
