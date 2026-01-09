@@ -19,12 +19,31 @@ public struct InitMacro: PeerMacro {
 }
 
 public struct MemberwiseInitMacro: MemberMacro {
-  public static func expansion<D, C>(
+  #if canImport(SwiftSyntax601)
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf decl: some DeclGroupSyntax,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [SwiftSyntax.DeclSyntax] {
+      try expansionImpl(of: node, providingMembersOf: decl, in: context)
+    }
+  #else
+    public static func expansion<D, C>(
+      of node: AttributeSyntax,
+      providingMembersOf decl: D,
+      in context: C
+    ) throws -> [SwiftSyntax.DeclSyntax]
+    where D: DeclGroupSyntax, C: MacroExpansionContext {
+      try expansionImpl(of: node, providingMembersOf: decl, in: context)
+    }
+  #endif
+
+  private static func expansionImpl(
     of node: AttributeSyntax,
-    providingMembersOf decl: D,
-    in context: C
-  ) throws -> [SwiftSyntax.DeclSyntax]
-  where D: DeclGroupSyntax, C: MacroExpansionContext {
+    providingMembersOf decl: some DeclGroupSyntax,
+    in context: some MacroExpansionContext
+  ) throws -> [SwiftSyntax.DeclSyntax] {
     guard [SwiftSyntax.SyntaxKind.classDecl, .structDecl, .actorDecl].contains(decl.kind) else {
       throw MacroExpansionErrorMessage(
         """
