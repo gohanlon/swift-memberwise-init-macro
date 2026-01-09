@@ -166,11 +166,30 @@ extension OptionSetMacro: ExtensionMacro {
 }
 
 extension OptionSetMacro: MemberMacro {
-  public static func expansion(
+  #if canImport(SwiftSyntax601)
+    public static func expansion(
+      of attribute: AttributeSyntax,
+      providingMembersOf decl: some DeclGroupSyntax,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      expansionImpl(of: attribute, providingMembersOf: decl, in: context)
+    }
+  #else
+    public static func expansion(
+      of attribute: AttributeSyntax,
+      providingMembersOf decl: some DeclGroupSyntax,
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      expansionImpl(of: attribute, providingMembersOf: decl, in: context)
+    }
+  #endif
+
+  private static func expansionImpl(
     of attribute: AttributeSyntax,
     providingMembersOf decl: some DeclGroupSyntax,
     in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
+  ) -> [DeclSyntax] {
     // Decode the expansion arguments.
     guard
       let (_, optionsEnum, rawType) = decodeExpansion(of: attribute, attachedTo: decl, in: context)

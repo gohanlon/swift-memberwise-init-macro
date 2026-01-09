@@ -4,13 +4,24 @@ import SwiftSyntaxMacros
 import XCTest
 
 private struct AddMemberMacro: MemberMacro {
-  static func expansion(
-    of node: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax,
-    in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
-    return ["let v: T"]
-  }
+  #if canImport(SwiftSyntax601)
+    static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      return ["let v: T"]
+    }
+  #else
+    static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      return ["let v: T"]
+    }
+  #endif
 }
 
 final class IndentationWidthTests: XCTestCase {

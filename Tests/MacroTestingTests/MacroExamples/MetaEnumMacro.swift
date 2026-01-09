@@ -81,7 +81,26 @@ public struct MetaEnumMacro {
 }
 
 extension MetaEnumMacro: MemberMacro {
-  public static func expansion(
+  #if canImport(SwiftSyntax601)
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      try expansionImpl(of: node, providingMembersOf: declaration, in: context)
+    }
+  #else
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      try expansionImpl(of: node, providingMembersOf: declaration, in: context)
+    }
+  #endif
+
+  private static func expansionImpl(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
     in context: some MacroExpansionContext

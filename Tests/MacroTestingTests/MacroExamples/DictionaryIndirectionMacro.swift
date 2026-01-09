@@ -16,13 +16,24 @@ import SwiftSyntaxMacros
 public struct DictionaryStorageMacro {}
 
 extension DictionaryStorageMacro: MemberMacro {
-  public static func expansion(
-    of node: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax,
-    in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
-    return ["\n  var _storage: [String: Any] = [:]"]
-  }
+  #if canImport(SwiftSyntax601)
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      return ["\n  var _storage: [String: Any] = [:]"]
+    }
+  #else
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      return ["\n  var _storage: [String: Any] = [:]"]
+    }
+  #endif
 }
 
 extension DictionaryStorageMacro: MemberAttributeMacro {

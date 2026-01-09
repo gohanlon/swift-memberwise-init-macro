@@ -14,11 +14,29 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 
 public enum CaseDetectionMacro: MemberMacro {
-  public static func expansion(
+  #if canImport(SwiftSyntax601)
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      expansionImpl(of: node, providingMembersOf: declaration)
+    }
+  #else
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      expansionImpl(of: node, providingMembersOf: declaration)
+    }
+  #endif
+
+  private static func expansionImpl(
     of node: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax,
-    in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
+    providingMembersOf declaration: some DeclGroupSyntax
+  ) -> [DeclSyntax] {
     declaration.memberBlock.members
       .compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }
       .map { $0.elements.first!.name }
