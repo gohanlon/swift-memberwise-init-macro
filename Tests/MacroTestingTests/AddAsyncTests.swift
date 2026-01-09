@@ -9,7 +9,7 @@ final class AddAsyncMacroTests: BaseTestCase {
   }
 
   func testExpansionTransformsFunctionWithResultCompletionToAsyncThrows() {
-    #if canImport(SwiftSyntax510)
+    #if canImport(SwiftSyntax600)
       assertMacro {
         #"""
         @AddAsync
@@ -73,7 +73,7 @@ final class AddAsyncMacroTests: BaseTestCase {
   }
 
   func testExpansionTransformsFunctionWithBoolCompletionToAsync() {
-    #if canImport(SwiftSyntax510)
+    #if canImport(SwiftSyntax600)
       assertMacro {
         """
         @AddAsync

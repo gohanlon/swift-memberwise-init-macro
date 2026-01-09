@@ -107,7 +107,7 @@ final class AddCompletionHandlerTests: BaseTestCase {
         ✏️ add 'async'
         struct Test {
           @AddCompletionHandler
-          func fetchData() async-> String {
+          func fetchData() async -> String {
             return "Hello, World!"
           }
         }
