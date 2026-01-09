@@ -32,11 +32,29 @@ public struct ObservableMacro: MemberMacro, MemberAttributeMacro {
 
   // MARK: - MemberMacro
 
-  public static func expansion(
+  #if canImport(SwiftSyntax601)
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      expansionImpl(of: node, providingMembersOf: declaration)
+    }
+  #else
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      expansionImpl(of: node, providingMembersOf: declaration)
+    }
+  #endif
+
+  private static func expansionImpl(
     of node: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax,
-    in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
+    providingMembersOf declaration: some DeclGroupSyntax
+  ) -> [DeclSyntax] {
     guard let identified = declaration.asProtocol(NamedDeclSyntax.self) else {
       return []
     }

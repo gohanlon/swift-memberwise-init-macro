@@ -133,11 +133,19 @@ public struct AddAsyncMacro: PeerMacro {
       """
 
     // add async
-    funcDecl.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(
-      leadingTrivia: .space,
-      asyncSpecifier: .keyword(.async),
-      throwsSpecifier: isResultReturn ? .keyword(.throws) : nil
-    )
+    #if canImport(SwiftSyntax600)
+      funcDecl.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(
+        leadingTrivia: .space,
+        asyncSpecifier: .keyword(.async),
+        throwsClause: isResultReturn ? ThrowsClauseSyntax(throwsSpecifier: .keyword(.throws)) : nil
+      )
+    #else
+      funcDecl.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(
+        leadingTrivia: .space,
+        asyncSpecifier: .keyword(.async),
+        throwsSpecifier: isResultReturn ? .keyword(.throws) : nil
+      )
+    #endif
 
     // add result type
     if let successReturnType {

@@ -14,11 +14,29 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 
 public enum CustomCodable: MemberMacro {
-  public static func expansion(
+  #if canImport(SwiftSyntax601)
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      expansionImpl(of: node, providingMembersOf: declaration)
+    }
+  #else
+    public static func expansion(
+      of node: AttributeSyntax,
+      providingMembersOf declaration: some DeclGroupSyntax,
+      in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+      expansionImpl(of: node, providingMembersOf: declaration)
+    }
+  #endif
+
+  private static func expansionImpl(
     of node: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax,
-    in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
+    providingMembersOf declaration: some DeclGroupSyntax
+  ) -> [DeclSyntax] {
     let memberList = declaration.memberBlock.members
 
     let cases = memberList.compactMap({ member -> String? in
