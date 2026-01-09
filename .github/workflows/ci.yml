@@ -38,9 +38,9 @@ jobs:
       - name: Set SWIFT_SYNTAX_VERSION environment variable
         run: echo "SWIFT_SYNTAX_VERSION=${{ matrix.swift-syntax-version }}" >> $GITHUB_ENV
       - name: Resolve Dependencies
-        run: swift package resolve
+        run: swift package resolve --disable-experimental-prebuilts
       - name: Run tests
-        run: swift test
+        run: swift test --disable-experimental-prebuilts
 
   linux:
     name: Linux
