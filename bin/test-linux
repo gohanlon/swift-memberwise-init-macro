@@ -20,17 +20,30 @@ is_transient_failure() {
   grep -q "error: fatalError" "$output_file" 2>/dev/null
 }
 
-# Detect optimal parallel jobs from Podman VM memory
-# Outputs: "jobs memory_gb" (e.g., "18 144")
+# Detect optimal parallel jobs from Podman VM resources
+# Outputs: "jobs memory_gb" (e.g., "6 144")
 detect_parallel_jobs() {
-  local memory_mb
+  local memory_mb cpus
   memory_mb=$(podman machine inspect --format '{{.Resources.Memory}}' 2>/dev/null) || return 1
+  cpus=$(podman machine inspect --format '{{.Resources.CPUs}}' 2>/dev/null) || cpus=4
   if [[ -z "$memory_mb" || "$memory_mb" -lt 1 ]]; then
     return 1
   fi
   local memory_gb=$((memory_mb / 1024))
-  # ~8 GB per concurrent Swift build
-  local jobs=$((memory_mb / 8192))
+  # ~8 GB per concurrent Swift build, but cap based on CPUs and max parallelism
+  # Testing shows 4-8 parallel jobs is optimal; higher causes contention
+  local jobs_by_memory=$((memory_mb / 8192))
+  local jobs_by_cpus=$((cpus / 3))  # ~3 CPUs per job for good parallelism
+  local max_jobs=8  # Cap to avoid contention at high parallelism
+
+  # Take minimum of all constraints
+  local jobs=$jobs_by_memory
+  if [[ "$jobs_by_cpus" -lt "$jobs" ]]; then
+    jobs=$jobs_by_cpus
+  fi
+  if [[ "$max_jobs" -lt "$jobs" ]]; then
+    jobs=$max_jobs
+  fi
   if [[ "$jobs" -lt 1 ]]; then
     jobs=1
   fi

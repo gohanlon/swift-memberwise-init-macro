@@ -65,6 +65,29 @@ calc_cpus_light() {
   echo "$cpus"
 }
 
+# Calculate parallel jobs based on VM resources
+# Uses same formula as bin/test-linux: min(memory/8GB, cpus/3, 8)
+calc_parallel_jobs() {
+  local memory_gb="$1"
+  local cpus="$2"
+
+  local jobs_by_memory=$((memory_gb / 8))
+  local jobs_by_cpus=$((cpus / 3))
+  local max_jobs=8
+
+  local jobs=$jobs_by_memory
+  if [[ "$jobs_by_cpus" -lt "$jobs" ]]; then
+    jobs=$jobs_by_cpus
+  fi
+  if [[ "$max_jobs" -lt "$jobs" ]]; then
+    jobs=$max_jobs
+  fi
+  if [[ "$jobs" -lt 1 ]]; then
+    jobs=1
+  fi
+  echo "$jobs"
+}
+
 # Get current machine state
 get_machine_state() {
   if ! podman machine inspect &>/dev/null; then
@@ -175,8 +198,9 @@ flow_no_machine() {
   rec_cpus=$(calc_cpus_recommended "$host_cpus")
   light_cpus=$(calc_cpus_light "$host_cpus")
 
-  local rec_jobs=$((rec_gb / 8))
-  [[ "$rec_jobs" -lt 1 ]] && rec_jobs=1
+  local rec_jobs light_jobs
+  rec_jobs=$(calc_parallel_jobs "$rec_gb" "$rec_cpus")
+  light_jobs=$(calc_parallel_jobs "$light_gb" "$light_cpus")
 
   echo ""
   echo "Create a Podman machine:"
@@ -196,8 +220,6 @@ flow_no_machine() {
       2) flow_custom "$host_cpus" ;;
     esac
   else
-    local light_jobs=$((light_gb / 8))
-    [[ "$light_jobs" -lt 1 ]] && light_jobs=1
 
     echo "  [1] Recommended (${rec_gb} GB, ${rec_cpus} CPUs) — ${rec_jobs} parallel jobs"
     echo "  [2] Light (${light_gb} GB, ${light_cpus} CPUs) — ${light_jobs} parallel job(s), frees macOS resources"
@@ -278,8 +300,9 @@ flow_reconfigure() {
   rec_cpus=$(calc_cpus_recommended "$host_cpus")
   light_cpus=$(calc_cpus_light "$host_cpus")
 
-  local rec_jobs=$((rec_gb / 8))
-  [[ "$rec_jobs" -lt 1 ]] && rec_jobs=1
+  local rec_jobs light_jobs
+  rec_jobs=$(calc_parallel_jobs "$rec_gb" "$rec_cpus")
+  light_jobs=$(calc_parallel_jobs "$light_gb" "$light_cpus")
 
   echo ""
   echo "Reconfigure to:"
@@ -298,8 +321,6 @@ flow_reconfigure() {
       2) flow_custom_reconfigure "$host_cpus" "$was_running" ;;
     esac
   else
-    local light_jobs=$((light_gb / 8))
-    [[ "$light_jobs" -lt 1 ]] && light_jobs=1
 
     echo "  [1] Recommended (${rec_gb} GB, ${rec_cpus} CPUs) — ${rec_jobs} parallel jobs"
     echo "  [2] Light (${light_gb} GB, ${light_cpus} CPUs) — ${light_jobs} parallel job(s)"
