@@ -36,15 +36,14 @@ public struct WrapStoredPropertiesMacro: MemberAttributeMacro {
       return []
     }
 
-    guard case .argumentList(let arguments) = node.arguments,
+    guard case let .argumentList(arguments) = node.arguments,
       let firstElement = arguments.first,
       let stringLiteral = firstElement.expression
         .as(StringLiteralExprSyntax.self),
       stringLiteral.segments.count == 1,
-      case .stringSegment(let wrapperName)? = stringLiteral.segments.first
+      case let .stringSegment(wrapperName)? = stringLiteral.segments.first
     else {
-      throw CustomError.message(
-        "macro requires a string literal containing the name of an attribute")
+      throw CustomError.message("macro requires a string literal containing the name of an attribute")
     }
 
     return [

@@ -9,8 +9,8 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
-
-import SwiftSyntax
+#if canImport(SwiftSyntax601)
+@_spi(ExperimentalLanguageFeatures) import SwiftSyntax
 import SwiftSyntaxMacros
 
 extension SyntaxCollection {
@@ -49,21 +49,20 @@ public struct AddAsyncMacro: PeerMacro {
     }
 
     // Requires a completion handler block as last parameter
-    guard
-      let completionHandlerParameterAttribute = funcDecl.signature.parameterClause.parameters.last?
-        .type.as(AttributedTypeSyntax.self),
-      let completionHandlerParameter = completionHandlerParameterAttribute.baseType.as(
-        FunctionTypeSyntax.self)
-    else {
+    let completionHandlerParameter = funcDecl
+      .signature
+      .parameterClause
+      .parameters.last?
+      .type.as(AttributedTypeSyntax.self)?
+      .baseType.as(FunctionTypeSyntax.self)
+    guard let completionHandlerParameter else {
       throw CustomError.message(
         "@addAsync requires an function that has a completion handler as last parameter"
       )
     }
 
     // Completion handler needs to return Void
-    if completionHandlerParameter.returnClause.type.as(IdentifierTypeSyntax.self)?.name.text
-      != "Void"
-    {
+    if completionHandlerParameter.returnClause.type.as(IdentifierTypeSyntax.self)?.name.text != "Void" {
       throw CustomError.message(
         "@addAsync requires an function that has a completion handler that returns Void"
       )
@@ -72,11 +71,24 @@ public struct AddAsyncMacro: PeerMacro {
     let returnType = completionHandlerParameter.parameters.first?.type
 
     let isResultReturn = returnType?.children(viewMode: .all).first?.description == "Result"
-    let successReturnType =
-      isResultReturn
-      ? returnType!.as(IdentifierTypeSyntax.self)!.genericArgumentClause?.arguments.first!
-        .argumentCompat600
-      : returnType
+    let successReturnType: TypeSyntax?
+
+    if isResultReturn {
+      let argument = returnType!.as(IdentifierTypeSyntax.self)!.genericArgumentClause?.arguments.first!.argument
+
+      switch argument {
+      case .some(.type(let type)):
+        successReturnType = type
+
+      case .some(.expr(_)):
+        throw CustomError.message("Found unexpected value generic in Result type")
+
+      case .none:
+        successReturnType = nil
+      }
+    } else {
+      successReturnType = returnType
+    }
 
     // Remove completionHandler and comma from the previous parameter
     var newParameterList = funcDecl.signature.parameterClause.parameters
@@ -89,7 +101,7 @@ public struct AddAsyncMacro: PeerMacro {
 
     // Drop the @addAsync attribute from the new declaration.
     let newAttributeList = funcDecl.attributes.filter {
-      guard case .attribute(let attribute) = $0,
+      guard case let .attribute(attribute) = $0,
         let attributeType = attribute.attributeName.as(IdentifierTypeSyntax.self),
         let nodeType = node.attributeName.as(IdentifierTypeSyntax.self)
       else {
@@ -136,13 +148,15 @@ public struct AddAsyncMacro: PeerMacro {
     funcDecl.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(
       leadingTrivia: .space,
       asyncSpecifier: .keyword(.async),
-      throwsSpecifier: isResultReturn ? .keyword(.throws) : nil
+      throwsClause: isResultReturn ? ThrowsClauseSyntax(throwsSpecifier: .keyword(.throws)) : nil
     )
 
     // add result type
     if let successReturnType {
       funcDecl.signature.returnClause = ReturnClauseSyntax(
-        leadingTrivia: .space, type: successReturnType.with(\.leadingTrivia, .space))
+        leadingTrivia: .space,
+        type: successReturnType.with(\.leadingTrivia, .space)
+      )
     } else {
       funcDecl.signature.returnClause = nil
     }
@@ -166,3 +180,315 @@ public struct AddAsyncMacro: PeerMacro {
     return [DeclSyntax(funcDecl)]
   }
 }
+#elseif canImport(SwiftSyntax600)
+import SwiftSyntax
+import SwiftSyntaxMacros
+
+extension SyntaxCollection {
+  mutating func removeLast() {
+    self.remove(at: self.index(before: self.endIndex))
+  }
+}
+
+public struct AddAsyncMacro: PeerMacro {
+  public static func expansion<
+    Context: MacroExpansionContext,
+    Declaration: DeclSyntaxProtocol
+  >(
+    of node: AttributeSyntax,
+    providingPeersOf declaration: Declaration,
+    in context: Context
+  ) throws -> [DeclSyntax] {
+
+    // Only on functions at the moment.
+    guard var funcDecl = declaration.as(FunctionDeclSyntax.self) else {
+      throw CustomError.message("@addAsync only works on functions")
+    }
+
+    // This only makes sense for non async functions.
+    if funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil {
+      throw CustomError.message(
+        "@addAsync requires an non async function"
+      )
+    }
+
+    // This only makes sense void functions
+    if funcDecl.signature.returnClause?.type.as(IdentifierTypeSyntax.self)?.name.text != "Void" {
+      throw CustomError.message(
+        "@addAsync requires an function that returns void"
+      )
+    }
+
+    // Requires a completion handler block as last parameter
+    let completionHandlerParameter = funcDecl
+      .signature
+      .parameterClause
+      .parameters.last?
+      .type.as(AttributedTypeSyntax.self)?
+      .baseType.as(FunctionTypeSyntax.self)
+    guard let completionHandlerParameter else {
+      throw CustomError.message(
+        "@addAsync requires an function that has a completion handler as last parameter"
+      )
+    }
+
+    // Completion handler needs to return Void
+    if completionHandlerParameter.returnClause.type.as(IdentifierTypeSyntax.self)?.name.text != "Void" {
+      throw CustomError.message(
+        "@addAsync requires an function that has a completion handler that returns Void"
+      )
+    }
+
+    let returnType = completionHandlerParameter.parameters.first?.type
+
+    let isResultReturn = returnType?.children(viewMode: .all).first?.description == "Result"
+    let successReturnType =
+      if isResultReturn {
+        returnType!.as(IdentifierTypeSyntax.self)!.genericArgumentClause?.arguments.first!.argument
+      } else {
+        returnType
+      }
+
+    // Remove completionHandler and comma from the previous parameter
+    var newParameterList = funcDecl.signature.parameterClause.parameters
+    newParameterList.removeLast()
+    var newParameterListLastParameter = newParameterList.last!
+    newParameterList.removeLast()
+    newParameterListLastParameter.trailingTrivia = []
+    newParameterListLastParameter.trailingComma = nil
+    newParameterList.append(newParameterListLastParameter)
+
+    // Drop the @addAsync attribute from the new declaration.
+    let newAttributeList = funcDecl.attributes.filter {
+      guard case let .attribute(attribute) = $0,
+        let attributeType = attribute.attributeName.as(IdentifierTypeSyntax.self),
+        let nodeType = node.attributeName.as(IdentifierTypeSyntax.self)
+      else {
+        return true
+      }
+
+      return attributeType.name.text != nodeType.name.text
+    }
+
+    let callArguments: [String] = newParameterList.map { param in
+      let argName = param.secondName ?? param.firstName
+
+      let paramName = param.firstName
+      if paramName.text != "_" {
+        return "\(paramName.text): \(argName.text)"
+      }
+
+      return "\(argName.text)"
+    }
+
+    let switchBody: ExprSyntax =
+      """
+            switch returnValue {
+            case .success(let value):
+              continuation.resume(returning: value)
+            case .failure(let error):
+              continuation.resume(throwing: error)
+            }
+      """
+
+    let newBody: ExprSyntax =
+      """
+
+        \(raw: isResultReturn ? "try await withCheckedThrowingContinuation { continuation in" : "await withCheckedContinuation { continuation in")
+          \(raw: funcDecl.name)(\(raw: callArguments.joined(separator: ", "))) { \(raw: returnType != nil ? "returnValue in" : "")
+
+      \(raw: isResultReturn ? switchBody : "continuation.resume(returning: \(raw: returnType != nil ? "returnValue" : "()"))")
+          }
+        }
+
+      """
+
+    // add async
+    funcDecl.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(
+      leadingTrivia: .space,
+      asyncSpecifier: .keyword(.async),
+      throwsClause: isResultReturn ? ThrowsClauseSyntax(throwsSpecifier: .keyword(.throws)) : nil
+    )
+
+    // add result type
+    if let successReturnType {
+      funcDecl.signature.returnClause = ReturnClauseSyntax(
+        leadingTrivia: .space,
+        type: successReturnType.with(\.leadingTrivia, .space)
+      )
+    } else {
+      funcDecl.signature.returnClause = nil
+    }
+
+    // drop completion handler
+    funcDecl.signature.parameterClause.parameters = newParameterList
+    funcDecl.signature.parameterClause.trailingTrivia = []
+
+    funcDecl.body = CodeBlockSyntax(
+      leftBrace: .leftBraceToken(leadingTrivia: .space),
+      statements: CodeBlockItemListSyntax(
+        [CodeBlockItemSyntax(item: .expr(newBody))]
+      ),
+      rightBrace: .rightBraceToken(leadingTrivia: .newline)
+    )
+
+    funcDecl.attributes = newAttributeList
+
+    funcDecl.leadingTrivia = .newlines(2)
+
+    return [DeclSyntax(funcDecl)]
+  }
+}
+#else
+import SwiftSyntax
+import SwiftSyntaxMacros
+
+extension SyntaxCollection {
+  mutating func removeLast() {
+    self.remove(at: self.index(before: self.endIndex))
+  }
+}
+
+public struct AddAsyncMacro: PeerMacro {
+  public static func expansion<
+    Context: MacroExpansionContext,
+    Declaration: DeclSyntaxProtocol
+  >(
+    of node: AttributeSyntax,
+    providingPeersOf declaration: Declaration,
+    in context: Context
+  ) throws -> [DeclSyntax] {
+
+    // Only on functions at the moment.
+    guard let funcDecl = declaration.as(FunctionDeclSyntax.self) else {
+      throw CustomError.message("@addAsync only works on functions")
+    }
+
+    // This only makes sense for non async functions.
+    if funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil {
+      throw CustomError.message(
+        "@addAsync requires an non async function"
+      )
+    }
+
+    // This only makes sense void functions
+    if funcDecl.signature.returnClause?.type.with(\.leadingTrivia, []).with(\.trailingTrivia, []).description != "Void" {
+      throw CustomError.message(
+        "@addAsync requires an function that returns void"
+      )
+    }
+
+    // Requires a completion handler block as last parameter
+    guard let completionHandlerParameterAttribute = funcDecl.signature.parameterClause.parameters.last?.type.as(AttributedTypeSyntax.self),
+      let completionHandlerParameter = completionHandlerParameterAttribute.baseType.as(FunctionTypeSyntax.self)
+    else {
+      throw CustomError.message(
+        "@addAsync requires an function that has a completion handler as last parameter"
+      )
+    }
+
+    // Completion handler needs to return Void
+    if completionHandlerParameter.returnClause.type.with(\.leadingTrivia, []).with(\.trailingTrivia, []).description != "Void" {
+      throw CustomError.message(
+        "@addAsync requires an function that has a completion handler that returns Void"
+      )
+    }
+
+    let returnType = completionHandlerParameter.parameters.first?.type
+
+    let isResultReturn = returnType?.children(viewMode: .all).first?.description == "Result"
+    let successReturnType = isResultReturn ? returnType!.as(IdentifierTypeSyntax.self)!.genericArgumentClause?.arguments.first!.argument : returnType
+
+    // Remove completionHandler and comma from the previous parameter
+    var newParameterList = funcDecl.signature.parameterClause.parameters
+    newParameterList.removeLast()
+    let newParameterListLastParameter = newParameterList.last!
+    newParameterList.removeLast()
+    newParameterList.append(newParameterListLastParameter.with(\.trailingTrivia, []).with(\.trailingComma, nil))
+
+    // Drop the @addAsync attribute from the new declaration.
+    let newAttributeList = funcDecl.attributes.filter {
+      guard case let .attribute(attribute) = $0,
+        let attributeType = attribute.attributeName.as(IdentifierTypeSyntax.self),
+        let nodeType = node.attributeName.as(IdentifierTypeSyntax.self)
+      else {
+        return true
+      }
+
+      return attributeType.name.text != nodeType.name.text
+    }
+
+    let callArguments: [String] = newParameterList.map { param in
+      let argName = param.secondName ?? param.firstName
+
+      let paramName = param.firstName
+      if paramName.text != "_" {
+        return "\(paramName.text): \(argName.text)"
+      }
+
+      return "\(argName.text)"
+    }
+
+    let switchBody: ExprSyntax =
+      """
+        switch returnValue {
+        case .success(let value):
+            continuation.resume(returning: value)
+        case .failure(let error):
+            continuation.resume(throwing: error)
+        }
+      """
+
+    let newBody: ExprSyntax =
+      """
+
+        \(raw: isResultReturn ? "try await withCheckedThrowingContinuation { continuation in" : "await withCheckedContinuation { continuation in")
+          \(raw: funcDecl.name)(\(raw: callArguments.joined(separator: ", "))) { \(raw: returnType != nil ? "returnValue in" : "")
+
+          \(raw: isResultReturn ? switchBody : "continuation.resume(returning: \(raw: returnType != nil ? "returnValue" : "()"))")
+
+          }
+        }
+
+      """
+
+    let newFunc =
+      funcDecl
+      .with(
+        \.signature,
+        funcDecl.signature
+          .with(
+            \.effectSpecifiers,
+            FunctionEffectSpecifiersSyntax(
+              leadingTrivia: .space,
+              asyncSpecifier: .keyword(.async),
+              throwsSpecifier: isResultReturn ? .keyword(.throws) : nil
+            )  // add async
+          )
+          .with(
+            \.returnClause,
+            successReturnType != nil ? ReturnClauseSyntax(leadingTrivia: .space, type: successReturnType!.with(\.leadingTrivia, .space)) : nil
+          )  // add result type
+          .with(
+            \.parameterClause,
+            funcDecl.signature.parameterClause.with(\.parameters, newParameterList)  // drop completion handler
+              .with(\.trailingTrivia, [])
+          )
+      )
+      .with(
+        \.body,
+        CodeBlockSyntax(
+          leftBrace: .leftBraceToken(leadingTrivia: .space),
+          statements: CodeBlockItemListSyntax(
+            [CodeBlockItemSyntax(item: .expr(newBody))]
+          ),
+          rightBrace: .rightBraceToken(leadingTrivia: .newline)
+        )
+      )
+      .with(\.attributes, newAttributeList)
+      .with(\.leadingTrivia, .newlines(2))
+
+    return [DeclSyntax(newFunc)]
+  }
+}
+#endif

@@ -13,8 +13,8 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-extension DeclSyntaxProtocol {
-  fileprivate var isObservableStoredProperty: Bool {
+private extension DeclSyntaxProtocol {
+  var isObservableStoredProperty: Bool {
     if let property = self.as(VariableDeclSyntax.self),
       let binding = property.bindings.first,
       let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier,
@@ -35,6 +35,7 @@ public struct ObservableMacro: MemberMacro, MemberAttributeMacro {
   public static func expansion(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
+    conformingTo: [TypeSyntax],
     in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
     guard let identified = declaration.asProtocol(NamedDeclSyntax.self) else {

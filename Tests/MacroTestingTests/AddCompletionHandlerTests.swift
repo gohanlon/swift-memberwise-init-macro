@@ -76,41 +76,80 @@ final class AddCompletionHandlerTests: BaseTestCase {
   }
 
   func testExpansionOnNonAsyncFunctionEmitsErrorWithFixItSuggestion() {
-    assertMacro {
-      """
-      struct Test {
-        @AddCompletionHandler
-        func fetchData() -> String {
-          return "Hello, World!"
+    #if canImport(SwiftSyntax510)
+      assertMacro {
+        """
+        struct Test {
+          @AddCompletionHandler
+          func fetchData() -> String {
+            return "Hello, World!"
+          }
         }
-      }
-      """
-    } diagnostics: {
-      """
-      struct Test {
-        @AddCompletionHandler
+        """
+      } diagnostics: {
+        """
+        struct Test {
+          @AddCompletionHandler
+          func fetchData() -> String {
+          ┬───
+          ╰─ 🛑 can only add a completion-handler variant to an 'async' function
+             ✏️ add 'async'
+            return "Hello, World!"
+          }
+        }
+        """
+      } fixes: {
+        """
         func fetchData() -> String {
         ┬───
         ╰─ 🛑 can only add a completion-handler variant to an 'async' function
-           ✏️ add 'async'
-          return "Hello, World!"
-        }
-      }
-      """
-    } fixes: {
-      """
-      func fetchData() -> String {
-      ┬───
-      ╰─ 🛑 can only add a completion-handler variant to an 'async' function
 
-      ✏️ add 'async'
-      struct Test {
-        @AddCompletionHandler
-        func fetchData() async-> String {
-          return "Hello, World!"
+        ✏️ add 'async'
+        struct Test {
+          @AddCompletionHandler
+          func fetchData() async-> String {
+            return "Hello, World!"
+          }
         }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        """
+        struct Test {
+          @AddCompletionHandler
+          func fetchData() -> String {
+            return "Hello, World!"
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        struct Test {
+          @AddCompletionHandler
+          func fetchData() -> String {
+          ┬───
+          ╰─ 🛑 can only add a completion-handler variant to an 'async' function
+             ✏️ add 'async'
+            return "Hello, World!"
+          }
+        }
+        """
+      } fixes: {
+        """
+        func fetchData() -> String {
+        ┬───
+        ╰─ 🛑 can only add a completion-handler variant to an 'async' function
+
+        ✏️ add 'async'
+        struct Test {
+          @AddCompletionHandler
+          func fetchData() async -> String {
+            return "Hello, World!"
+          }
+        }
+        """
+      }
+    #endif
   }
 }

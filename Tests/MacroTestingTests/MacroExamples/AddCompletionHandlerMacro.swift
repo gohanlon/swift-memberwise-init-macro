@@ -34,9 +34,9 @@ public struct AddCompletionHandlerMacro: PeerMacro {
       var newEffects: FunctionEffectSpecifiersSyntax
       if let existingEffects = funcDecl.signature.effectSpecifiers {
         newEffects = existingEffects
-        newEffects.asyncSpecifier = .keyword(.async)
+        newEffects.asyncSpecifier = .keyword(.async, trailingTrivia: .space)
       } else {
-        newEffects = FunctionEffectSpecifiersSyntax(asyncSpecifier: .keyword(.async))
+        newEffects = FunctionEffectSpecifiersSyntax(asyncSpecifier: .keyword(.async, trailingTrivia: .space))
       }
 
       var newSignature = funcDecl.signature
@@ -128,7 +128,7 @@ public struct AddCompletionHandlerMacro: PeerMacro {
 
     // Drop the @addCompletionHandler attribute from the new declaration.
     let newAttributeList = funcDecl.attributes.filter {
-      guard case .attribute(let attribute) = $0,
+      guard case let .attribute(attribute) = $0,
         let attributeType = attribute.attributeName.as(IdentifierTypeSyntax.self),
         let nodeType = node.attributeName.as(IdentifierTypeSyntax.self)
       else {
