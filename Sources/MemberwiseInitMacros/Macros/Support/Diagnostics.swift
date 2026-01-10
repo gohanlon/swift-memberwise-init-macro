@@ -500,7 +500,8 @@ extension VariableDeclSyntax {
       newFirstBinding.typeAnnotation = TypeAnnotationSyntax(
         colon: .colonToken(trailingTrivia: .space),
         type: inferredTypeSyntax
-          ?? TypeSyntax(MissingTypeSyntax(placeholder: TokenSyntax(stringLiteral: "\u{3C}#Type#\u{3E}")))
+          ?? TypeSyntax(
+            MissingTypeSyntax(placeholder: TokenSyntax(stringLiteral: "\u{3C}#Type#\u{3E}")))
       )
       newFirstBinding.pattern = newFirstBinding.pattern.trimmed
     }
