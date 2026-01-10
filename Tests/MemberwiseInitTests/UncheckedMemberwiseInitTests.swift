@@ -187,6 +187,16 @@ final class UncheckedMemberwiseInitTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      @_UncheckedMemberwiseInit(.internal, _deunderscoreParameters: true)
+                                           ┬────────────────────────────
+                                           ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      struct S {
+        var _internalName: String
+        var normalName: Int
+      }
+      """
     }
   }
 

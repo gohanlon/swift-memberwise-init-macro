@@ -10,7 +10,28 @@ func deprecationDiagnostics(
   node: AttributeSyntax,
   declaration decl: some DeclGroupSyntax
 ) -> [Diagnostic] {
-  return diagnoseDotEscaping(decl)
+  return diagnoseDeunderscoreParameters(node) + diagnoseDotEscaping(decl)
+}
+
+private func diagnoseDeunderscoreParameters(_ node: AttributeSyntax) -> [Diagnostic] {
+  guard let arguments = node.arguments?.as(LabeledExprListSyntax.self) else {
+    return []
+  }
+
+  guard
+    let argument = arguments.first(where: { $0.label?.text == "_deunderscoreParameters" })
+  else {
+    return []
+  }
+
+  return [
+    Diagnostic(
+      node: argument,
+      message: MacroExpansionWarningMessage(
+        "_deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead"
+      )
+    )
+  ]
 }
 
 private func diagnoseDotEscaping<D: DeclGroupSyntax>(_ decl: D) -> [Diagnostic] {

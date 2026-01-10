@@ -2441,6 +2441,15 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      @MemberwiseInit(_deunderscoreParameters: true)
+                      ┬────────────────────────────
+                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      struct Person {
+        let _name: String
+      }
+      """
     }
   }
 
@@ -2462,6 +2471,15 @@ final class MemberwiseInitTests: XCTestCase {
         ) {
           self._name = _name
         }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(_deunderscoreParameters: false)
+                      ┬─────────────────────────────
+                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      struct Person {
+        let _name: String
       }
       """
     }
@@ -2491,6 +2509,16 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      @MemberwiseInit(_deunderscoreParameters: true)
+                      ┬────────────────────────────
+                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      struct S {
+        let a: String
+        let _a: String
+      }
+      """
     }
   }
 
@@ -2516,6 +2544,16 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      @MemberwiseInit(_deunderscoreParameters: true)
+                      ┬────────────────────────────
+                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      struct S {
+        let _a: String
+        @Init(.ignore) let a: String
+      }
+      """
     }
   }
 
@@ -2539,6 +2577,15 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      @MemberwiseInit(_deunderscoreParameters: true)
+                      ┬────────────────────────────
+                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      struct S {
+        @Init(label: "_a") let _a: String
+      }
+      """
     }
   }
 
@@ -2560,6 +2607,15 @@ final class MemberwiseInitTests: XCTestCase {
         ) {
           self._a = _a
         }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(_deunderscoreParameters: true)
+                      ┬────────────────────────────
+                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      struct S {
+        @Init(label: "b") let _a: String
       }
       """
     }
@@ -3144,6 +3200,17 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public, _deunderscoreParameters: true)
+                               ┬────────────────────────────
+                               ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      @MemberwiseInit(.internal, _optionalsDefaultNil: false)
+      @MemberwiseInit(.private)
+      public struct Person {
+        @Init(.public) var _name: String?
+      }
+      """
     }
   }
 
@@ -3174,6 +3241,17 @@ final class MemberwiseInitTests: XCTestCase {
           self._set = set
           self._values = values
         }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public, _deunderscoreParameters: true)
+                               ┬────────────────────────────
+                               ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
+      public struct Dependency: Sendable {
+        public let _get: @Sendable (_ key: String, _ type: Any.Type) -> (any Sendable)?
+        public let _set: @Sendable (_ value: (any Sendable)?, _ key: String) -> Void
+        public let _values: @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
       }
       """
     }

@@ -27,7 +27,7 @@ Informed by explicit developer cues, MemberwiseInit can more often automatically
   * [Support for property wrappers](#support-for-property-wrappers)
   * [Automatic `@escaping` for closure types (usually)](#automatic-escaping-for-closure-types-usually)
   * [Experimental: Unchecked memberwise initialization](#experimental-unchecked-memberwise-initialization)
-  * [Experimental: Deunderscore parameter names](#experimental-deunderscore-parameter-names)
+  * [Deprecated: Deunderscore parameter names](#deprecated-deunderscore-parameter-names)
   * [Experimental: Defaulting optionals to nil](#experimental-defaulting-optionals-to-nil)
   * [Tuple destructuring in property declarations isn’t supported (yet)](#tuple-destructuring-in-property-declarations-isnt-supported-yet)
 * [Background](#background)
@@ -171,8 +171,8 @@ Attach to the property declarations of a struct that `@MemberwiseInit` is provid
 * `@MemberwiseInit(_optionalsDefaultNil: true)` *(experimental)*
   <br> When set to `true`, give all optional properties a default `init` parameter value of `nil`. For non-public initializers, optional `var` properties default to `nil` unless this parameter is explicitly set to `false`.
 
-* `@MemberwiseInit(_deunderscoreParameters: true)` *(experimental)*
-  <br> Drop underscore prefix from generated `init` parameter names, unless doing so would result in a naming conflict. Ignored properties won’t contribute to conflicts, and overridable using `@Init(label:)`.
+* `@MemberwiseInit(_deunderscoreParameters: true)` *(deprecated, use `@Init(label:)` instead)*
+  <br> Drop underscore prefix from generated `init` parameter names, unless doing so would result in a naming conflict. Ignored properties won't contribute to conflicts, and overridable using `@Init(label:)`.
 
 * `@MemberwiseInit` on  `actor`, `class` *(experimental)*
   <br> Attachable to actor and class.
@@ -639,12 +639,12 @@ public init(
 }
 ```
 
-### Experimental: Deunderscore parameter names
+### Deprecated: Deunderscore parameter names
 
-> **Note**
-> Prefer using `@Init(label:)` at the property level to explicitly specify non-underscored names—`@MemberwiseInit(_deunderscoreParmeters:)` may be deprecated soon.
+> **Warning**
+> `_deunderscoreParameters` is deprecated and will be removed in version 1.0. Use `@Init(label:)` on individual properties instead.
 
-Set `@MemberwiseInit(_deunderscoreParmeters: true)` to strip the underscore prefix from properties when generating initializer parameter names. If you wish to maintain the underscore or provide a custom label on a particular property, use `@Init(label: String)`.
+Set `@MemberwiseInit(_deunderscoreParameters: true)` to strip the underscore prefix from properties when generating initializer parameter names. If you wish to maintain the underscore or provide a custom label on a particular property, use `@Init(label: String)`.
 
 If the removal of the underscore would lead to a naming conflict among the properties included in the initializer, MemberwiseInit will not strip the underscore. (Ignored properties won’t contribute to conflicts.)
 

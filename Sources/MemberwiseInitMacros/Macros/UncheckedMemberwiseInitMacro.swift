@@ -43,6 +43,9 @@ public struct UncheckedMemberwiseInitMacro: MemberMacro {
       )
     }
 
+    deprecationDiagnostics(node: node, declaration: decl)
+      .forEach(context.diagnose)
+
     let accessLevel =
       MemberwiseInitMacro.extractConfiguredAccessLevel(from: node) ?? .internal
     let optionalsDefaultNil: Bool? =
