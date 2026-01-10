@@ -9,31 +9,23 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
-
+// swift-format-ignore-file
+// The content of this file was copied from the swift-syntax repository.
+// version: 602.0.0
 import SwiftSyntax
 import SwiftSyntaxMacros
 
 public struct DictionaryStorageMacro {}
 
 extension DictionaryStorageMacro: MemberMacro {
-  #if canImport(SwiftSyntax601)
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      conformingTo protocols: [TypeSyntax],
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      return ["\n  var _storage: [String: Any] = [:]"]
-    }
-  #else
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      return ["\n  var _storage: [String: Any] = [:]"]
-    }
-  #endif
+  public static func expansion(
+    of node: AttributeSyntax,
+    providingMembersOf declaration: some DeclGroupSyntax,
+    conformingTo: [TypeSyntax],
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
+    return ["\n  var _storage: [String: Any] = [:]"]
+  }
 }
 
 extension DictionaryStorageMacro: MemberAttributeMacro {

@@ -9,7 +9,9 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
-
+// swift-format-ignore-file
+// The content of this file was copied from the swift-syntax repository.
+// version: 602.0.0
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
@@ -17,29 +19,12 @@ import SwiftSyntaxMacros
 public enum NewTypeMacro {}
 
 extension NewTypeMacro: MemberMacro {
-  #if canImport(SwiftSyntax601)
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      conformingTo protocols: [TypeSyntax],
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      try expansionImpl(of: node, providingMembersOf: declaration)
-    }
-  #else
-    public static func expansion<Declaration, Context>(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: Declaration,
-      in context: Context
-    ) throws -> [DeclSyntax] where Declaration: DeclGroupSyntax, Context: MacroExpansionContext {
-      try expansionImpl(of: node, providingMembersOf: declaration)
-    }
-  #endif
-
-  private static func expansionImpl(
+  public static func expansion<Declaration, Context>(
     of node: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax
-  ) throws -> [DeclSyntax] {
+    providingMembersOf declaration: Declaration,
+    conformingTo: [TypeSyntax],
+    in context: Context
+  ) throws -> [DeclSyntax] where Declaration: DeclGroupSyntax, Context: MacroExpansionContext {
     do {
       guard
         case .argumentList(let arguments) = node.arguments,
@@ -48,8 +33,7 @@ extension NewTypeMacro: MemberMacro {
           .expression.as(MemberAccessExprSyntax.self),
         let rawType = memberAccessExn.base?.as(DeclReferenceExprSyntax.self)
       else {
-        throw CustomError.message(
-          #"@NewType requires the raw type as an argument, in the form "RawType.self"."#)
+        throw CustomError.message(#"@NewType requires the raw type as an argument, in the form "RawType.self"."#)
       }
 
       guard let declaration = declaration.as(StructDeclSyntax.self) else {

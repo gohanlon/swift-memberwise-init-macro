@@ -9,12 +9,14 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
-
+// swift-format-ignore-file
+// The content of this file was copied from the swift-syntax repository.
+// version: 602.0.0
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-extension DeclSyntaxProtocol {
-  fileprivate var isObservableStoredProperty: Bool {
+private extension DeclSyntaxProtocol {
+  var isObservableStoredProperty: Bool {
     if let property = self.as(VariableDeclSyntax.self),
       let binding = property.bindings.first,
       let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier,
@@ -32,29 +34,12 @@ public struct ObservableMacro: MemberMacro, MemberAttributeMacro {
 
   // MARK: - MemberMacro
 
-  #if canImport(SwiftSyntax601)
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      conformingTo protocols: [TypeSyntax],
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      expansionImpl(of: node, providingMembersOf: declaration)
-    }
-  #else
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      expansionImpl(of: node, providingMembersOf: declaration)
-    }
-  #endif
-
-  private static func expansionImpl(
+  public static func expansion(
     of node: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax
-  ) -> [DeclSyntax] {
+    providingMembersOf declaration: some DeclGroupSyntax,
+    conformingTo: [TypeSyntax],
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
     guard let identified = declaration.asProtocol(NamedDeclSyntax.self) else {
       return []
     }
