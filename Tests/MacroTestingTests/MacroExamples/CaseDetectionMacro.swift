@@ -9,34 +9,19 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
-
+// swift-format-ignore-file
+// The content of this file was copied from the swift-syntax repository.
+// version: 602.0.0
 import SwiftSyntax
 import SwiftSyntaxMacros
 
 public enum CaseDetectionMacro: MemberMacro {
-  #if canImport(SwiftSyntax601)
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      conformingTo protocols: [TypeSyntax],
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      expansionImpl(of: node, providingMembersOf: declaration)
-    }
-  #else
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      expansionImpl(of: node, providingMembersOf: declaration)
-    }
-  #endif
-
-  private static func expansionImpl(
+  public static func expansion(
     of node: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax
-  ) -> [DeclSyntax] {
+    providingMembersOf declaration: some DeclGroupSyntax,
+    conformingTo: [TypeSyntax],
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
     declaration.memberBlock.members
       .compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }
       .map { $0.elements.first!.name }
