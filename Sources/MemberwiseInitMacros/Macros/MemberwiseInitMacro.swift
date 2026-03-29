@@ -139,9 +139,19 @@ public struct MemberwiseInitMacro: MemberMacro {
       ) { acc, member in
         guard
           let variable = member.decl.as(VariableDeclSyntax.self),
-          variable.attributes.isEmpty || variable.hasCustomConfigurationAttribute,
           !variable.isComputedProperty
         else { return }
+
+        // Properties with non-configuration attributes (e.g. @State) but no @Init
+        // must be explicitly configured
+        if variable.hasNonConfigurationAttributes && !variable.hasCustomConfigurationAttribute {
+          if variable.modifiersExclude([.static, .lazy]) {
+            acc.diagnostics.append(
+              diagnoseAttributedPropertyWithoutInit(variable: variable)
+            )
+          }
+          return
+        }
 
         if let diagnostics = diagnoseMultipleConfigurations(variable: variable) {
           acc.diagnostics += diagnostics

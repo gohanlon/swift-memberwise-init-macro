@@ -392,6 +392,48 @@ final class ReadmeTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      import SwiftUI
+      @MemberwiseInit(.internal)  // 👈
+      struct MyView: View {
+        @State var isOn: Bool
+        ┬────────────────────
+        ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
+           ✏️ Add '@Init'
+           ✏️ Add '@Init(.ignore)' and an initializer
+
+        var body: some View { EmptyView() }
+      }
+      """
+    } fixes: {
+      """
+      @State var isOn: Bool
+      ┬────────────────────
+      ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
+
+      ✏️ Add '@Init'
+      import SwiftUI
+      @MemberwiseInit(.internal)  // 👈
+      struct MyView: View {
+        @Init
+
+        @State var isOn: Bool
+
+        var body: some View { EmptyView() }
+      }
+
+      ✏️ Add '@Init(.ignore)' and an initializer
+      import SwiftUI
+      @MemberwiseInit(.internal)  // 👈
+      struct MyView: View {
+        @Init(.ignore)
+
+        @State var isOn: Bool = <#value#>
+
+        var body: some View { EmptyView() }
+      }
+      """
     }
 
     assertMacro {
@@ -414,6 +456,48 @@ final class ReadmeTests: XCTestCase {
 
         internal init() {
         }
+      }
+      """
+    } diagnostics: {
+      """
+      import SwiftUI
+      @MemberwiseInit(. internal)
+      struct MyView: View {
+        @State var isOn: Bool = false  // 👈 Default value provided
+        ┬────────────────────────────
+        ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
+           ✏️ Add '@Init'
+           ✏️ Add '@Init(.ignore)'
+
+        var body: some View { EmptyView() }
+      }
+      """
+    } fixes: {
+      """
+      @State var isOn: Bool = false  // 👈 Default value provided
+      ┬────────────────────────────
+      ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
+
+      ✏️ Add '@Init'
+      import SwiftUI
+      @MemberwiseInit(. internal)
+      struct MyView: View {
+        @Init
+
+        @State var isOn: Bool = false  // 👈 Default value provided
+
+        var body: some View { EmptyView() }
+      }
+
+      ✏️ Add '@Init(.ignore)'
+      import SwiftUI
+      @MemberwiseInit(. internal)
+      struct MyView: View {
+        @Init(.ignore)
+
+        @State var isOn: Bool = false  // 👈 Default value provided
+
+        var body: some View { EmptyView() }
       }
       """
     }

@@ -724,6 +724,39 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.public)
+      public struct MyView {
+        @State private var isOn: Bool
+        ┬────────────────────────────
+        ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
+           ✏️ Add '@Init'
+           ✏️ Add '@Init(.ignore)' and an initializer
+      }
+      """
+    } fixes: {
+      """
+      @State private var isOn: Bool
+      ┬────────────────────────────
+      ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
+
+      ✏️ Add '@Init'
+      @MemberwiseInit(.public)
+      public struct MyView {
+        @Init
+
+        @State private var isOn: Bool
+      }
+
+      ✏️ Add '@Init(.ignore)' and an initializer
+      @MemberwiseInit(.public)
+      public struct MyView {
+        @Init(.ignore)
+
+        @State private var isOn: Bool = <#value#>
+      }
+      """
     }
   }
 
