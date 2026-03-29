@@ -53,14 +53,9 @@ public struct MemberwiseInitMacro: MemberMacro {
       )
     }
 
-    deprecationDiagnostics(node: node, declaration: decl)
-      .forEach(context.diagnose)
-
     let configuredAccessLevel: AccessLevelModifier? = extractConfiguredAccessLevel(from: node)
     let optionalsDefaultNil: Bool? =
       extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
-    let deunderscoreParameters: Bool =
-      extractLabeledBoolArgument("_deunderscoreParameters", from: node) ?? false
 
     let accessLevel = configuredAccessLevel ?? .internal
     let (properties, diagnostics) = try collectMemberPropertiesAndDiagnostics(
@@ -74,7 +69,6 @@ public struct MemberwiseInitMacro: MemberMacro {
         MemberwiseInitFormatter.formatInitializer(
           properties: properties,
           accessLevel: accessLevel,
-          deunderscoreParameters: deunderscoreParameters,
           optionalsDefaultNil: optionalsDefaultNil
         )
       )

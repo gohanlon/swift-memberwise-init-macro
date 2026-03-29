@@ -43,15 +43,10 @@ public struct UncheckedMemberwiseInitMacro: MemberMacro {
       )
     }
 
-    deprecationDiagnostics(node: node, declaration: decl)
-      .forEach(context.diagnose)
-
     let accessLevel =
       MemberwiseInitMacro.extractConfiguredAccessLevel(from: node) ?? .internal
     let optionalsDefaultNil: Bool? =
       MemberwiseInitMacro.extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
-    let deunderscoreParameters: Bool =
-      MemberwiseInitMacro.extractLabeledBoolArgument("_deunderscoreParameters", from: node) ?? false
 
     let properties = try collectUncheckedMemberProperties(
       from: decl.memberBlock.members
@@ -62,7 +57,6 @@ public struct UncheckedMemberwiseInitMacro: MemberMacro {
         MemberwiseInitFormatter.formatInitializer(
           properties: properties,
           accessLevel: accessLevel,
-          deunderscoreParameters: deunderscoreParameters,
           optionalsDefaultNil: optionalsDefaultNil
         )
       )

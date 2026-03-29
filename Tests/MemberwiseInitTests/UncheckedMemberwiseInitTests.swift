@@ -163,43 +163,6 @@ final class UncheckedMemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testStructWithDeunderscoreParameters() {
-    assertMacro {
-      """
-      @_UncheckedMemberwiseInit(.internal, _deunderscoreParameters: true)
-      struct S {
-        var _internalName: String
-        var normalName: Int
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        var _internalName: String
-        var normalName: Int
-
-        internal init(
-          internalName: String,
-          normalName: Int
-        ) {
-          self._internalName = internalName
-          self.normalName = normalName
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @_UncheckedMemberwiseInit(.internal, _deunderscoreParameters: true)
-                                           ┬────────────────────────────
-                                           ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      struct S {
-        var _internalName: String
-        var normalName: Int
-      }
-      """
-    }
-  }
-
   func testDefaultAccessLevelWhenMissing() {
     assertMacro {
       """

@@ -2421,206 +2421,6 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testDeunderscoreParameters() {
-    assertMacro {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-      struct Person {
-        let _name: String
-      }
-      """
-    } expansion: {
-      """
-      struct Person {
-        let _name: String
-
-        internal init(
-          name: String
-        ) {
-          self._name = name
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-                      ┬────────────────────────────
-                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      struct Person {
-        let _name: String
-      }
-      """
-    }
-  }
-
-  func testDeunderscoreParametersFalse() {
-    assertMacro {
-      """
-      @MemberwiseInit(_deunderscoreParameters: false)
-      struct Person {
-        let _name: String
-      }
-      """
-    } expansion: {
-      """
-      struct Person {
-        let _name: String
-
-        internal init(
-          _name: String
-        ) {
-          self._name = _name
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(_deunderscoreParameters: false)
-                      ┬─────────────────────────────
-                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      struct Person {
-        let _name: String
-      }
-      """
-    }
-  }
-
-  func testDeunderscoredParametersWouldConflict_DeunderscoreSkipped() {
-    assertMacro {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-      struct S {
-        let a: String
-        let _a: String
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let a: String
-        let _a: String
-
-        internal init(
-          a: String,
-          _a: String
-        ) {
-          self.a = a
-          self._a = _a
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-                      ┬────────────────────────────
-                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      struct S {
-        let a: String
-        let _a: String
-      }
-      """
-    }
-  }
-
-  func testDeunderscoredParameters_WhenConflictingPropertyIsIgnored() {
-    assertMacro {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-      struct S {
-        let _a: String
-        @Init(.ignore) let a: String
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let _a: String
-        let a: String
-
-        internal init(
-          a: String
-        ) {
-          self._a = a
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-                      ┬────────────────────────────
-                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      struct S {
-        let _a: String
-        @Init(.ignore) let a: String
-      }
-      """
-    }
-  }
-
-  func testCustomInitLabelOverridesDeunderscoring() {
-    assertMacro {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-      struct S {
-        @Init(label: "_a") let _a: String
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let _a: String
-
-        internal init(
-          _a: String
-        ) {
-          self._a = _a
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-                      ┬────────────────────────────
-                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      struct S {
-        @Init(label: "_a") let _a: String
-      }
-      """
-    }
-  }
-
-  func testCustomInitLabelOnUnderscoredProperty_DeunderscoreSkipped() {
-    assertMacro {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-      struct S {
-        @Init(label: "b") let _a: String
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let _a: String
-
-        internal init(
-          b _a: String
-        ) {
-          self._a = _a
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(_deunderscoreParameters: true)
-                      ┬────────────────────────────
-                      ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      struct S {
-        @Init(label: "b") let _a: String
-      }
-      """
-    }
-  }
-
   func testCustomInitLabel_Labeless() {
     assertMacro {
       """
@@ -3169,7 +2969,7 @@ final class MemberwiseInitTests: XCTestCase {
   func testAttachedMultipleTimes() {
     assertMacro {
       """
-      @MemberwiseInit(.public, _deunderscoreParameters: true)
+      @MemberwiseInit(.public)
       @MemberwiseInit(.internal, _optionalsDefaultNil: false)
       @MemberwiseInit(.private)
       public struct Person {
@@ -3182,9 +2982,9 @@ final class MemberwiseInitTests: XCTestCase {
         var _name: String?
 
         public init(
-          name: String?
+          _name: String?
         ) {
-          self._name = name
+          self._name = _name
         }
 
         internal init(
@@ -3200,17 +3000,6 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
       """
-    } diagnostics: {
-      """
-      @MemberwiseInit(.public, _deunderscoreParameters: true)
-                               ┬────────────────────────────
-                               ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      @MemberwiseInit(.internal, _optionalsDefaultNil: false)
-      @MemberwiseInit(.private)
-      public struct Person {
-        @Init(.public) var _name: String?
-      }
-      """
     }
   }
 
@@ -3218,11 +3007,11 @@ final class MemberwiseInitTests: XCTestCase {
   func testComplexProtocolWitnessDependency() {
     assertMacro {
       """
-      @MemberwiseInit(.public, _deunderscoreParameters: true)
+      @MemberwiseInit(.public)
       public struct Dependency: Sendable {
-        public let _get: @Sendable (_ key: String, _ type: Any.Type) -> (any Sendable)?
-        public let _set: @Sendable (_ value: (any Sendable)?, _ key: String) -> Void
-        public let _values: @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
+        @Init(label: "get") public let _get: @Sendable (_ key: String, _ type: Any.Type) -> (any Sendable)?
+        @Init(label: "set") public let _set: @Sendable (_ value: (any Sendable)?, _ key: String) -> Void
+        @Init(label: "values") public let _values: @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
       }
       """
     } expansion: {
@@ -3233,25 +3022,14 @@ final class MemberwiseInitTests: XCTestCase {
         public let _values: @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
 
         public init(
-          get: @escaping @Sendable (_ key: String, _ type: Any.Type) -> (any Sendable)?,
-          set: @escaping @Sendable (_ value: (any Sendable)?, _ key: String) -> Void,
-          values: @escaping @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
+          get _get: @escaping @Sendable (_ key: String, _ type: Any.Type) -> (any Sendable)?,
+          set _set: @escaping @Sendable (_ value: (any Sendable)?, _ key: String) -> Void,
+          values _values: @escaping @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
         ) {
-          self._get = get
-          self._set = set
-          self._values = values
+          self._get = _get
+          self._set = _set
+          self._values = _values
         }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(.public, _deunderscoreParameters: true)
-                               ┬────────────────────────────
-                               ╰─ ⚠️ _deunderscoreParameters is deprecated; use @Init(label:) on individual properties instead
-      public struct Dependency: Sendable {
-        public let _get: @Sendable (_ key: String, _ type: Any.Type) -> (any Sendable)?
-        public let _set: @Sendable (_ value: (any Sendable)?, _ key: String) -> Void
-        public let _values: @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
       }
       """
     }

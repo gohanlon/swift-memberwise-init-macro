@@ -123,31 +123,19 @@ struct MemberProperty: Equatable {
   let type: TypeSyntax
 
   func initParameterLabel(
-    considering allProperties: [MemberProperty],
-    deunderscoreParameters: Bool
+    considering allProperties: [MemberProperty]
   ) -> String {
     guard
       let customSettings = self.customSettings,
-      customSettings.label
-        != self.initParameterName(
-          considering: allProperties,
-          deunderscoreParameters: deunderscoreParameters
-        )
+      customSettings.label != self.initParameterName(considering: allProperties)
     else { return "" }
 
     return customSettings.label.map { "\($0) " } ?? ""
   }
 
   func initParameterName(
-    considering allProperties: [MemberProperty],
-    deunderscoreParameters: Bool
+    considering allProperties: [MemberProperty]
   ) -> String {
-    guard
-      self.customSettings?.label == nil,
-      deunderscoreParameters
-    else { return self.name }
-
-    let potentialName = self.name.hasPrefix("_") ? String(name.dropFirst()) : self.name
-    return allProperties.contains(where: { $0.name == potentialName }) ? self.name : potentialName
+    return self.name
   }
 }

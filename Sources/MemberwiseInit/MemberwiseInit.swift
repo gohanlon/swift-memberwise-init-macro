@@ -12,7 +12,6 @@ public enum AccessLevelConfig {
 @attached(member, names: named(init))
 public macro MemberwiseInit(
   _ accessLevel: AccessLevelConfig,
-  _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
@@ -22,7 +21,6 @@ public macro MemberwiseInit(
 
 @attached(member, names: named(init))
 public macro MemberwiseInit(
-  _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
@@ -32,7 +30,6 @@ public macro MemberwiseInit(
 
 @attached(member, names: named(init))
 public macro _UncheckedMemberwiseInit(
-  _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
@@ -43,7 +40,6 @@ public macro _UncheckedMemberwiseInit(
 @attached(member, names: named(init))
 public macro _UncheckedMemberwiseInit(
   _ accessLevel: AccessLevelConfig,
-  _deunderscoreParameters: Bool? = nil,
   _optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(

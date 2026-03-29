@@ -5,12 +5,10 @@ struct MemberwiseInitFormatter {
   static func formatInitializer(
     properties: [MemberProperty],
     accessLevel: AccessLevelModifier,
-    deunderscoreParameters: Bool,
     optionalsDefaultNil: Bool?
   ) -> InitializerDeclSyntax {
     let formattedParameters = formatParameters(
       properties: properties,
-      deunderscoreParameters: deunderscoreParameters,
       optionalsDefaultNil: optionalsDefaultNil,
       accessLevel: accessLevel
     )
@@ -23,8 +21,7 @@ struct MemberwiseInitFormatter {
           CodeBlockItemSyntax(
             stringLiteral: formatInitializerAssignmentStatement(
               for: property,
-              considering: properties,
-              deunderscoreParameters: deunderscoreParameters
+              considering: properties
             )
           )
         }
@@ -34,7 +31,6 @@ struct MemberwiseInitFormatter {
 
   private static func formatParameters(
     properties: [MemberProperty],
-    deunderscoreParameters: Bool,
     optionalsDefaultNil: Bool?,
     accessLevel: AccessLevelModifier
   ) -> String {
@@ -46,7 +42,6 @@ struct MemberwiseInitFormatter {
         formatParameter(
           for: property,
           considering: properties,
-          deunderscoreParameters: deunderscoreParameters,
           optionalsDefaultNil: optionalsDefaultNil
             ?? MemberwiseInitMacro.defaultOptionalsDefaultNil(
               for: property.keywordToken,
@@ -60,7 +55,6 @@ struct MemberwiseInitFormatter {
   private static func formatParameter(
     for property: MemberProperty,
     considering allProperties: [MemberProperty],
-    deunderscoreParameters: Bool,
     optionalsDefaultNil: Bool
   ) -> String {
     let defaultValue =
@@ -72,19 +66,16 @@ struct MemberwiseInitFormatter {
       (property.customSettings?.forceEscaping ?? false || property.type.isFunctionType)
       ? "@escaping " : ""
 
-    let label = property.initParameterLabel(
-      considering: allProperties, deunderscoreParameters: deunderscoreParameters)
+    let label = property.initParameterLabel(considering: allProperties)
 
-    let parameterName = property.initParameterName(
-      considering: allProperties, deunderscoreParameters: deunderscoreParameters)
+    let parameterName = property.initParameterName(considering: allProperties)
 
     return "\(label)\(parameterName): \(escaping)\(property.type.description)\(defaultValue)"
   }
 
   private static func formatInitializerAssignmentStatement(
     for property: MemberProperty,
-    considering allProperties: [MemberProperty],
-    deunderscoreParameters: Bool
+    considering allProperties: [MemberProperty]
   ) -> String {
     let assignee =
       switch property.customSettings?.assignee {
@@ -96,10 +87,7 @@ struct MemberwiseInitFormatter {
         assignee
       }
 
-    let parameterName = property.initParameterName(
-      considering: allProperties,
-      deunderscoreParameters: deunderscoreParameters
-    )
+    let parameterName = property.initParameterName(considering: allProperties)
     return "\(assignee) = \(parameterName)"
   }
 }

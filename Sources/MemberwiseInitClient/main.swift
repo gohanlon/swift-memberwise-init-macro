@@ -215,9 +215,9 @@ struct S1 {
 }
 _ = S1.init(b: "Blob")
 
-@MemberwiseInit(_deunderscoreParameters: true)
+@MemberwiseInit
 struct S2 {
-  let _a: String
+  @Init(label: "a") let _a: String
   @Init(.ignore) var a: String? = nil
 }
 _ = S2.init(a: "Blob")
@@ -246,9 +246,9 @@ _ = S3.init(_a: "Blob")
 //}
 //_ = MyView2.init(isOn: true)
 
-@MemberwiseInit(_deunderscoreParameters: true)
+@MemberwiseInit
 struct Person10 {
-  let _name: String
+  @Init(label: "name") let _name: String
 }
 _ = Person10.init(name: "Blob")
 //_ = Person10.init(_name: "Blob") // 🛑 No exact matches in call to initializer
