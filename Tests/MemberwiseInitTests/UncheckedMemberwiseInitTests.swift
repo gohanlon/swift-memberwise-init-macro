@@ -361,6 +361,35 @@ final class UncheckedMemberwiseInitTests: XCTestCase {
     }
   }
 
+  func testDestructuredTuple() {
+    assertMacro {
+      """
+      @_UncheckedMemberwiseInit
+      struct Point2D {
+        let (x, y): (Int, Int)
+        var name: String
+      }
+      """
+    } expansion: {
+      """
+      struct Point2D {
+        let (x, y): (Int, Int)
+        var name: String
+
+        internal init(
+          x: Int,
+          y: Int,
+          name: String
+        ) {
+          self.x = x
+          self.y = y
+          self.name = name
+        }
+      }
+      """
+    }
+  }
+
   func testEscaping() {
     assertMacro {
       """

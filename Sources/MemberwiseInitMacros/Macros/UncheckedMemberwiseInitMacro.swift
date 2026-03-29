@@ -66,28 +66,67 @@ public struct UncheckedMemberwiseInitMacro: MemberMacro {
   private static func collectUncheckedMemberProperties(
     from memberBlockItemList: MemberBlockItemListSyntax
   ) throws -> [MemberProperty] {
-    memberBlockItemList.compactMap { member -> MemberProperty? in
+    memberBlockItemList.flatMap { member -> [MemberProperty] in
       guard let variable = member.decl.as(VariableDeclSyntax.self),
         !variable.isComputedProperty,
         variable.modifiersExclude([.static, .lazy]),
-        let binding = variable.bindings.first,
-        let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text,
-        let type = binding.typeAnnotation?.type ?? binding.initializer?.value.inferredTypeSyntax
-      else { return nil }
+        let binding = variable.bindings.first
+      else { return [] }
 
       let customSettings = MemberwiseInitMacro.extractVariableCustomSettings(from: variable)
       if customSettings?.ignore == true {
-        return nil
+        return []
       }
 
-      return MemberProperty(
-        accessLevel: variable.accessLevel,
-        customSettings: customSettings,
-        initializerValue: binding.initializer?.value,
-        keywordToken: variable.bindingSpecifier.tokenKind,
-        name: name,
-        type: type.trimmed
-      )
+      // Handle tuple destructuring
+      if let tuplePattern = binding.pattern.as(TuplePatternSyntax.self),
+        let tupleType = binding.typeAnnotation?.type.as(TupleTypeSyntax.self)
+      {
+        let patternElements = Array(tuplePattern.elements)
+        let typeElements = Array(tupleType.elements)
+        guard patternElements.count == typeElements.count else { return [] }
+
+        let initializerValues: [ExprSyntax?]
+        if let tupleExpr = binding.initializer?.value.as(TupleExprSyntax.self),
+          tupleExpr.elements.count == patternElements.count
+        {
+          initializerValues = tupleExpr.elements.map { $0.expression }
+        } else {
+          initializerValues = Array(repeating: nil, count: patternElements.count)
+        }
+
+        return zip(patternElements, zip(typeElements, initializerValues)).compactMap {
+          patternElement, typeAndInit in
+          let (typeElement, initValue) = typeAndInit
+          guard
+            let name = patternElement.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
+          else { return nil }
+          return MemberProperty(
+            accessLevel: variable.accessLevel,
+            customSettings: customSettings,
+            initializerValue: initValue,
+            keywordToken: variable.bindingSpecifier.tokenKind,
+            name: name,
+            type: typeElement.type.trimmed
+          )
+        }
+      }
+
+      guard
+        let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text,
+        let type = binding.typeAnnotation?.type ?? binding.initializer?.value.inferredTypeSyntax
+      else { return [] }
+
+      return [
+        MemberProperty(
+          accessLevel: variable.accessLevel,
+          customSettings: customSettings,
+          initializerValue: binding.initializer?.value,
+          keywordToken: variable.bindingSpecifier.tokenKind,
+          name: name,
+          type: type.trimmed
+        )
+      ]
     }
   }
 }

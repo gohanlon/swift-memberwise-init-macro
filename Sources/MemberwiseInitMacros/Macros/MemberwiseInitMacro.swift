@@ -234,17 +234,55 @@ public struct MemberwiseInitMacro: MemberMacro {
         return
       }
       if propertyBinding.isTuplePattern {
-        acc.diagnostics.append(
-          propertyBinding.diagnostic(
-            MacroExpansionErrorMessage(
-              """
-              @MemberwiseInit does not support tuple destructuring for property declarations. \
-              Use multiple declarations instead.
-              """
+        guard
+          let tuplePattern = propertyBinding.syntax.pattern.as(TuplePatternSyntax.self),
+          let tupleType = propertyBinding.effectiveType?.as(TupleTypeSyntax.self)
+        else {
+          acc.diagnostics.append(
+            propertyBinding.diagnostic(
+              MacroExpansionErrorMessage(
+                "@MemberwiseInit requires a type annotation for tuple destructuring."
+              )
             )
           )
-        )
+          return
+        }
 
+        let patternElements = Array(tuplePattern.elements)
+        let typeElements = Array(tupleType.elements)
+        guard patternElements.count == typeElements.count else { return }
+
+        // Extract per-element initializer values from tuple literal, if available
+        let initializerValues: [ExprSyntax?]
+        if let tupleExpr = propertyBinding.initializerValue?.as(TupleExprSyntax.self),
+          tupleExpr.elements.count == patternElements.count
+        {
+          initializerValues = tupleExpr.elements.map { $0.expression }
+        } else if propertyBinding.initializerValue != nil {
+          // Has initializer but not a tuple literal — can't extract per-element defaults
+          initializerValues = Array(repeating: nil, count: patternElements.count)
+        } else {
+          initializerValues = Array(repeating: nil, count: patternElements.count)
+        }
+
+        for (patternElement, (typeElement, initValue)) in zip(
+          patternElements, zip(typeElements, initializerValues))
+        {
+          guard
+            let name = patternElement.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
+          else { continue }
+
+          acc.members.append(
+            MemberProperty(
+              accessLevel: propertyBinding.variable.accessLevel,
+              customSettings: propertyBinding.variable.customSettings,
+              initializerValue: initValue,
+              keywordToken: propertyBinding.variable.keywordToken,
+              name: name,
+              type: typeElement.type.trimmed
+            )
+          )
+        }
         return
       }
 

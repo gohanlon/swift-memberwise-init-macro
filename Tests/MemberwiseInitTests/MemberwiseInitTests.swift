@@ -430,34 +430,32 @@ final class MemberwiseInitTests: XCTestCase {
 
   // MARK: - Test destructured tuples
 
-  // TODO: @MemberwiseInit should support tuple destructuring for property declarations
-  //  func testLetDestructuredTupleWithoutInitializer() {
-  //    assertMacro {
-  //      """
-  //      @MemberwiseInit
-  //      struct Point2D {
-  //        let (x, y): (Int, Int)
-  //      }
-  //      """
-  //    } expansion: {
-  //      """
-  //      struct Point2D {
-  //        let (x, y): (Int, Int)
-  //
-  //        internal init(
-  //          x: Int,
-  //          y: Int
-  //        ) {
-  //          self.x = x
-  //          self.y = y
-  //        }
-  //      }
-  //      """
-  //    }
-  //  }
+  func testLetDestructuredTupleWithoutInitializer() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct Point2D {
+        let (x, y): (Int, Int)
+      }
+      """
+    } expansion: {
+      """
+      struct Point2D {
+        let (x, y): (Int, Int)
 
-  // NB: @MemberwiseInit does not support tuple destructuring for property declarations, but
-  // already initialized `let` properties are ignored, so the tuple can be ignored.
+        internal init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
+        }
+      }
+      """
+    }
+  }
+
+  // Already initialized `let` properties are ignored, so the tuple is ignored.
   func testLetDestructuredTupleWithInitializer() {
     assertMacro {
       """
@@ -478,47 +476,149 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  func testLetDestructuredTupleWithoutInitializer_FailsNotSupported() {
+  func testVarDestructuredTupleWithInitializer() {
     assertMacro {
       """
       @MemberwiseInit
       struct Point2D {
-        let (x, y): (Int, Int)
+        var (x, y): (Int, Int) = (0, 0)
       }
       """
     } expansion: {
       """
       struct Point2D {
-        let (x, y): (Int, Int)
+        var (x, y): (Int, Int) = (0, 0)
 
-        internal init() {
+        internal init(
+          x: Int = 0,
+          y: Int = 0
+        ) {
+          self.x = x
+          self.y = y
         }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit
-      struct Point2D {
-        let (x, y): (Int, Int)
-            ┬─────────────────
-            ╰─ 🛑 @MemberwiseInit does not support tuple destructuring for property declarations. Use multiple declarations instead.
       }
       """
     }
   }
 
-  func testVarDestructuredTupleWithInitializer_FailsNotSupported() {
+  func testVarDestructuredTupleWithoutInitializer() {
     assertMacro {
       """
       @MemberwiseInit
       struct Point2D {
-        var (x, y): (Int, Int) = (0, 0)
+        var (x, y): (Int, Int)
       }
       """
     } expansion: {
       """
       struct Point2D {
-        var (x, y): (Int, Int) = (0, 0)
+        var (x, y): (Int, Int)
+
+        internal init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
+        }
+      }
+      """
+    }
+  }
+
+  func testDestructuredTupleWithMixedProperties() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        let (x, y): (Int, Int)
+        var name: String
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let (x, y): (Int, Int)
+        var name: String
+
+        internal init(
+          x: Int,
+          y: Int,
+          name: String
+        ) {
+          self.x = x
+          self.y = y
+          self.name = name
+        }
+      }
+      """
+    }
+  }
+
+  func testDestructuredTupleWithThreeElements() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct Point3D {
+        let (x, y, z): (Int, Double, String)
+      }
+      """
+    } expansion: {
+      """
+      struct Point3D {
+        let (x, y, z): (Int, Double, String)
+
+        internal init(
+          x: Int,
+          y: Double,
+          z: String
+        ) {
+          self.x = x
+          self.y = y
+          self.z = z
+        }
+      }
+      """
+    }
+  }
+
+  func testDestructuredTupleWithInferredType() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        var (x, y) = (0, "hello")
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        var (x, y) = (0, "hello")
+
+        internal init(
+          x: Int = 0,
+          y: String = "hello"
+        ) {
+          self.x = x
+          self.y = y
+        }
+      }
+      """
+    }
+  }
+
+  func testDestructuredTupleWithNonInferrableType() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        var (x, y) = (computeX(), computeY())
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        var (x, y) = (computeX(), computeY())
 
         internal init() {
         }
@@ -527,10 +627,110 @@ final class MemberwiseInitTests: XCTestCase {
     } diagnostics: {
       """
       @MemberwiseInit
-      struct Point2D {
+      struct S {
+        var (x, y) = (computeX(), computeY())
+            ┬────────────────────────────────
+            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+      }
+      """
+    }
+  }
+
+  func testDestructuredTupleWithNonTupleLiteralInitializer() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        var (x, y): (Int, Int) = getPoint()
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        var (x, y): (Int, Int) = getPoint()
+
+        internal init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
+        }
+      }
+      """
+    }
+  }
+
+  func testDestructuredTupleWithInitIgnore() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(.ignore) var (x, y): (Int, Int) = (0, 0)
+        var name: String
+      }
+      """
+    } expansion: {
+      """
+      struct S {
         var (x, y): (Int, Int) = (0, 0)
-            ┬──────────────────────────
-            ╰─ 🛑 @MemberwiseInit does not support tuple destructuring for property declarations. Use multiple declarations instead.
+        var name: String
+
+        internal init(
+          name: String
+        ) {
+          self.name = name
+        }
+      }
+      """
+    }
+  }
+
+  func testDestructuredTupleWithOptionalsDefaultNil() {
+    assertMacro {
+      """
+      @MemberwiseInit(optionalsDefaultNil: true)
+      struct S {
+        let (x, y): (Int?, String?)
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let (x, y): (Int?, String?)
+
+        internal init(
+          x: Int? = nil,
+          y: String? = nil
+        ) {
+          self.x = x
+          self.y = y
+        }
+      }
+      """
+    }
+  }
+
+  func testDestructuredTupleWithAccessLevel() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct Point {
+        public let (x, y): (Int, Int)
+      }
+      """
+    } expansion: {
+      """
+      public struct Point {
+        public let (x, y): (Int, Int)
+
+        public init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
+        }
       }
       """
     }

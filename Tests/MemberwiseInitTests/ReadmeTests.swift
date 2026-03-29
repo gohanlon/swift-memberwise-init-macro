@@ -771,7 +771,7 @@ final class ReadmeTests: XCTestCase {
     }
   }
 
-  func testTupleDestructuringNotSupported() {
+  func testTupleDestructuring() {
     assertMacro {
       """
       @MemberwiseInit
@@ -784,17 +784,13 @@ final class ReadmeTests: XCTestCase {
       struct Point2D {
         let (x, y): (Int, Int)
 
-        internal init() {
+        internal init(
+          x: Int,
+          y: Int
+        ) {
+          self.x = x
+          self.y = y
         }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit
-      struct Point2D {
-        let (x, y): (Int, Int)
-            ┬─────────────────
-            ╰─ 🛑 @MemberwiseInit does not support tuple destructuring for property declarations. Use multiple declarations instead.
       }
       """
     }
