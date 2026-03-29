@@ -291,6 +291,143 @@ final class ReadmeTests: XCTestCase {
     }
   }
 
+  func testInferTypeFromPropertyInitializationExpressionsComprehensive() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      public struct Example<T: CaseIterable> {
+        var string = "", int = 0
+        var boolTrue = true
+
+        var mixedDivide = 8.0 / 4  // Double
+        var halfOpenRange = 1.0..<5  // Range<Double>
+
+        var arrayTypeInit = [T]()
+        var arrayIntLiteral = [1, 2, 3]
+        var arrayPromoted = [1, 2.0]  // [Double]
+        var nestedArray = [[1, 2], [20, 30]]  // [[Int]]
+
+        var dictionaryTypeInit = [String: T]()
+        var dictionaryLiteral = ["key1": 1, "key2": 2]
+        var dictionaryPromoted = [1: 2.0, 3.0: 4]  // [Double: Double]
+        var nestedDictionary = ["key1": ["subkey1": 10], "key2": ["subkey2": 20]]  // [String: [String: Int]]
+
+        var tuple = (1, ("Hello", true))
+        var value = T.allCases.first as T?
+
+        var nestedMixed = ((1 + 2) * 3) >= (4 / 2) && ((true || false) && !(false))  // Bool
+
+        var bitwiseAnd = 0b1010 & 0b0101
+        var leftShift = 1 << 2
+        var bitwiseNotInt = ~0b0011
+
+        var intBinary = 0b01010101
+        var intOctal = 0o21
+        var intHex = 0x1A
+        var floatExponential = 1.25e2  // Double
+        var floatHex = 0xC.3p0  // Double
+
+        var arrayAs = [1, "foo", 3] as [Any]
+        var dictionaryAs = ["foo": 1, 3: "bar"] as [AnyHashable: Any]
+      }
+      """
+    } expansion: {
+      """
+      public struct Example<T: CaseIterable> {
+        var string = "", int = 0
+        var boolTrue = true
+
+        var mixedDivide = 8.0 / 4  // Double
+        var halfOpenRange = 1.0..<5  // Range<Double>
+
+        var arrayTypeInit = [T]()
+        var arrayIntLiteral = [1, 2, 3]
+        var arrayPromoted = [1, 2.0]  // [Double]
+        var nestedArray = [[1, 2], [20, 30]]  // [[Int]]
+
+        var dictionaryTypeInit = [String: T]()
+        var dictionaryLiteral = ["key1": 1, "key2": 2]
+        var dictionaryPromoted = [1: 2.0, 3.0: 4]  // [Double: Double]
+        var nestedDictionary = ["key1": ["subkey1": 10], "key2": ["subkey2": 20]]  // [String: [String: Int]]
+
+        var tuple = (1, ("Hello", true))
+        var value = T.allCases.first as T?
+
+        var nestedMixed = ((1 + 2) * 3) >= (4 / 2) && ((true || false) && !(false))  // Bool
+
+        var bitwiseAnd = 0b1010 & 0b0101
+        var leftShift = 1 << 2
+        var bitwiseNotInt = ~0b0011
+
+        var intBinary = 0b01010101
+        var intOctal = 0o21
+        var intHex = 0x1A
+        var floatExponential = 1.25e2  // Double
+        var floatHex = 0xC.3p0  // Double
+
+        var arrayAs = [1, "foo", 3] as [Any]
+        var dictionaryAs = ["foo": 1, 3: "bar"] as [AnyHashable: Any]
+
+        internal init(
+          string: String = "",
+          int: Int = 0,
+          boolTrue: Bool = true,
+          mixedDivide: Double = 8.0 / 4,
+          halfOpenRange: Range<Double> = 1.0 ..< 5,
+          arrayTypeInit: [T] = [T](),
+          arrayIntLiteral: [Int] = [1, 2, 3],
+          arrayPromoted: [Double] = [1, 2.0],
+          nestedArray: [[Int]] = [[1, 2], [20, 30]],
+          dictionaryTypeInit: [String: T] = [String: T](),
+          dictionaryLiteral: [String: Int] = ["key1": 1, "key2": 2],
+          dictionaryPromoted: [Double: Double] = [1: 2.0, 3.0: 4],
+          nestedDictionary: [String: [String: Int]] = ["key1": ["subkey1": 10], "key2": ["subkey2": 20]],
+          tuple: (Int, (String, Bool)) = (1, ("Hello", true)),
+          value: T? = T.allCases.first as T?,
+          nestedMixed: Bool = ((1 + 2) * 3) >= (4 / 2) && ((true || false) && !(false)),
+          bitwiseAnd: Int = 0b1010 & 0b0101,
+          leftShift: Int = 1 << 2,
+          bitwiseNotInt: Int = ~0b0011,
+          intBinary: Int = 0b01010101,
+          intOctal: Int = 0o21,
+          intHex: Int = 0x1A,
+          floatExponential: Double = 1.25e2,
+          floatHex: Double = 0xC.3p0,
+          arrayAs: [Any] = [1, "foo", 3] as [Any],
+          dictionaryAs: [AnyHashable: Any] = ["foo": 1, 3: "bar"] as [AnyHashable: Any]
+        ) {
+          self.string = string
+          self.int = int
+          self.boolTrue = boolTrue
+          self.mixedDivide = mixedDivide
+          self.halfOpenRange = halfOpenRange
+          self.arrayTypeInit = arrayTypeInit
+          self.arrayIntLiteral = arrayIntLiteral
+          self.arrayPromoted = arrayPromoted
+          self.nestedArray = nestedArray
+          self.dictionaryTypeInit = dictionaryTypeInit
+          self.dictionaryLiteral = dictionaryLiteral
+          self.dictionaryPromoted = dictionaryPromoted
+          self.nestedDictionary = nestedDictionary
+          self.tuple = tuple
+          self.value = value
+          self.nestedMixed = nestedMixed
+          self.bitwiseAnd = bitwiseAnd
+          self.leftShift = leftShift
+          self.bitwiseNotInt = bitwiseNotInt
+          self.intBinary = intBinary
+          self.intOctal = intOctal
+          self.intHex = intHex
+          self.floatExponential = floatExponential
+          self.floatHex = floatHex
+          self.arrayAs = arrayAs
+          self.dictionaryAs = dictionaryAs
+        }
+      }
+      """
+    }
+  }
+
   func testDefaultValues() {
     assertMacro {
       """
@@ -647,6 +784,28 @@ final class ReadmeTests: XCTestCase {
 
     assertMacro {
       """
+      @MemberwiseInit(.public)  // 👈 `.public`
+      public struct TaskRunner {
+        public let onCompletion: () -> Void
+      }
+      """
+    } expansion: {
+      """
+      // 👈 `.public`
+      public struct TaskRunner {
+        public let onCompletion: () -> Void
+
+        public init(
+          onCompletion: @escaping () -> Void
+        ) {
+          self.onCompletion = onCompletion
+        }
+      }
+      """
+    }
+
+    assertMacro {
+      """
       public typealias CompletionHandler = @Sendable () -> Void
 
       @MemberwiseInit(.public)
@@ -673,7 +832,7 @@ final class ReadmeTests: XCTestCase {
   func testUncheckedMemberwiseInit() {
     assertMacro {
       """
-      @_UncheckedMemberwiseInit(.internal)
+      @_UncheckedMemberwiseInit(.public)
       public struct APIResponse: Codable {
         public let id: String
         @Monitored internal var statusCode: Int
@@ -689,7 +848,7 @@ final class ReadmeTests: XCTestCase {
         @Monitored internal var statusCode: Int
         private var rawResponse: Data
 
-        internal init(
+        public init(
           id: String,
           statusCode: Int,
           rawResponse: Data
@@ -700,6 +859,33 @@ final class ReadmeTests: XCTestCase {
         }
 
         // Computed properties and methods...
+      }
+      """
+    }
+  }
+
+  func testOptionalsRequireExplicitArgument() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct User {
+        let id: Int
+        let name: String?
+      }
+      """
+    } expansion: {
+      """
+      struct User {
+        let id: Int
+        let name: String?
+
+        internal init(
+          id: Int,
+          name: String?
+        ) {
+          self.id = id
+          self.name = name
+        }
       }
       """
     }
@@ -740,6 +926,29 @@ final class ReadmeTests: XCTestCase {
     }
   }
 
+  func testExplicitNilOnVarProperty() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      public struct User {
+        public var name: String? = nil  // 👈 explicit initializer
+      }
+      """
+    } expansion: {
+      """
+      public struct User {
+        public var name: String? = nil  // 👈 explicit initializer
+
+        public init(
+          name: String? = nil
+        ) {
+          self.name = name
+        }
+      }
+      """
+    }
+  }
+
   func testTupleDestructuring() {
     assertMacro {
       """
@@ -756,6 +965,31 @@ final class ReadmeTests: XCTestCase {
         internal init(
           x: Int,
           y: Int
+        ) {
+          self.x = x
+          self.y = y
+        }
+      }
+      """
+    }
+  }
+
+  func testTupleDestructuringWithDefaults() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct Point2D {
+        var (x, y): (Int, Int) = (0, 0)
+      }
+      """
+    } expansion: {
+      """
+      struct Point2D {
+        var (x, y): (Int, Int) = (0, 0)
+
+        internal init(
+          x: Int = 0,
+          y: Int = 0
         ) {
           self.x = x
           self.y = y
