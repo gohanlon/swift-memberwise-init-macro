@@ -40,7 +40,7 @@ public struct User1 {
 _ = User1.init(id: 42)
 _ = User1.init(id: 42, name: "Blob")
 
-@MemberwiseInit(.public, _optionalsDefaultNil: true)
+@MemberwiseInit(.public, optionalsDefaultNil: true)
 public struct User2 {
   public let id: Int
   public let name: String?

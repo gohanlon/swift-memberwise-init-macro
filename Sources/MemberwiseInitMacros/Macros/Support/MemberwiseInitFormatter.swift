@@ -5,12 +5,11 @@ struct MemberwiseInitFormatter {
   static func formatInitializer(
     properties: [MemberProperty],
     accessLevel: AccessLevelModifier,
-    optionalsDefaultNil: Bool?
+    optionalsDefaultNil: Bool
   ) -> InitializerDeclSyntax {
     let formattedParameters = formatParameters(
       properties: properties,
-      optionalsDefaultNil: optionalsDefaultNil,
-      accessLevel: accessLevel
+      optionalsDefaultNil: optionalsDefaultNil
     )
 
     let formattedInitSignature = "\n\(accessLevel) init(\(formattedParameters))"
@@ -31,8 +30,7 @@ struct MemberwiseInitFormatter {
 
   private static func formatParameters(
     properties: [MemberProperty],
-    optionalsDefaultNil: Bool?,
-    accessLevel: AccessLevelModifier
+    optionalsDefaultNil: Bool
   ) -> String {
     guard !properties.isEmpty else { return "" }
 
@@ -43,10 +41,6 @@ struct MemberwiseInitFormatter {
           for: property,
           considering: properties,
           optionalsDefaultNil: optionalsDefaultNil
-            ?? MemberwiseInitMacro.defaultOptionalsDefaultNil(
-              for: property.keywordToken,
-              initAccessLevel: accessLevel
-            )
         )
       }
       .joined(separator: ",\n") + "\n"

@@ -655,7 +655,7 @@ final class ReadmeTests: XCTestCase {
   func testOptionalsDefaultToNil() {
     assertMacro {
       """
-      @MemberwiseInit(.public, _optionalsDefaultNil: true)
+      @MemberwiseInit(.public, optionalsDefaultNil: true)
       public struct User: Codable {
         public let id: Int
         public let name: String?

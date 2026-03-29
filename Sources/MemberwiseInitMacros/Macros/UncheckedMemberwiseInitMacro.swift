@@ -45,8 +45,8 @@ public struct UncheckedMemberwiseInitMacro: MemberMacro {
 
     let accessLevel =
       MemberwiseInitMacro.extractConfiguredAccessLevel(from: node) ?? .internal
-    let optionalsDefaultNil: Bool? =
-      MemberwiseInitMacro.extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
+    let optionalsDefaultNil: Bool =
+      MemberwiseInitMacro.extractLabeledBoolArgument("optionalsDefaultNil", from: node) ?? false
 
     let properties = try collectUncheckedMemberProperties(
       from: decl.memberBlock.members

@@ -12,7 +12,7 @@ public enum AccessLevelConfig {
 @attached(member, names: named(init))
 public macro MemberwiseInit(
   _ accessLevel: AccessLevelConfig,
-  _optionalsDefaultNil: Bool? = nil
+  optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
     module: "MemberwiseInitMacros",
@@ -21,7 +21,7 @@ public macro MemberwiseInit(
 
 @attached(member, names: named(init))
 public macro MemberwiseInit(
-  _optionalsDefaultNil: Bool? = nil
+  optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
     module: "MemberwiseInitMacros",
@@ -30,7 +30,7 @@ public macro MemberwiseInit(
 
 @attached(member, names: named(init))
 public macro _UncheckedMemberwiseInit(
-  _optionalsDefaultNil: Bool? = nil
+  optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
     module: "MemberwiseInitMacros",
@@ -40,7 +40,7 @@ public macro _UncheckedMemberwiseInit(
 @attached(member, names: named(init))
 public macro _UncheckedMemberwiseInit(
   _ accessLevel: AccessLevelConfig,
-  _optionalsDefaultNil: Bool? = nil
+  optionalsDefaultNil: Bool? = nil
 ) =
   #externalMacro(
     module: "MemberwiseInitMacros",

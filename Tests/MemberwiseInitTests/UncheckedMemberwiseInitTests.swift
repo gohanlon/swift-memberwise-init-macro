@@ -135,7 +135,7 @@ final class UncheckedMemberwiseInitTests: XCTestCase {
   func testStructWithOptionals() {
     assertMacro {
       """
-      @_UncheckedMemberwiseInit(.internal, _optionalsDefaultNil: true)
+      @_UncheckedMemberwiseInit(.internal, optionalsDefaultNil: true)
       struct S {
         var optionalInt: Int?
         var optionalString: String?

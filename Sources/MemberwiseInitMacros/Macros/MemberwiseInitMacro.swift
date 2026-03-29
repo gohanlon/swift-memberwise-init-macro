@@ -54,8 +54,8 @@ public struct MemberwiseInitMacro: MemberMacro {
     }
 
     let configuredAccessLevel: AccessLevelModifier? = extractConfiguredAccessLevel(from: node)
-    let optionalsDefaultNil: Bool? =
-      extractLabeledBoolArgument("_optionalsDefaultNil", from: node)
+    let optionalsDefaultNil: Bool =
+      extractLabeledBoolArgument("optionalsDefaultNil", from: node) ?? false
 
     let accessLevel = configuredAccessLevel ?? .internal
     let (properties, diagnostics) = try collectMemberPropertiesAndDiagnostics(
@@ -337,16 +337,4 @@ public struct MemberwiseInitMacro: MemberMacro {
     )
   }
 
-  static func defaultOptionalsDefaultNil(
-    for bindingKeyword: TokenKind,
-    initAccessLevel: AccessLevelModifier
-  ) -> Bool {
-    guard bindingKeyword == .keyword(.var) else { return false }
-    return switch initAccessLevel {
-    case .private, .fileprivate, .internal:
-      true
-    case .package, .public, .open:
-      false
-    }
-  }
 }
