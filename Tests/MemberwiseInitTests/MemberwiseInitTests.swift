@@ -152,7 +152,7 @@ final class MemberwiseInitTests: XCTestCase {
       struct Earth {
         @Init let name = "Earth"
         ┬────
-        ╰─ ⚠️ @Init can't be applied to already initialized constant
+        ╰─ 🛑 @Init can't be applied to already initialized constant
            ✏️ Remove '@Init'
            ✏️ Remove '= "Earth"'
       }
@@ -161,7 +161,7 @@ final class MemberwiseInitTests: XCTestCase {
       """
       @Init let name = "Earth"
       ┬────
-      ╰─ ⚠️ @Init can't be applied to already initialized constant
+      ╰─ 🛑 @Init can't be applied to already initialized constant
 
       ✏️ Remove '@Init'
       @MemberwiseInit

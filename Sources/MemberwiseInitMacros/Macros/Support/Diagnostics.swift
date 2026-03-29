@@ -77,18 +77,7 @@ private func diagnoseInitOnInitializedLet(
 
     let message = "@\(attributeName) can't be applied to already initialized constant"
 
-    // @InitWrapper and @InitRaw can be errors instead of warnings since they haven't seen release.
-    if attributeName != "Init" {
-      return MacroExpansionErrorMessage(message)
-    }
-    // @Init(default:) hasn't seen release, so any misuses that include "default" can be an error.
-    if variable.includesArgument("default") {
-      return MacroExpansionErrorMessage(message)
-    }
-
-    // TODO: For 1.0, @Init can also be an error
-    // Conservatively, make @Init be a warning to tolerate uses relying on @Init being silently ignored.
-    return MacroExpansionWarningMessage(message)
+    return MacroExpansionErrorMessage(message)
   }
 
   return customSettings.diagnosticOnDefault(diagnosticMessage, fixIts: fixIts)
@@ -103,7 +92,7 @@ private func diagnoseMemberModifiers(
   if let modifier = variable.firstModifierWhere(keyword: .static) {
     return Diagnostic(
       node: modifier,
-      message: MacroExpansionWarningMessage(
+      message: MacroExpansionErrorMessage(
         "@\(attributeName) can't be applied to 'static' members"),
       fixIts: [variable.fixItRemoveCustomInit].compactMap { $0 }
     )
@@ -112,7 +101,7 @@ private func diagnoseMemberModifiers(
   if let modifier = variable.firstModifierWhere(keyword: .lazy) {
     return Diagnostic(
       node: modifier,
-      message: MacroExpansionWarningMessage("@\(attributeName) can't be applied to 'lazy' members"),
+      message: MacroExpansionErrorMessage("@\(attributeName) can't be applied to 'lazy' members"),
       fixIts: [variable.fixItRemoveCustomInit].compactMap { $0 }
     )
   }

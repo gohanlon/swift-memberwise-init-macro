@@ -40,7 +40,7 @@ final class CustomInitTests: XCTestCase {
       struct S {
         @Init let number = 42
         ┬────
-        ╰─ ⚠️ @Init can't be applied to already initialized constant
+        ╰─ 🛑 @Init can't be applied to already initialized constant
            ✏️ Remove '@Init'
            ✏️ Remove '= 42'
       }
@@ -49,7 +49,7 @@ final class CustomInitTests: XCTestCase {
       """
       @Init let number = 42
       ┬────
-      ╰─ ⚠️ @Init can't be applied to already initialized constant
+      ╰─ 🛑 @Init can't be applied to already initialized constant
 
       ✏️ Remove '@Init'
       @MemberwiseInit
@@ -118,7 +118,7 @@ final class CustomInitTests: XCTestCase {
       struct S {
         @Init static var staticNumber: Int
               ┬─────
-              ╰─ ⚠️ @Init can't be applied to 'static' members
+              ╰─ 🛑 @Init can't be applied to 'static' members
                  ✏️ Remove '@Init'
       }
       """
@@ -126,7 +126,7 @@ final class CustomInitTests: XCTestCase {
       """
       @Init static var staticNumber: Int
             ┬─────
-            ╰─ ⚠️ @Init can't be applied to 'static' members
+            ╰─ 🛑 @Init can't be applied to 'static' members
 
       ✏️ Remove '@Init'
       @MemberwiseInit
@@ -165,7 +165,7 @@ final class CustomInitTests: XCTestCase {
       struct S {
         @Init(default: 0) lazy var lazyNumber: Int = {
                           ┬───
-                          ╰─ ⚠️ @Init can't be applied to 'lazy' members
+                          ╰─ 🛑 @Init can't be applied to 'lazy' members
                              ✏️ Remove '@Init(default: 0)'
           return 2 * 2
         }()
@@ -175,7 +175,7 @@ final class CustomInitTests: XCTestCase {
       """
       @Init(default: 0) lazy var lazyNumber: Int = {
                         ┬───
-                        ╰─ ⚠️ @Init can't be applied to 'lazy' members
+                        ╰─ 🛑 @Init can't be applied to 'lazy' members
 
       ✏️ Remove '@Init(default: 0)'
       @MemberwiseInit
@@ -214,7 +214,7 @@ final class CustomInitTests: XCTestCase {
       struct B {
         @Init lazy static var value = 0
                    ┬─────
-                   ╰─ ⚠️ @Init can't be applied to 'static' members
+                   ╰─ 🛑 @Init can't be applied to 'static' members
                       ✏️ Remove '@Init'
       }
       """
@@ -222,7 +222,7 @@ final class CustomInitTests: XCTestCase {
       """
       @Init lazy static var value = 0
                  ┬─────
-                 ╰─ ⚠️ @Init can't be applied to 'static' members
+                 ╰─ 🛑 @Init can't be applied to 'static' members
 
       ✏️ Remove '@Init'
       @MemberwiseInit
