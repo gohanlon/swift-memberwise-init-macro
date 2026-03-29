@@ -109,29 +109,3 @@ public macro Init(
     type: "InitMacro"
   )
 
-// MARK: - Deprecated
-
-// Deprecated; remove in 1.0
-public enum EscapingConfig { case escaping }
-
-@attached(peer)
-public macro Init(
-  _ accessLevel: AccessLevelConfig,
-  _ escaping: EscapingConfig,
-  label: String? = nil
-) =
-  #externalMacro(
-    module: "MemberwiseInitMacros",
-    type: "InitMacro"
-  )
-
-// Deprecated; remove in 1.0
-@attached(peer)
-public macro Init(
-  _ escaping: EscapingConfig,
-  label: String? = nil
-) =
-  #externalMacro(
-    module: "MemberwiseInitMacros",
-    type: "InitMacro"
-  )
