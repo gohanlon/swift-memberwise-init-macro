@@ -812,7 +812,7 @@ public func withMacroTesting<R>(
 extension Snapshotting where Value == String, Format == String {
   fileprivate static let _lines = Snapshotting(
     pathExtension: "txt",
-    diffing: Diffing(
+    diffing: .diff(
       toData: { Data($0.utf8) },
       fromData: { String(decoding: $0, as: UTF8.self) }
     ) { old, new in
@@ -854,11 +854,7 @@ extension Snapshotting where Value == String, Format == String {
         }
       }
 
-      let attachment = XCTAttachment(
-        data: Data(result.utf8),
-        uniformTypeIdentifier: "public.patch-file"
-      )
-      return (result, [attachment])
+      return (result, [.data(Data(result.utf8), name: "diff.patch")])
     }
   )
 }
