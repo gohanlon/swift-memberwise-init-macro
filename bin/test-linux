@@ -10,14 +10,17 @@ set -euo pipefail
 #
 # To ensure compatibility for all users, we test the full matrix.
 
-readonly SWIFT_VERSIONS=(5.9 5.10 6.0 6.1 6.2)
-readonly SYNTAX_VERSIONS=(509 510 600 601 602)
+readonly SWIFT_VERSIONS=(5.9 5.10 6.0 6.1 6.2 6.3)
+readonly SYNTAX_VERSIONS=(509 510 600 601 602 603 604)
 readonly MAX_RETRIES=2  # Retry transient compiler crashes
 
-# Check if output indicates a transient failure (compiler crash)
+# Check if output indicates a transient failure worth retrying:
+# - compiler crashes (error: fatalError) — resource pressure in Podman VM
+# - git clone/fetch failures (network issues, TLS disconnects)
 is_transient_failure() {
   local output_file="$1"
-  grep -q "error: fatalError" "$output_file" 2>/dev/null
+  grep -qE "error: fatalError|Failed to clone repository|RPC failed" \
+    "$output_file" 2>/dev/null
 }
 
 # Detect optimal parallel jobs from Podman VM resources
@@ -58,6 +61,8 @@ syntax_range() {
     600) echo "600.0.0..<601.0.0" ;;
     601) echo "601.0.0..<602.0.0" ;;
     602) echo "602.0.0..<603.0.0" ;;
+    603) echo "603.0.0..<604.0.0" ;;
+    604) echo "604.0.0-prerelease..<605.0.0" ;;
     *) echo "Unknown syntax version: $1" >&2; exit 1 ;;
   esac
 }
@@ -240,6 +245,12 @@ run_sequential() {
   local failed=0
   local failed_combos=()
 
+  # Cleanup per-combo build directories on exit
+  cleanup_sequential() {
+    rm -rf .build-*-* 2>/dev/null || true
+  }
+  trap cleanup_sequential EXIT
+
   for i in "${!combinations[@]}"; do
     combo="${combinations[$i]}"
     IFS=: read -r swift_ver syntax_ver <<< "$combo"
@@ -250,13 +261,16 @@ run_sequential() {
 
     printf "%s %s ... " "$progress" "$label"
 
-    # Clean build artifacts to avoid workspace state conflicts between Swift versions
-    rm -rf .build
+    # Per-combo build directory avoids conflicts with other invocations and SourceKit
+    local build_dir=".build-${swift_ver}-${syntax_ver}"
+    rm -rf "$build_dir" 2>/dev/null || true
+    mkdir -p "$build_dir"
 
     # Run podman
     cmd=(
       podman run --rm
       -v "$(pwd)":/workspace
+      -v "$(pwd)/$build_dir":/workspace/.build
       -w /workspace
       -e "SWIFT_SYNTAX_VERSION=$syntax_range_val"
       "swift:$swift_ver"
@@ -293,13 +307,15 @@ run_sequential() {
           break
         else
           if is_transient_failure "$tmp_output" && [[ "$attempt" -lt "$MAX_RETRIES" ]]; then
-            echo "⟳ $label transient failure, retrying..."
+            echo "⟳ $label transient failure, retrying in 5s..."
             if [[ -n "$log_file" ]]; then
               mv "$tmp_output" "$log_file"
             else
               rm -f "$tmp_output"
             fi
-            rm -rf .build  # Clean before retry
+            sleep 5
+            rm -rf "$build_dir" 2>/dev/null || true  # Clean before retry
+            mkdir -p "$build_dir"
           else
             echo "✗ $label FAILED"
             if [[ -n "$log_file" ]]; then
@@ -327,13 +343,15 @@ run_sequential() {
           break
         else
           if is_transient_failure "$tmp_output" && [[ "$attempt" -lt "$MAX_RETRIES" ]]; then
-            printf "⟳ retry %d... " "$((attempt + 1))"
+            printf "⟳ retry %d (in 5s)... " "$((attempt + 1))"
             if [[ -n "$log_file" ]]; then
               mv "$tmp_output" "$log_file"
             else
               rm -f "$tmp_output"
             fi
-            rm -rf .build  # Clean before retry
+            sleep 5
+            rm -rf "$build_dir" 2>/dev/null || true  # Clean before retry
+            mkdir -p "$build_dir"
           else
             # Final failure
             if [[ "$attempt" -gt 1 ]]; then
@@ -355,6 +373,9 @@ run_sequential() {
         fi
       fi
     done
+
+    # Clean up per-combo build directory
+    rm -rf "$build_dir" 2>/dev/null || true
 
     if [[ "$test_passed" == true ]]; then
       ((passed++)) || true
