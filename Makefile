@@ -17,13 +17,22 @@ clean:
 	fi
 	@echo "Build artifacts cleaned (ensure that any remaining files listed above won't affect new builds, e.g. SourceKit files)"
 
+# Run all tests: swift-syntax version matrix (macOS) + Linux via Podman.
+# Use this before submitting PRs.
+test-all: preflight-podman test-swift-syntax-versions test-linux
+
+preflight-podman:
+	@podman info > /dev/null 2>&1 || { echo "Error: Podman is not running. Start it with: podman machine start"; exit 1; }
+
 test-swift-syntax-versions:
 	@for version in \
 		"509.0.0..<510.0.0" \
 		"510.0.0..<511.0.0" \
 		"600.0.0..<601.0.0" \
 		"601.0.0..<602.0.0" \
-		"602.0.0..<603.0.0"; \
+		"602.0.0..<603.0.0" \
+		"603.0.0..<604.0.0" \
+		"604.0.0-prerelease..<605.0.0"; \
 	do \
 		echo "\n## Testing SwiftSyntax version $$version"; \
 		$(MAKE) clean; \
@@ -42,4 +51,4 @@ format:
 		--recursive \
 		./Package.swift ./Sources ./Tests
 
-.PHONY: default test test-swift clean test-swift-syntax-versions test-linux format
+.PHONY: default test test-swift clean test-all preflight-podman test-swift-syntax-versions test-linux format

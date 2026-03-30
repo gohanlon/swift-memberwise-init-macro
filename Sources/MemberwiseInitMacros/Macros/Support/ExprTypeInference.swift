@@ -317,6 +317,13 @@ extension ExprSyntax {
         return nil
     #endif
 
+    #if canImport(SwiftSyntax603)
+      case .moduleSelector,
+        .specializedAttributeArgument,
+        .unexpectedCodeDecl:
+        return nil
+    #endif
+
     case .token, .accessorBlock, .accessorDeclList, .accessorDecl, .accessorEffectSpecifiers,
       .accessorParameters, .actorDecl, .arrayElementList, .arrayElement, .arrayType, .arrowExpr,
       .assignmentExpr, .associatedTypeDecl, .attributeList, .attribute, .attributedType,

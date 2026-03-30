@@ -1,5 +1,6 @@
 .DS_Store
 /.build
+/.build-*-*
 /.swiftpm
 /Packages
 /*.swiftinterface
@@ -7,4 +8,3 @@
 xcuserdata/
 tmp
 /.vscode
-
