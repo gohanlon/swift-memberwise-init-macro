@@ -2314,6 +2314,90 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
+  // MARK: - Test class and actor support
+
+  func testClassWithStoredProperties() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      class Person {
+        let name: String
+        var age: Int
+      }
+      """
+    } expansion: {
+      """
+      class Person {
+        let name: String
+        var age: Int
+
+        internal init(
+          name: String,
+          age: Int
+        ) {
+          self.name = name
+          self.age = age
+        }
+      }
+      """
+    }
+  }
+
+  func testActorWithStoredProperties() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      actor Counter {
+        var count: Int
+        let name: String
+      }
+      """
+    } expansion: {
+      """
+      actor Counter {
+        var count: Int
+        let name: String
+
+        internal init(
+          count: Int,
+          name: String
+        ) {
+          self.count = count
+          self.name = name
+        }
+      }
+      """
+    }
+  }
+
+  // NB: @MemberwiseInit on a subclass generates an init that doesn't call super.init.
+  // This produces a valid expansion only when the superclass has a zero-argument init.
+  // For superclasses that require arguments, the generated init will fail to compile.
+  // Future: consider diagnosing subclass declarations or generating super.init calls
+  // for trivial cases.
+  func testSubclass_GeneratesInitWithoutSuperInit() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      class Employee: Person {
+        var department: String
+      }
+      """
+    } expansion: {
+      """
+      class Employee: Person {
+        var department: String
+
+        internal init(
+          department: String
+        ) {
+          self.department = department
+        }
+      }
+      """
+    }
+  }
+
   // MARK: - Test open access level
 
   func testOpenOnClass() {
