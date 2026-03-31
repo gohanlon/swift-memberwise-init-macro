@@ -10,8 +10,9 @@ import SwiftSyntax
 //   https://docs.swift.org/swift-book/documentation/the-swift-programming-language/accesscontrol#Custom-Types
 // - Added missing DeclGroupSyntax kinds
 
-// TODO: Rules for local DeclGroup's nested within a function definition
-// TODO: Rules for local access functions? e.g. `func foo() { func bar() { … } … }`
+// NB: Does not handle local DeclGroups nested within a function definition, or local functions
+// (e.g. `func foo() { func bar() { … } … }`). Not relevant to @MemberwiseInit, which only
+// attaches to top-level type declarations.
 
 enum AccessLevelModifier: String, Comparable, CaseIterable, Sendable {
   case `private`
@@ -99,8 +100,8 @@ extension StructDeclSyntax: DeclGroupAccessLevelSyntax {}
 
 extension VariableDeclSyntax: AccessLevelSyntax {
   var accessLevel: AccessLevelModifier {
-    // TODO: assuming the least access of the modifiers may not be correct, but it suits the special case of MemberwiseInit
-    // maybe this is generally okay, since the "set" detail must be given less access than then get? either way, this needs to be made clearer
+    // NB: Uses min to get the most restrictive modifier (e.g. `public private(set)` → `private`).
+    // Correct for MemberwiseInit: init parameters need the effective read access level.
     self.accessLevelModifiers?.min() ?? inferDefaultAccessLevel(node: self._syntaxNode)
   }
 }
