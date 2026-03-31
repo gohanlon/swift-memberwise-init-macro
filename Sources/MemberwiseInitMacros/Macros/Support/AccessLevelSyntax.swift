@@ -40,7 +40,7 @@ enum AccessLevelModifier: String, Comparable, CaseIterable, Sendable {
   }
 }
 
-public protocol AccessLevelSyntax {
+protocol AccessLevelSyntax {
   var parent: Syntax? { get }
   var modifiers: DeclModifierListSyntax { get set }
 }
@@ -68,7 +68,7 @@ extension AccessLevelSyntax {
 protocol DeclGroupAccessLevelSyntax: AccessLevelSyntax {
 }
 extension DeclGroupAccessLevelSyntax {
-  public var accessLevel: AccessLevelModifier {
+  var accessLevel: AccessLevelModifier {
     self.accessLevelModifiers?.first ?? .internal
   }
 }
