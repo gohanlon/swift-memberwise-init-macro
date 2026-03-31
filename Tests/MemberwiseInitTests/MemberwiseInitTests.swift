@@ -2344,7 +2344,6 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  // TODO: regress MemberwiseInit to match swift-syntax 5.10 limitation
   func testCustomInitEscapingWithMultipleBindings() {
     #if canImport(SwiftSyntax510)
       assertMacro {
@@ -2407,7 +2406,6 @@ final class MemberwiseInitTests: XCTestCase {
     #endif
   }
 
-  // TODO: Consider regressing MemberwiseInit to match swift-syntax 5.10 limitation (or leave redundant error, but that has a fix-it)
   func testCustomLabelWithMultipleBindings_FailsWithDiagnostic() {
     #if canImport(SwiftSyntax510)
       assertMacro {
@@ -2468,7 +2466,6 @@ final class MemberwiseInitTests: XCTestCase {
     #endif
   }
 
-  // TODO: Consider regressing MemberwiseInit to match swift-syntax 5.10 limitation (or leave redundant error, but that has a fix-it)
   func testLabellessCustomInitForMultipleBindings() {
     #if canImport(SwiftSyntax510)
       assertMacro {
