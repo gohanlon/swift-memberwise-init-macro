@@ -3,7 +3,6 @@ import MemberwiseInitMacros
 import SwiftSyntaxMacros
 import XCTest
 
-// TODO: Cover valid `open` usages (on class and member decl).
 // NB: No warning when `@Init(.private)` reduces access (e.g. `public let v: T`), since it may be
 // intentional to restrict init parameter visibility below the property's declared access level.
 
