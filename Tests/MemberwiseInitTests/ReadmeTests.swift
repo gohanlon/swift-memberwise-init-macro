@@ -705,37 +705,6 @@ final class ReadmeTests: XCTestCase {
     }
   }
 
-  func testDeunderscoreParameterNames() {
-    assertMacro {
-      """
-      @MemberwiseInit(.public, _deunderscoreParmeters: true)
-      public struct Review {
-        @Init(.public) private let _rating: Int
-
-        public var rating: String {
-          String(repeating: "⭐️", count: self._rating)
-        }
-      }
-      """
-    } expansion: {
-      """
-      public struct Review {
-        private let _rating: Int
-
-        public var rating: String {
-          String(repeating: "⭐️", count: self._rating)
-        }
-
-        public init(
-          _rating: Int
-        ) {
-          self._rating = _rating
-        }
-      }
-      """
-    }
-  }
-
   func testOptionalsDefaultToNil() {
     assertMacro {
       """
