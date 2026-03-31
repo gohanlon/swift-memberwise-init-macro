@@ -243,6 +243,49 @@ private func makeAddIgnoreFixIt(
   )
 }
 
+// MARK: - Diagnose macro-level configuration
+
+func diagnoseOpenOnNonClass(
+  node: AttributeSyntax,
+  decl: some DeclGroupSyntax
+) -> Diagnostic {
+  let openArgument = node.arguments?
+    .as(LabeledExprListSyntax.self)?
+    .first(where: {
+      $0.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text == "open"
+    })
+
+  let targetNode: any SyntaxProtocol = openArgument ?? node
+
+  var fixedNode = node
+  if let arguments = fixedNode.arguments?.as(LabeledExprListSyntax.self) {
+    let newArguments = arguments.map { arg -> LabeledExprSyntax in
+      if arg.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text == "open" {
+        var newArg = arg
+        newArg.expression = ExprSyntax(
+          MemberAccessExprSyntax(name: TokenSyntax(stringLiteral: "public"))
+        )
+        return newArg
+      }
+      return arg
+    }
+    fixedNode.arguments = .argumentList(LabeledExprListSyntax(newArguments))
+  }
+
+  return Diagnostic(
+    node: targetNode,
+    message: MacroExpansionErrorMessage(
+      "'open' can only be used with classes"
+    ),
+    fixIts: [
+      FixIt(
+        message: MacroExpansionFixItMessage("Replace '.open' with '.public'"),
+        changes: [.replace(oldNode: Syntax(node), newNode: Syntax(fixedNode))]
+      )
+    ]
+  )
+}
+
 // MARK: - Diagnose VariableDeclSyntax
 
 func diagnoseMultipleConfigurations(variable: VariableDeclSyntax) -> [Diagnostic]? {

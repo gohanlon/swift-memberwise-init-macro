@@ -57,7 +57,16 @@ public struct MemberwiseInitMacro: MemberMacro {
     let optionalsDefaultNil: Bool =
       extractLabeledBoolArgument("optionalsDefaultNil", from: node) ?? false
 
-    let accessLevel = configuredAccessLevel ?? .internal
+    if configuredAccessLevel == .open && decl.kind != .classDecl {
+      context.diagnose(
+        diagnoseOpenOnNonClass(node: node, decl: decl)
+      )
+    }
+
+    let accessLevel =
+      (configuredAccessLevel == .open && decl.kind != .classDecl)
+      ? .public
+      : configuredAccessLevel ?? .internal
     let (properties, diagnostics) = try collectMemberPropertiesAndDiagnostics(
       from: decl.memberBlock.members,
       targetAccessLevel: accessLevel

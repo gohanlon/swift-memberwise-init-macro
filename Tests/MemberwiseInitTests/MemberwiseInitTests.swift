@@ -2314,6 +2314,177 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
+  // MARK: - Test open access level
+
+  func testOpenOnClass() {
+    assertMacro {
+      """
+      @MemberwiseInit(.open)
+      open class Person {
+        open var name: String
+      }
+      """
+    } expansion: {
+      """
+      open class Person {
+        open var name: String
+
+        open init(
+          name: String
+        ) {
+          self.name = name
+        }
+      }
+      """
+    }
+  }
+
+  func testOpenOnStruct_FailsWithDiagnostic() {
+    assertMacro {
+      """
+      @MemberwiseInit(.open)
+      public struct S {
+        public var name: String
+      }
+      """
+    } expansion: {
+      """
+      public struct S {
+        public var name: String
+
+        public init(
+          name: String
+        ) {
+          self.name = name
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.open)
+                      ┬────
+                      ╰─ 🛑 'open' can only be used with classes
+                         ✏️ Replace '.open' with '.public'
+      public struct S {
+        public var name: String
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit(.open)
+                      ┬────
+                      ╰─ 🛑 'open' can only be used with classes
+
+      ✏️ Replace '.open' with '.public'
+      @MemberwiseInit(.public)
+      public struct S {
+        public var name: String
+      }
+      """
+    }
+  }
+
+  func testOpenOnActor_FailsWithDiagnostic() {
+    assertMacro {
+      """
+      @MemberwiseInit(.open)
+      public actor A {
+        public var name: String
+      }
+      """
+    } expansion: {
+      """
+      public actor A {
+        public var name: String
+
+        public init(
+          name: String
+        ) {
+          self.name = name
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.open)
+                      ┬────
+                      ╰─ 🛑 'open' can only be used with classes
+                         ✏️ Replace '.open' with '.public'
+      public actor A {
+        public var name: String
+      }
+      """
+    } fixes: {
+      """
+      @MemberwiseInit(.open)
+                      ┬────
+                      ╰─ 🛑 'open' can only be used with classes
+
+      ✏️ Replace '.open' with '.public'
+      @MemberwiseInit(.public)
+      public actor A {
+        public var name: String
+      }
+      """
+    }
+  }
+
+  func testOpenOnClass_LeaksInternalProperty_FailsWithDiagnostic() {
+    assertMacro {
+      """
+      @MemberwiseInit(.open)
+      open class Person {
+        var name: String
+      }
+      """
+    } expansion: {
+      """
+      open class Person {
+        var name: String
+
+        open init() {
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit(.open)
+      open class Person {
+        var name: String
+        ┬───────────────
+        ╰─ 🛑 @MemberwiseInit(.open) would leak access to 'internal' property
+           ✏️ Add '@Init(.open)'
+           ✏️ Add 'open' access level
+           ✏️ Add '@Init(.ignore)' and a default value
+      }
+      """
+    } fixes: {
+      """
+      var name: String
+      ┬───────────────
+      ╰─ 🛑 @MemberwiseInit(.open) would leak access to 'internal' property
+
+      ✏️ Add '@Init(.open)'
+      @MemberwiseInit(.open)
+      open class Person {
+        @Init(.open) var name: String
+      }
+
+      ✏️ Add 'open' access level
+      @MemberwiseInit(.open)
+      open class Person {
+        open var name: String
+      }
+
+      ✏️ Add '@Init(.ignore)' and a default value
+      @MemberwiseInit(.open)
+      open class Person {
+        @Init(.ignore) var name: String = <#value#>
+      }
+      """
+    }
+  }
+
   // MARK: - Test macro parameters
 
   func testCustomInitPublicEscapingLabel() {
