@@ -320,6 +320,19 @@ private func diagnoseInitOnInitializedLet(
   return customSettings.diagnosticOnDefault(diagnosticMessage, fixIts: fixIts)
 }
 
+func diagnoseInitOnComputedProperty(
+  variable: VariableDeclSyntax
+) -> Diagnostic {
+  let attributeName =
+    variable.customConfigurationAttribute?.attributeName.trimmedDescription ?? "Init"
+  return Diagnostic(
+    node: Syntax(variable),
+    message: MacroExpansionErrorMessage(
+      "@\(attributeName) can't be applied to computed properties"),
+    fixIts: [variable.fixItRemoveCustomInit].compactMap { $0 }
+  )
+}
+
 private func diagnoseMemberModifiers(
   customSettings: VariableCustomSettings,
   variable: VariableDeclSyntax

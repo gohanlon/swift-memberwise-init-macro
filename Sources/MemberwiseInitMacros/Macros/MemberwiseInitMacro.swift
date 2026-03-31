@@ -137,10 +137,17 @@ public struct MemberwiseInitMacro: MemberMacro {
           diagnostics: [Diagnostic]()
         )
       ) { acc, member in
-        guard
-          let variable = member.decl.as(VariableDeclSyntax.self),
-          !variable.isComputedProperty
+        guard let variable = member.decl.as(VariableDeclSyntax.self)
         else { return }
+
+        if variable.isComputedProperty {
+          if variable.hasCustomConfigurationAttribute {
+            acc.diagnostics.append(
+              diagnoseInitOnComputedProperty(variable: variable)
+            )
+          }
+          return
+        }
 
         // Properties with non-configuration attributes (e.g. @State) but no @Init
         // must be explicitly configured

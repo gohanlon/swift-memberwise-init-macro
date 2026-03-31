@@ -64,8 +64,6 @@ final class CustomInitTests: XCTestCase {
     }
   }
 
-  // TODO: For 1.0, diagnostic error on nonsensical @Init. While getter-only computed properties are
-  // nonsensical, setter computed properties could be allowed, and perhaps also computed properties with init accessor?
   func testComputedProperty() {
     assertMacro {
       """
@@ -86,6 +84,30 @@ final class CustomInitTests: XCTestCase {
         ) {
           self.number = number
         }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        var number: Int
+        @Init var computed: Int { number * 2 }
+        ┬─────────────────────────────────────
+        ╰─ 🛑 @Init can't be applied to computed properties
+           ✏️ Remove '@Init'
+      }
+      """
+    } fixes: {
+      """
+      @Init var computed: Int { number * 2 }
+      ┬─────────────────────────────────────
+      ╰─ 🛑 @Init can't be applied to computed properties
+
+      ✏️ Remove '@Init'
+      @MemberwiseInit
+      struct S {
+        var number: Int
+        var computed: Int { number * 2 }
       }
       """
     }
