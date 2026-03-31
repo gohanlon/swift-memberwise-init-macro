@@ -205,6 +205,56 @@ final class CustomInitTests: XCTestCase {
     }
   }
 
+  func testLazyPropertyWithBareInit() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init lazy var lazyNumber: Int = {
+          return 2 * 2
+        }()
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        @Init lazy var lazyNumber: Int = {
+          return 2 * 2
+        }()
+
+        internal init() {
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init lazy var lazyNumber: Int = {
+              ┬───
+              ╰─ 🛑 @Init can't be applied to 'lazy' members
+                 ✏️ Remove '@Init'
+          return 2 * 2
+        }()
+      }
+      """
+    } fixes: {
+      """
+      @Init lazy var lazyNumber: Int = {
+            ┬───
+            ╰─ 🛑 @Init can't be applied to 'lazy' members
+
+      ✏️ Remove '@Init'
+      @MemberwiseInit
+      struct S {
+        lazy var lazyNumber: Int = {
+          return 2 * 2
+        }()
+      }
+      """
+    }
+  }
+
   // NB: 'lazy static' is redundant and a compiler error: "'lazy' cannot be used on an already-lazy
   // global". Since the fix is to "Remove 'lazy '", @MemberwiseInit emits its diagnostic on
   // 'static' which is still a mistake to apply @Init to.
