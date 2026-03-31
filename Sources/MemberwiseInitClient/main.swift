@@ -332,17 +332,12 @@ _ = Person40.init(name: "Blob")
 //  lazy var lastResult: Double // 🛑 `Error: Lazy properties must have an initializer`
 //}
 
-// Tuple destructuring for property declarations fails with diagnostic, but support can be added:
-//@MemberwiseInit
-//struct Point2D {
-//  let (defaultX, defaultY): (Int, Int) // 🛑 @MemberwiseInit does not support tuple destructuring for property declarations. Use multiple declarations instead.
-//}
-
-// Note: Swift's memberwise init supports tuple destructuring for property declarations:
-struct Point {
-  let (defaultX, defaultY): (Int, Int)
+// Tuple destructuring in property declarations:
+@MemberwiseInit
+struct TuplePoint {
+  let (x, y): (Int, Int)
 }
-_ = Point.init(defaultX: 0, defaultY: 0)
+_ = TuplePoint(x: 0, y: 0)
 
 // MARK: - Swift compiler "tests"
 
