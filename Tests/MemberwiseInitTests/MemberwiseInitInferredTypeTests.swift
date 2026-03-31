@@ -430,7 +430,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
     }
   }
 
-  // FIXME: Diagnostic is excessive on already invalid syntax.
+  // NB: Diagnostic is redundant with a compiler error on this already-invalid syntax.
   func testArrayOfAsIntAndAsDouble_FailsWithDiagnostic() {
     assertMacro {
       ##"""
@@ -563,7 +563,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
     #endif
   }
 
-  // FIXME: Diagnostic is excessive on already invalid syntax, but we can only detect special cases.
+  // NB: Diagnostic is redundant with a compiler error on this already-invalid syntax.
   func testRaggedLiteralArray_FailsWithDiagnostic() {
     assertMacro {
       ##"""
@@ -754,7 +754,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
     }
   }
 
-  // FIXME: Diagnostic is excessive on already invalid syntax.
+  // NB: Diagnostic is redundant with a compiler error on this already-invalid syntax.
   // Compiler error: Heterogeneous collection literal could only be inferred to '[AnyHashable : Double]'; add explicit type annotation if this is intentional
   func testDictionaryOfAsIntAndAsDoubleNotPromoted_FailsWithDiagnostic() {
     assertMacro {
@@ -834,7 +834,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
     #endif
   }
 
-  // FIXME: Diagnostic is excessive on already invalid syntax.
+  // NB: Diagnostic is redundant with a compiler error on this already-invalid syntax.
   // Compiler error: Heterogeneous collection literal could only be inferred to '[AnyHashable : Any]'; add explicit type annotation if this is intentional
   func testRaggedLiteralDictionary_FailsWithDiagnostic() {
     assertMacro {
@@ -1217,7 +1217,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
     }
   }
 
-  // FIXME: Diagnostic is excessive on already invalid syntax.
+  // NB: Diagnostic is redundant with a compiler error on this already-invalid syntax.
   func testBitwiseInfixOpertorsWithNonInt_FailsWithDiagnostic() {
     assertMacro {
       ##"""
@@ -1337,7 +1337,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
     }
   }
 
-  // FIXME: Diagnostic is excessive on already invalid syntax.
+  // NB: Diagnostic is redundant with a compiler error on this already-invalid syntax.
   func testModuloOpertorWithNonInt_FailsWithDiagnostic() {
     assertMacro {
       ##"""
