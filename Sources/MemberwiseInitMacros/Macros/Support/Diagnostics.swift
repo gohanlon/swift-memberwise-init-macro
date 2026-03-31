@@ -416,7 +416,9 @@ private func diagnoseVariableLabel(
   }
 
   if customSettings.label?.isInvalidSwiftLabel ?? false {
-    return customSettings.diagnosticOnLabelValue(MacroExpansionErrorMessage("Invalid label value"))
+    return customSettings.diagnosticOnLabelValue(
+      MacroExpansionErrorMessage("Label must be a valid Swift identifier or '_'")
+    )
   }
 
   return nil

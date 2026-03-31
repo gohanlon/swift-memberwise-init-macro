@@ -2939,7 +2939,7 @@ final class MemberwiseInitTests: XCTestCase {
       struct Person {
         @Init(label: "1foo") let name: String
                      ┬─────
-                     ╰─ 🛑 Invalid label value
+                     ╰─ 🛑 Label must be a valid Swift identifier or '_'
       }
       """
     }
@@ -2970,7 +2970,7 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit
       struct Person {
         @Init(label: """
-                     ╰─ 🛑 Invalid label value
+                     ╰─ 🛑 Label must be a valid Swift identifier or '_'
           too
           long
         """) let name: String
