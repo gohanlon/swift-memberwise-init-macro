@@ -1,4 +1,4 @@
-public enum AccessLevelConfig {
+public enum AccessLevelConfig: Sendable {
   case `private`
   case `fileprivate`
   case `internal`
@@ -49,7 +49,7 @@ public macro _UncheckedMemberwiseInit(
 
 // MARK: @Init macro
 
-public enum IgnoreConfig {
+public enum IgnoreConfig: Sendable {
   case ignore
 }
 
