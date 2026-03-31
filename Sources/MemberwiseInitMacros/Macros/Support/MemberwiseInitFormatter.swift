@@ -18,10 +18,7 @@ struct MemberwiseInitFormatter {
       CodeBlockItemListSyntax(
         properties.map { property in
           CodeBlockItemSyntax(
-            stringLiteral: formatInitializerAssignmentStatement(
-              for: property,
-              considering: properties
-            )
+            stringLiteral: formatInitializerAssignmentStatement(for: property)
           )
         }
       )
@@ -39,7 +36,6 @@ struct MemberwiseInitFormatter {
       .map { property in
         formatParameter(
           for: property,
-          considering: properties,
           optionalsDefaultNil: optionalsDefaultNil
         )
       }
@@ -48,7 +44,6 @@ struct MemberwiseInitFormatter {
 
   private static func formatParameter(
     for property: MemberProperty,
-    considering allProperties: [MemberProperty],
     optionalsDefaultNil: Bool
   ) -> String {
     let defaultValue =
@@ -66,16 +61,13 @@ struct MemberwiseInitFormatter {
       escaping = property.type.isFunctionType ? "@escaping " : ""
     }
 
-    let label = property.initParameterLabel(considering: allProperties)
+    let label = property.initParameterLabel
 
-    let parameterName = property.initParameterName(considering: allProperties)
-
-    return "\(label)\(parameterName): \(escaping)\(property.type.description)\(defaultValue)"
+    return "\(label)\(property.name): \(escaping)\(property.type.description)\(defaultValue)"
   }
 
   private static func formatInitializerAssignmentStatement(
-    for property: MemberProperty,
-    considering allProperties: [MemberProperty]
+    for property: MemberProperty
   ) -> String {
     let assignee =
       switch property.customSettings?.assignee {
@@ -87,7 +79,6 @@ struct MemberwiseInitFormatter {
         assignee
       }
 
-    let parameterName = property.initParameterName(considering: allProperties)
-    return "\(assignee) = \(parameterName)"
+    return "\(assignee) = \(property.name)"
   }
 }

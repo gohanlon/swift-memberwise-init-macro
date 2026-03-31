@@ -122,20 +122,12 @@ struct MemberProperty: Equatable {
   let name: String
   let type: TypeSyntax
 
-  func initParameterLabel(
-    considering allProperties: [MemberProperty]
-  ) -> String {
+  var initParameterLabel: String {
     guard
       let customSettings = self.customSettings,
-      customSettings.label != self.initParameterName(considering: allProperties)
+      customSettings.label != self.name
     else { return "" }
 
     return customSettings.label.map { "\($0) " } ?? ""
-  }
-
-  func initParameterName(
-    considering allProperties: [MemberProperty]
-  ) -> String {
-    return self.name
   }
 }
