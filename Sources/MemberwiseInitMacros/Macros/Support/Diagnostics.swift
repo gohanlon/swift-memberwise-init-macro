@@ -675,7 +675,6 @@ extension VariableDeclSyntax {
     let newArguments = arguments.filter { $0.label?.text != "default" }
     newAttribute.arguments = newArguments.as(AttributeSyntax.Arguments.self)
     if newArguments.count == 0 {
-      // TODO: test coverage on @InitRaw(default:) and @InitWrapper(default:), not just @Init(default:)
       let trailingTrivia = newAttribute.trailingTrivia
       newAttribute.leftParen = nil
       newAttribute.rightParen = nil
