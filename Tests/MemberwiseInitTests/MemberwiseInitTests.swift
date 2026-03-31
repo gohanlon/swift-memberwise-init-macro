@@ -3295,11 +3295,12 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  // TODO: Consider SE-0400: Init Accessors:
-  // https://github.com/apple/swift-evolution/blob/main/proposals/0400-init-accessors.md#init-accessors
-  //
-  // - May need something like `@MemberwiseInit(properties: ["title", "text"])` to generate
-  //  `init(title: String, text: String)`.
+  // NB: SE-0400 Init Accessors (https://github.com/apple/swift-evolution/blob/main/proposals/0400-init-accessors.md)
+  // allow computed properties to initialize stored properties via @storageRestrictions(initializes:).
+  // @MemberwiseInit currently generates init params from stored properties only, which is correct
+  // but doesn't leverage init accessor paths. Supporting this would require parsing
+  // @storageRestrictions to understand the init graph and letting users choose which path to use.
+  // Out of scope for now — users can write a manual init for init accessor patterns.
   func testInitAccessor() {
     assertMacro {
       """
