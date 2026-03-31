@@ -4,9 +4,8 @@ import XCTest
 
 final class CustomInitTests: XCTestCase {
   override func invokeTest() {
-    // NB: Waiting for swift-macro-testing PR to support explicit indentationWidth: https://github.com/pointfreeco/swift-macro-testing/pull/8
     withMacroTesting(
-      //indentationWidth: .spaces(2),
+      indentationWidth: .spaces(2),
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "InitRaw": InitMacro.self,

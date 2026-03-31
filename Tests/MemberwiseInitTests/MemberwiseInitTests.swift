@@ -8,9 +8,8 @@ import XCTest
 
 final class MemberwiseInitTests: XCTestCase {
   override func invokeTest() {
-    // NB: Waiting for swift-macro-testing PR to support explicit indentationWidth: https://github.com/pointfreeco/swift-macro-testing/pull/8
     withMacroTesting(
-      // indentationWidth: .spaces(2),
+      indentationWidth: .spaces(2),
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,
@@ -1310,38 +1309,38 @@ final class MemberwiseInitTests: XCTestCase {
       """
       private struct Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       fileprivate struct Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       struct Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       internal struct Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       package struct Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       public struct Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       open class Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
@@ -2050,8 +2049,8 @@ final class MemberwiseInitTests: XCTestCase {
       """
       public final class Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
