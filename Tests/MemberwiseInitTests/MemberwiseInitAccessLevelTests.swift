@@ -600,8 +600,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       struct S {
 
-          private init() {
-          }
+        private init() {
+        }
       }
       """
     }
@@ -894,8 +894,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       public struct S {
 
-          private init() {
-          }
+        private init() {
+        }
       }
       """
     }
@@ -1230,8 +1230,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       private struct S {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
@@ -2244,8 +2244,8 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
       """
       private struct S {
 
-          public init() {
-          }
+        public init() {
+        }
       }
       """
     }

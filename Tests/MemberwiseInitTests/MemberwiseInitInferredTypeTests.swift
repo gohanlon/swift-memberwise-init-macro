@@ -6,6 +6,7 @@ import XCTest
 final class MemberwiseInitInferredTypeTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
+      indentationWidth: .spaces(2),
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,

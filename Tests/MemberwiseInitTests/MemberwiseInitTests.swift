@@ -33,8 +33,8 @@ final class MemberwiseInitTests: XCTestCase {
       """
       struct Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
@@ -52,8 +52,8 @@ final class MemberwiseInitTests: XCTestCase {
       """
       public struct Person {
 
-          internal init() {
-          }
+        internal init() {
+        }
       }
       """
     }
