@@ -3193,39 +3193,71 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  // NB: Most cases of multiple attachement are invalid or nonsensical.
-  // TODO: Generate a helpful diagnostic error message when multiple attachment is nonsensical.
-  func testAttachedMultipleTimes() {
+  // NB: Multiple @MemberwiseInit attachments each independently generate an init. When
+  // configurations differ (e.g. optionalsDefaultNil), the generated inits can have distinct
+  // signatures. No diagnostic is emitted — nonsensical combinations (identical signatures at
+  // different access levels) are caught by the compiler as redeclarations.
+  func testAttachedMultipleTimes_ValidDifferentConfigurations() {
     assertMacro {
       """
       @MemberwiseInit(.public)
-      @MemberwiseInit(.internal, optionalsDefaultNil: false)
-      @MemberwiseInit(.private)
+      @MemberwiseInit(.private, optionalsDefaultNil: true)
       public struct Person {
-        @Init(.public) var _name: String?
+        @Init(.public) var name: String?
       }
       """
     } expansion: {
       """
       public struct Person {
-        var _name: String?
+        var name: String?
 
         public init(
-          _name: String?
+          name: String?
         ) {
-          self._name = _name
-        }
-
-        internal init(
-          _name: String?
-        ) {
-          self._name = _name
+          self.name = name
         }
 
         private init(
-          _name: String?
+          name: String? = nil
         ) {
-          self._name = _name
+          self.name = name
+        }
+      }
+      """
+    }
+  }
+
+  func testAttachedMultipleTimes_NonsensicalIdenticalSignatures() {
+    assertMacro {
+      """
+      @MemberwiseInit(.public)
+      @MemberwiseInit(.internal)
+      @MemberwiseInit(.private)
+      public struct Person {
+        @Init(.public) var name: String?
+      }
+      """
+    } expansion: {
+      """
+      public struct Person {
+        var name: String?
+
+        public init(
+          name: String?
+        ) {
+          self.name = name
+        }
+
+        internal init(
+          name: String?
+        ) {
+          self.name = name
+        }
+
+        private init(
+          name: String?
+        ) {
+          self.name = name
         }
       }
       """
