@@ -64,7 +64,6 @@ final class CustomInitDefaultTests: XCTestCase {
     }
   }
 
-  // TODO: For 1.0, strengthen by rejecting @Init on already initialized let (not just on '@Init(default:)')
   func testInitializedLet() {
     assertMacro {
       """

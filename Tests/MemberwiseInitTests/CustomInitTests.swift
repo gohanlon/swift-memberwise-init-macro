@@ -155,7 +155,6 @@ final class CustomInitTests: XCTestCase {
     }
   }
 
-  // TODO: For 1.0, diagnostic error on nonsensical @Init
   func testLazyProperty() {
     assertMacro {
       """
