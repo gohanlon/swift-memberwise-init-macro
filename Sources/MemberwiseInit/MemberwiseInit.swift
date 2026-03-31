@@ -104,4 +104,3 @@ public macro Init(
     module: "MemberwiseInitMacros",
     type: "InitMacro"
   )
-

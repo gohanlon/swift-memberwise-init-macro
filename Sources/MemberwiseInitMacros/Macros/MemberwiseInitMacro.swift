@@ -332,11 +332,11 @@ public struct MemberwiseInitMacro: MemberMacro {
 
     let configuredForceEscaping =
       customConfiguration?
-        .firstWhereLabel("escaping")?
-        .expression
-        .as(BooleanLiteralExprSyntax.self)?
-        .literal
-        .text == "true"
+      .firstWhereLabel("escaping")?
+      .expression
+      .as(BooleanLiteralExprSyntax.self)?
+      .literal
+      .text == "true"
 
     let configuredIgnore = configuredValues?.contains("ignore") ?? false
 
