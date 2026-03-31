@@ -10,7 +10,7 @@ final class MemberwiseInitTests: XCTestCase {
   override func invokeTest() {
     // NB: Waiting for swift-macro-testing PR to support explicit indentationWidth: https://github.com/pointfreeco/swift-macro-testing/pull/8
     withMacroTesting(
-      //indentationWidth: .spaces(2),
+      // indentationWidth: .spaces(2),
       macros: [
         "MemberwiseInit": MemberwiseInitMacro.self,
         "Init": InitMacro.self,
@@ -931,8 +931,8 @@ final class MemberwiseInitTests: XCTestCase {
         @State private var isOn: Bool
         ┬────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
-           ✏️ Add '@Init'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
+           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
       }
       """
     } fixes: {
@@ -941,20 +941,20 @@ final class MemberwiseInitTests: XCTestCase {
       ┬────────────────────────────
       ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
 
-      ✏️ Add '@Init'
-      @MemberwiseInit(.public)
-      public struct MyView {
-        @Init
-
-        @State private var isOn: Bool
-      }
-
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       public struct MyView {
         @Init(.ignore)
 
         @State private var isOn: Bool = <#value#>
+      }
+
+      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      @MemberwiseInit(.public)
+      public struct MyView {
+        @Init
+
+        @State private var isOn: Bool
       }
       """
     }
@@ -1408,7 +1408,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'private' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
 
       @MemberwiseInit
@@ -1418,7 +1418,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'private' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
 
       @MemberwiseInit
@@ -1428,7 +1428,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'fileprivate' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'fileprivate' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
 
       @MemberwiseInit
@@ -1438,7 +1438,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'fileprivate' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'fileprivate' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1529,7 +1529,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -1552,7 +1552,7 @@ final class MemberwiseInitTests: XCTestCase {
         public var lastName: String
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       public struct Person {
         public var firstName = "Foo"
@@ -1617,7 +1617,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'fileprivate' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'fileprivate' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -1640,7 +1640,7 @@ final class MemberwiseInitTests: XCTestCase {
         internal let lastName: String
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit
       public struct Person {
         public let firstName: String
@@ -1683,7 +1683,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'private' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -1706,7 +1706,7 @@ final class MemberwiseInitTests: XCTestCase {
         internal let lastName: String
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit
       public struct Person {
         public let firstName: String
@@ -1748,7 +1748,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'private' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -1771,7 +1771,7 @@ final class MemberwiseInitTests: XCTestCase {
         internal let lastName: String
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit
       struct Person {
         public let firstName: String
@@ -1807,7 +1807,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -1828,7 +1828,7 @@ final class MemberwiseInitTests: XCTestCase {
         @Init public let v: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       public struct S {
         @Init(.ignore) let v: T = <#value#>
@@ -1863,7 +1863,7 @@ final class MemberwiseInitTests: XCTestCase {
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
                  ✏️ Replace 'private' access with 'public'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -1884,7 +1884,7 @@ final class MemberwiseInitTests: XCTestCase {
         @Init public let v: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       public struct S {
         @Init(.ignore) private let v: T = <#value#>
@@ -1918,7 +1918,7 @@ final class MemberwiseInitTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -1933,7 +1933,7 @@ final class MemberwiseInitTests: XCTestCase {
         @Init(.public, label: "_") let v: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       public struct S {
         @Init(.ignore) let v: T = <#value#>
@@ -1968,7 +1968,7 @@ final class MemberwiseInitTests: XCTestCase {
                           ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                              ✏️ Add '@Init(.public)'
                              ✏️ Replace 'private' access with 'public'
-                             ✏️ Add '@Init(.ignore)' and an initializer
+                             ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -1989,7 +1989,7 @@ final class MemberwiseInitTests: XCTestCase {
         @Init(label: "_") public let v: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       public struct S {
         @Init(.ignore) private let v: T = <#value#>
@@ -2106,7 +2106,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'public private(set)' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -2127,7 +2127,7 @@ final class MemberwiseInitTests: XCTestCase {
         public internal(set) var stepsToday: Int
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit
       struct Pedometer {
         @Init(.ignore) public private(set) var stepsToday: Int = <#value#>
@@ -2223,7 +2223,7 @@ final class MemberwiseInitTests: XCTestCase {
           ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
              ✏️ Add '@Init(.internal)'
              ✏️ Add 'internal' access level
-             ✏️ Add '@Init(.ignore)' and an initializer
+             ✏️ Add '@Init(.ignore)' and a default value
         }
       }
       """
@@ -2249,7 +2249,7 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       struct S {
         @MemberwiseInit(.internal)
         private struct T {
@@ -2286,7 +2286,7 @@ final class MemberwiseInitTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'private' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -2307,7 +2307,7 @@ final class MemberwiseInitTests: XCTestCase {
         internal var x, y: Int
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit
       public struct S {
         @Init(.ignore) private var x = <#value#>, y: Int = <#value#>

@@ -115,7 +115,7 @@ final class LayeredDiagnosticsTests: XCTestCase {
               │           │              ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
               │           │                 ✏️ Add '@Init(.public)'
               │           │                 ✏️ Replace 'private' access with 'public'
-              │           │                 ✏️ Add '@Init(.ignore)' and an initializer
+              │           │                 ✏️ Add '@Init(.ignore)' and a default value
                           ┬────────────
               │           ╰─ 🛑 Custom 'label' can't be applied to multiple bindings
               ┬──────────
@@ -151,7 +151,7 @@ final class LayeredDiagnosticsTests: XCTestCase {
         @Init(default: 0, label: "$foo") public let x, y: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       struct S {
         @Init(.ignore) private let x = <#value#>, y: T = <#value#>
@@ -188,13 +188,13 @@ final class LayeredDiagnosticsTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
         @Init(label: "foo") let y: T
         ┬───────────────────────────
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -217,7 +217,7 @@ final class LayeredDiagnosticsTests: XCTestCase {
         @Init(label: "foo") let y: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       struct S {
         @Init(.ignore) let x: T = <#value#>
@@ -242,7 +242,7 @@ final class LayeredDiagnosticsTests: XCTestCase {
         @Init(label: "foo") public let y: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       struct S {
         @Init(label: "foo") let x: T
@@ -280,13 +280,13 @@ final class LayeredDiagnosticsTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
         let y: T
         ┬───────
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     } fixes: {
@@ -309,7 +309,7 @@ final class LayeredDiagnosticsTests: XCTestCase {
         let y: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       struct S {
         @Init(.ignore) let x: T = <#value#>
@@ -334,7 +334,7 @@ final class LayeredDiagnosticsTests: XCTestCase {
         public let y: T
       }
 
-      ✏️ Add '@Init(.ignore)' and an initializer
+      ✏️ Add '@Init(.ignore)' and a default value
       @MemberwiseInit(.public)
       struct S {
         @Init(label: "y") let x: T

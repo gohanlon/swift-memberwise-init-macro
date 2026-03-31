@@ -14,14 +14,18 @@ extension VariableDeclSyntax {
   }
 
   var hasNonConfigurationAttributes: Bool {
-    self.attributes.filter { attribute in
-      switch attribute {
-      case .attribute:
-        true
-      case .ifConfigDecl:
-        false
+    self.attributes
+      .compactMap { $0.as(AttributeSyntax.self) }
+      .contains { attribute in
+        let name = attribute.attributeName.trimmedDescription
+        if ["Init", "InitWrapper", "InitRaw"].contains(name) {
+          return false
+        }
+        if case .safe = knownAttribute(name) {
+          return false
+        }
+        return true
       }
-    }.count != self.customConfigurationAttributes.count
   }
 
   var hasCustomConfigurationAttribute: Bool {

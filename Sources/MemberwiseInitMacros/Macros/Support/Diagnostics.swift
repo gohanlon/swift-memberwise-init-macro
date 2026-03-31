@@ -13,72 +13,233 @@ func diagnoseAttributedPropertyWithoutInit(
 ) -> Diagnostic {
   let nonConfigAttributes = variable.attributes
     .compactMap { $0.as(AttributeSyntax.self) }
-    .filter { !["Init", "InitWrapper", "InitRaw"].contains($0.attributeName.trimmedDescription) }
-  let attributeName = nonConfigAttributes.first?.attributeName.trimmedDescription ?? "custom"
-
-  // Fix-it 1: Add @Init to include the property
-  let fixItAddInit: FixIt = {
-    var initAttr = AttributeSyntax(stringLiteral: "@Init\n")
-    initAttr.leadingTrivia = variable.leadingTrivia
-
-    var newVariable = variable
-    newVariable.leadingTrivia = Trivia()
-    newVariable.attributes = AttributeListSyntax(
-      [.attribute(initAttr)] + Array(variable.attributes)
-    )
-
-    return FixIt(
-      message: MacroExpansionFixItMessage("Add '@Init'"),
-      changes: [.replace(oldNode: Syntax(variable), newNode: Syntax(newVariable))]
-    )
-  }()
-
-  // Fix-it 2: Add @Init(.ignore) to explicitly exclude the property
-  let fixItAddIgnore: FixIt = {
-    var ignoreAttr = AttributeSyntax(stringLiteral: "@Init(.ignore)\n")
-    ignoreAttr.leadingTrivia = variable.leadingTrivia
-
-    var newVariable = variable
-    newVariable.leadingTrivia = Trivia()
-    newVariable.attributes = AttributeListSyntax(
-      [.attribute(ignoreAttr)] + Array(variable.attributes)
-    )
-
-    // Add initializer placeholder if not already initialized
-    if !variable.isFullyInitialized {
-      newVariable.bindings = PatternBindingListSyntax(
-        newVariable.bindings.map { binding in
-          guard binding.initializer == nil else { return binding }
-          var newBinding = binding
-          newBinding.initializer = InitializerClauseSyntax(
-            equal: .equalToken(leadingTrivia: .space, trailingTrivia: .space),
-            value: EditorPlaceholderExprSyntax(
-              placeholder: TokenSyntax(stringLiteral: "\u{3C}#value#\u{3E}")
-            )
-          )
-          return newBinding
-        }
-      )
+    .filter {
+      let name = $0.attributeName.trimmedDescription
+      if ["Init", "InitWrapper", "InitRaw"].contains(name) { return false }
+      if case .safe = knownAttribute(name) { return false }
+      return true
     }
 
-    return FixIt(
-      message: MacroExpansionFixItMessage(
-        variable.isFullyInitialized
-          ? "Add '@Init(.ignore)'"
-          : "Add '@Init(.ignore)' and an initializer"
-      ),
-      changes: [.replace(oldNode: Syntax(variable), newNode: Syntax(newVariable))]
+  // Prefer recognized property wrappers over other attributes for the diagnostic
+  let diagnosticAttribute: AttributeSyntax? =
+    nonConfigAttributes.first(where: {
+      guard let kind = knownAttribute($0.attributeName.trimmedDescription) else { return false }
+      if case .safe = kind { return false }
+      return true
+    }) ?? nonConfigAttributes.first
+
+  let attributeName = diagnosticAttribute?.attributeName.trimmedDescription ?? "custom"
+  let kind = knownAttribute(attributeName)
+
+  let fixIts: [FixIt]
+  switch kind {
+  case .wrapperInit(let qualifiedName):
+    fixIts = fixItsForWrapperInit(
+      variable: variable,
+      attributeName: attributeName,
+      qualifiedName: qualifiedName
     )
-  }()
+
+  case .directInclude(let qualifiedName):
+    fixIts = fixItsForDirectInclude(
+      variable: variable,
+      qualifiedName: qualifiedName
+    )
+
+  case .ignore(let qualifiedName, let reason):
+    fixIts = fixItsForIgnore(
+      variable: variable,
+      qualifiedName: qualifiedName,
+      reason: reason
+    )
+
+  case .safe:
+    // Should never reach here — safe attributes are filtered out
+    fixIts = fixItsForUnknown(variable: variable)
+
+  case nil:
+    fixIts = fixItsForUnknown(variable: variable)
+  }
 
   return Diagnostic(
     node: variable._syntaxNode,
     message: MacroExpansionErrorMessage(
       """
-      @MemberwiseInit requires explicit @Init configuration for property with '@\(attributeName)' attribute
+      @MemberwiseInit requires explicit @Init configuration for property with \
+      '@\(attributeName)' attribute
       """
     ),
-    fixIts: [fixItAddInit, fixItAddIgnore]
+    fixIts: fixIts
+  )
+}
+
+// MARK: Fix-its by attribute kind
+
+private func fixItsForWrapperInit(
+  variable: VariableDeclSyntax,
+  attributeName: String,
+  qualifiedName: String
+) -> [FixIt] {
+  let wrapperName =
+    attributeName.contains(".")
+    ? String(attributeName.split(separator: ".").last!)
+    : attributeName
+  let propertyType: TypeSyntax? = variable.bindings.first?.typeAnnotation?.type
+
+  let typeArg: String
+  if let propertyType {
+    typeArg = "\(wrapperName)<\(propertyType.trimmedDescription)>.self"
+  } else {
+    typeArg = "\(wrapperName)<\u{3C}#Type#\u{3E}>.self"
+  }
+
+  return [
+    makeAddAttributeFixIt(
+      variable: variable,
+      attributeString: "@InitWrapper(type: \(typeArg))",
+      message: "Add '@InitWrapper(type: \(typeArg))' (@\(qualifiedName))"
+    ),
+    makeAddInitFixIt(
+      variable: variable,
+      message: "Add '@Init' to include in the initializer"
+    ),
+    makeAddIgnoreFixIt(variable: variable, message: nil),
+  ]
+}
+
+private func fixItsForDirectInclude(
+  variable: VariableDeclSyntax,
+  qualifiedName: String
+) -> [FixIt] {
+  [
+    makeAddInitFixIt(
+      variable: variable,
+      message: "Add '@Init' to include in the initializer (@\(qualifiedName))"
+    ),
+    makeAddIgnoreFixIt(variable: variable, message: nil),
+  ]
+}
+
+private func fixItsForIgnore(
+  variable: VariableDeclSyntax,
+  qualifiedName: String,
+  reason: IgnoreReason
+) -> [FixIt] {
+  if reason.noteOnInitFixIt {
+    // firstRender: note goes on @Init fix-it, not on @Init(.ignore)
+    return [
+      makeAddIgnoreFixIt(variable: variable, message: nil),
+      makeAddInitFixIt(
+        variable: variable,
+        message: "Add '@Init' to include (@\(qualifiedName) — \(reason.note))"
+      ),
+    ]
+  } else {
+    // injected, frameworkManaged, etc: note goes on @Init(.ignore)
+    return [
+      makeAddIgnoreFixIt(
+        variable: variable,
+        message: "Add '@Init(.ignore)' (@\(qualifiedName) — \(reason.note))"
+      ),
+      makeAddInitFixIt(
+        variable: variable,
+        message: "Add '@Init' to include in the initializer"
+      ),
+    ]
+  }
+}
+
+private func fixItsForUnknown(
+  variable: VariableDeclSyntax
+) -> [FixIt] {
+  [
+    makeAddInitFixIt(
+      variable: variable,
+      message: "Add '@Init' to include in the initializer"
+    ),
+    makeAddIgnoreFixIt(variable: variable, message: nil),
+  ]
+}
+
+// MARK: Primitive fix-it constructors
+
+private func makeAddAttributeFixIt(
+  variable: VariableDeclSyntax,
+  attributeString: String,
+  message: String
+) -> FixIt {
+  var attr = AttributeSyntax(stringLiteral: "\(attributeString)\n")
+  attr.leadingTrivia = variable.leadingTrivia
+
+  var newVariable = variable
+  newVariable.leadingTrivia = Trivia()
+  newVariable.attributes = AttributeListSyntax(
+    [.attribute(attr)] + Array(variable.attributes)
+  )
+
+  return FixIt(
+    message: MacroExpansionFixItMessage(message),
+    changes: [.replace(oldNode: Syntax(variable), newNode: Syntax(newVariable))]
+  )
+}
+
+private func makeAddInitFixIt(
+  variable: VariableDeclSyntax,
+  message: String
+) -> FixIt {
+  makeAddAttributeFixIt(
+    variable: variable,
+    attributeString: "@Init",
+    message: message
+  )
+}
+
+/// Builds an `@Init(.ignore)` fix-it, adding a default value placeholder when needed.
+/// When `message` is nil, a default message is generated based on initialization state.
+private func makeAddIgnoreFixIt(
+  variable: VariableDeclSyntax,
+  message: String?
+) -> FixIt {
+  var ignoreAttr = AttributeSyntax(stringLiteral: "@Init(.ignore)\n")
+  ignoreAttr.leadingTrivia = variable.leadingTrivia
+
+  var newVariable = variable
+  newVariable.leadingTrivia = Trivia()
+  newVariable.attributes = AttributeListSyntax(
+    [.attribute(ignoreAttr)] + Array(variable.attributes)
+  )
+
+  let needsDefault = !variable.isFullyInitialized
+
+  if needsDefault {
+    newVariable.bindings = PatternBindingListSyntax(
+      newVariable.bindings.map { binding in
+        guard binding.initializer == nil else { return binding }
+        var newBinding = binding
+        newBinding.initializer = InitializerClauseSyntax(
+          equal: .equalToken(leadingTrivia: .space, trailingTrivia: .space),
+          value: EditorPlaceholderExprSyntax(
+            placeholder: TokenSyntax(stringLiteral: "\u{3C}#value#\u{3E}")
+          )
+        )
+        return newBinding
+      }
+    )
+  }
+
+  let effectiveMessage: String
+  if let message {
+    effectiveMessage = needsDefault ? "\(message) and a default value" : message
+  } else {
+    effectiveMessage =
+      needsDefault
+      ? "Add '@Init(.ignore)' and a default value"
+      : "Add '@Init(.ignore)'"
+  }
+
+  return FixIt(
+    message: MacroExpansionFixItMessage(effectiveMessage),
+    changes: [.replace(oldNode: Syntax(variable), newNode: Syntax(newVariable))]
   )
 }
 
@@ -401,7 +562,7 @@ private func diagnoseAccessibilityLeak(
       if variable.isFullyInitialized {
         "Add '\(customAttribute.trimmedDescription)'"
       } else {
-        "Add '\(customAttribute.trimmedDescription)' and an initializer"
+        "Add '\(customAttribute.trimmedDescription)' and a default value"
       }
 
     newVariable.bindings = PatternBindingListSyntax(

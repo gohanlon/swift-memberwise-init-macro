@@ -929,7 +929,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'private' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -960,7 +960,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1038,7 +1038,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Add 'internal' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1069,7 +1069,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1169,7 +1169,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1265,7 +1265,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'private' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1296,7 +1296,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1396,7 +1396,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1496,7 +1496,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1592,7 +1592,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
            ✏️ Add '@Init(.internal)'
            ✏️ Replace 'private' access with 'internal'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1623,7 +1623,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1723,7 +1723,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1823,7 +1823,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.internal) would leak access to 'private' property
                  ✏️ Add '@Init(.internal)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1919,7 +1919,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
            ✏️ Add '@Init(.public)'
            ✏️ Replace 'private' access with 'public'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1950,7 +1950,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -1981,7 +1981,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2036,7 +2036,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2067,7 +2067,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2098,7 +2098,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2175,7 +2175,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2206,7 +2206,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2279,7 +2279,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
            ✏️ Add '@Init(.public)'
            ✏️ Replace 'private' access with 'public'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2310,7 +2310,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2341,7 +2341,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2396,7 +2396,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2427,7 +2427,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2458,7 +2458,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2535,7 +2535,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2566,7 +2566,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2639,7 +2639,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
            ✏️ Add '@Init(.public)'
            ✏️ Replace 'private' access with 'public'
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2670,7 +2670,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2701,7 +2701,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2756,7 +2756,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
            ✏️ Add '@Init(.public)'
            ✏️ Add 'public' access level
-           ✏️ Add '@Init(.ignore)' and an initializer
+           ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2787,7 +2787,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2818,7 +2818,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2895,7 +2895,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬───────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
@@ -2926,7 +2926,7 @@ final class MemberwiseInitAccessLevelTests: XCTestCase {
               ┬────────
               ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
                  ✏️ Add '@Init(.public)'
-                 ✏️ Add '@Init(.ignore)' and an initializer
+                 ✏️ Add '@Init(.ignore)' and a default value
       }
       """
     }
