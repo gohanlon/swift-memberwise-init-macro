@@ -10,7 +10,7 @@ struct VariableCustomSettings: Equatable {
   let accessLevel: AccessLevelModifier?
   let assignee: Assignee?
   let defaultValue: String?
-  let forceEscaping: Bool
+  let escaping: Bool?
   let ignore: Bool
   let label: String?
   let type: TypeSyntax?

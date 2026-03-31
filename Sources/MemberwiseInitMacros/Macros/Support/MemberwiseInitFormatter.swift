@@ -56,9 +56,15 @@ struct MemberwiseInitFormatter {
       ?? property.customSettings?.defaultValue.map { " = \($0)" }
       ?? (optionalsDefaultNil && property.type.isOptionalType ? " = nil" : "")
 
-    let escaping =
-      (property.customSettings?.forceEscaping ?? false || property.type.isFunctionType)
-      ? "@escaping " : ""
+    let escaping: String
+    switch property.customSettings?.escaping {
+    case .some(true):
+      escaping = "@escaping "
+    case .some(false):
+      escaping = ""
+    case .none:
+      escaping = property.type.isFunctionType ? "@escaping " : ""
+    }
 
     let label = property.initParameterLabel(considering: allProperties)
 

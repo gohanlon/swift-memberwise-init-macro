@@ -337,13 +337,10 @@ public struct MemberwiseInitMacro: MemberMacro {
       .trimmedStringLiteral
       .map(VariableCustomSettings.Assignee.raw)
 
-    let configuredForceEscaping =
+    let configuredEscaping: Bool? =
       customConfiguration?
-      .firstWhereLabel("escaping")?
-      .expression
-      .as(BooleanLiteralExprSyntax.self)?
-      .literal
-      .text == "true"
+      .firstWhereLabel("escaping")
+      .map { $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.text == "true" }
 
     let configuredIgnore = configuredValues?.contains("ignore") ?? false
 
@@ -384,7 +381,7 @@ public struct MemberwiseInitMacro: MemberMacro {
       accessLevel: configuredAccessLevel,
       assignee: configuredAssignee,
       defaultValue: configuredDefault,
-      forceEscaping: configuredForceEscaping,
+      escaping: configuredEscaping,
       ignore: configuredIgnore,
       label: configuredLabel,
       type: configuredTypeSyntax,

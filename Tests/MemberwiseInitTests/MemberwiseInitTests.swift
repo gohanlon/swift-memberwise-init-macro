@@ -2601,6 +2601,52 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
+  func testCustomInitEscapingFalse_SuppressesAutoDetection() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(escaping: false) let onComplete: () -> Void
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let onComplete: () -> Void
+
+        internal init(
+          onComplete: () -> Void
+        ) {
+          self.onComplete = onComplete
+        }
+      }
+      """
+    }
+  }
+
+  func testCustomInitEscapingFalse_OnNonClosureType() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct S {
+        @Init(escaping: false) let value: Int
+      }
+      """
+    } expansion: {
+      """
+      struct S {
+        let value: Int
+
+        internal init(
+          value: Int
+        ) {
+          self.value = value
+        }
+      }
+      """
+    }
+  }
+
   // MARK: - Test init parameter names and labels
 
   func testUnderscoredParameter() {
