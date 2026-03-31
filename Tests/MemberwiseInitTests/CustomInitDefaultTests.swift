@@ -2,7 +2,8 @@ import MacroTesting
 import MemberwiseInitMacros
 import XCTest
 
-// TODO: Carefully consider whether to allow @Init(default:) to be applied to multiple bindings
+// NB: @Init(default:) on multiple bindings is intentionally rejected — applying a single default
+// value across multiple bindings is ambiguous and error-prone.
 
 final class CustomInitDefaultTests: XCTestCase {
   override func invokeTest() {

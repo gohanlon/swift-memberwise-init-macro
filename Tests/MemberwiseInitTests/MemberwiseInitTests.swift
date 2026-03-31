@@ -4,7 +4,8 @@ import SwiftSyntaxMacros
 import XCTest
 
 // TODO: Cover valid `open` usages (on class and member decl).
-// TODO: Warn when `@Init(.private) is applied to reduce access, e.g. `public let v: T`?
+// NB: No warning when `@Init(.private)` reduces access (e.g. `public let v: T`), since it may be
+// intentional to restrict init parameter visibility below the property's declared access level.
 
 final class MemberwiseInitTests: XCTestCase {
   override func invokeTest() {
