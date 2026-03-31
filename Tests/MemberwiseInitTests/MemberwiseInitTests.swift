@@ -629,7 +629,7 @@ final class MemberwiseInitTests: XCTestCase {
       struct S {
         var (x, y) = (computeX(), computeY())
             ┬────────────────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }

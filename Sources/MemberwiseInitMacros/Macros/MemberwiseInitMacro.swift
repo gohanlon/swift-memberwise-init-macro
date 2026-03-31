@@ -244,7 +244,7 @@ public struct MemberwiseInitMacro: MemberMacro {
       if propertyBinding.isInitializedVarWithoutType {
         acc.diagnostics.append(
           propertyBinding.diagnostic(
-            MacroExpansionErrorMessage("@MemberwiseInit requires a type annotation.")
+            MacroExpansionErrorMessage("@MemberwiseInit requires a type annotation")
           )
         )
         return
@@ -257,7 +257,7 @@ public struct MemberwiseInitMacro: MemberMacro {
           acc.diagnostics.append(
             propertyBinding.diagnostic(
               MacroExpansionErrorMessage(
-                "@MemberwiseInit requires a type annotation for tuple destructuring."
+                "@MemberwiseInit requires a type annotation for tuple destructuring"
               )
             )
           )

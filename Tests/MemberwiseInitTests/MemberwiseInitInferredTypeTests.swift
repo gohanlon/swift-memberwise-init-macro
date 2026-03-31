@@ -44,7 +44,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct Pedometer {
         var stepsToday = number
             ┬──────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -454,7 +454,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       struct S {
         var array = [1 as Int, 2 as Double]
             ┬──────────────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -509,7 +509,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var array = [1, number, 3]
             ┬─────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -587,7 +587,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var array = [1, "foo", 3]
             ┬────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -670,7 +670,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var dictionary = ["key1": foo, "key2": bar]
             ┬──────────────────────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -702,7 +702,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var dictionary = ["foo": 1, bar: 2]
             ┬──────────────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -779,7 +779,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       struct S {
         var array = [1 as Int: 2 as Double, 1.0: 2]
             ┬──────────────────────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -859,7 +859,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var dictionary = ["foo": 1, 3: "bar"]
             ┬────────────────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -939,7 +939,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var tuple = (1, name, true)
             ┬──────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -1172,7 +1172,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var range = start...5
             ┬────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -1241,7 +1241,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var bitwiseAnd = 0b1010 & 1.0
             ┬────────────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
@@ -1361,7 +1361,7 @@ final class MemberwiseInitInferredTypeTests: XCTestCase {
       public struct S {
         var modulo = 10 % 3.0
             ┬────────────────
-            ╰─ 🛑 @MemberwiseInit requires a type annotation.
+            ╰─ 🛑 @MemberwiseInit requires a type annotation
       }
       """
     }
