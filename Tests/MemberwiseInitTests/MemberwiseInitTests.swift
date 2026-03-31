@@ -1649,8 +1649,7 @@ final class MemberwiseInitTests: XCTestCase {
     }
   }
 
-  // TODO: rename to _FailsWithDiagnostic
-  func testPublicStruct_PublicAndPrivateProperty_PrivateInit() {
+  func testPublicStruct_PublicAndPrivateProperty_PrivateInit_FailsWithDiagnostic() {
     assertMacro {
       """
       @MemberwiseInit

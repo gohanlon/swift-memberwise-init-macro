@@ -15,7 +15,6 @@ final class CustomInitTests: XCTestCase {
     }
   }
 
-  // TODO: For 1.0, diagnostic error on nonsensical @Init
   func testInitializedLet() {
     assertMacro {
       """
@@ -67,7 +66,6 @@ final class CustomInitTests: XCTestCase {
 
   // TODO: For 1.0, diagnostic error on nonsensical @Init. While getter-only computed properties are
   // nonsensical, setter computed properties could be allowed, and perhaps also computed properties with init accessor?
-  // TODO: For 0.3.0, diagnostic warning on nonsensical @Init?
   func testComputedProperty() {
     assertMacro {
       """
@@ -93,7 +91,6 @@ final class CustomInitTests: XCTestCase {
     }
   }
 
-  // TODO: For 1.0, diagnostic error on nonsensical @Init
   func testStaticProperty() {
     assertMacro {
       """

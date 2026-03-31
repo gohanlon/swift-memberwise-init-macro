@@ -407,7 +407,6 @@ final class CustomInitDefaultTests: XCTestCase {
     }
   }
 
-  // TODO: This test doesn't fit perfectly here because it touches on label
   func testInitializedVarCustomLabel() {
     assertMacro {
       """
