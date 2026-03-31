@@ -306,8 +306,6 @@ public func assertMacro(
         )
       }
 
-      // TODO: write a test where didExpand returns false
-      // For now, covered in MemberwiseInitTests.testAppliedToEnum_FailsWithDiagnostic
       var didExpand: Bool {
         let removingWhere: (AttributeSyntax) -> Bool = {
           guard let name = $0.attributeName.as(IdentifierTypeSyntax.self)?.name.text
