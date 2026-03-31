@@ -349,10 +349,12 @@ public struct TestManualExpressionFolding {
 }
 _ = TestManualExpressionFolding(number: 2)
 
-// Swift compiler bug prevents extending inner types (in the same file) when the outer type
-// has macros: https://github.com/apple/swift/issues/66450
-//@MemberwiseInit(.public)  // 🛑 Circular reference resolving attached macro 'MemberwiseInit'
-//public struct BottomMenuState {  // 🛑 Circular reference
-//  public struct Button {}
-//}
-//extension BottomMenuState.Button: Equatable {}
+// NB: Swift compiler bug (apple/swift#66450) prevented extending inner types (in the same
+// file) when the outer type has macros. Fixed in Swift 6.0.
+#if compiler(>=6.0)
+  @MemberwiseInit(.public)
+  public struct BottomMenuState {
+    public struct Button {}
+  }
+  extension BottomMenuState.Button: Equatable {}
+#endif

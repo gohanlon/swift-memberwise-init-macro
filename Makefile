@@ -1,6 +1,10 @@
 default: test
 
-test: test-swift
+test: build-client test-swift
+
+# Verify the example client compiles (swift test doesn't build executable targets)
+build-client:
+	swift build --target MemberwiseInitClient
 
 test-swift:
 	swift test --parallel
@@ -44,6 +48,23 @@ test-swift-syntax-versions:
 test-linux:
 	./bin/test-linux --parallel --continue-on-error --log-dir ./tmp/logs
 
+# Build the example client across Swift versions on Linux via Podman.
+# Use before releases or after major changes to main.swift.
+build-client-linux: preflight-podman
+	@for swift_ver in 5.9 5.10 6.0 6.1 6.2; do \
+		echo "\n## Building client with Swift $$swift_ver"; \
+		build_dir=".build-client-$$swift_ver"; \
+		rm -rf "$$build_dir" 2>/dev/null; \
+		mkdir -p "$$build_dir"; \
+		podman run --rm \
+			-v "$$(pwd)":/workspace \
+			-v "$$(pwd)/$$build_dir":/workspace/.build \
+			-w /workspace \
+			"swift:$$swift_ver" \
+			swift build --target MemberwiseInitClient || exit 1; \
+	done
+	@rm -rf .build-client-* 2>/dev/null
+
 format:
 	swift format \
 		--ignore-unparsable-files \
@@ -51,4 +72,4 @@ format:
 		--recursive \
 		./Package.swift ./Sources ./Tests
 
-.PHONY: default test test-swift clean test-all preflight-podman test-swift-syntax-versions test-linux format
+.PHONY: default test build-client test-swift clean test-all preflight-podman test-swift-syntax-versions test-linux build-client-linux format
