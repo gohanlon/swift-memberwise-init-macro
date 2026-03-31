@@ -9,7 +9,9 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
-
+// swift-format-ignore-file
+// The content of this file was copied from the swift-syntax repository.
+// version: 602.0.0
 import SwiftDiagnostics
 import SwiftOperators
 import SwiftSyntax

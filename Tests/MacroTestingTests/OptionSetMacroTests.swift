@@ -221,7 +221,6 @@ final class OptionSetMacroTests: BaseTestCase {
     } diagnostics: {
       """
       @MyOptionSet<UInt8>
-      ├─ 🛑 'OptionSet' macro can only be applied to a struct
       ╰─ 🛑 'OptionSet' macro can only be applied to a struct
       enum Animal {
         case dog
@@ -242,7 +241,6 @@ final class OptionSetMacroTests: BaseTestCase {
     } diagnostics: {
       """
       @MyOptionSet<UInt8>
-      ├─ 🛑 'OptionSet' macro requires nested options enum 'Options'
       ╰─ 🛑 'OptionSet' macro requires nested options enum 'Options'
       struct ShippingOptions {
         static let express: ShippingOptions = [.nextDay, .secondDay]
@@ -266,7 +264,6 @@ final class OptionSetMacroTests: BaseTestCase {
       """
       @MyOptionSet
       ┬───────────
-      ├─ 🛑 'OptionSet' macro requires a raw type
       ╰─ 🛑 'OptionSet' macro requires a raw type
       struct ShippingOptions {
         private enum Options: Int {

@@ -9,7 +9,9 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
-
+// swift-format-ignore-file
+// The content of this file was copied from the swift-syntax repository.
+// version: 602.0.0
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
@@ -21,9 +23,7 @@ public struct MetaEnumMacro {
   let access: DeclModifierListSyntax.Element?
   let parentParamName: TokenSyntax
 
-  init(
-    node: AttributeSyntax, declaration: some DeclGroupSyntax, context: some MacroExpansionContext
-  ) throws {
+  init(node: AttributeSyntax, declaration: some DeclGroupSyntax, context: some MacroExpansionContext) throws {
     guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
       throw DiagnosticsError(diagnostics: [
         CaseMacroDiagnostic.notAnEnum(declaration).diagnose(at: Syntax(node))
@@ -81,28 +81,10 @@ public struct MetaEnumMacro {
 }
 
 extension MetaEnumMacro: MemberMacro {
-  #if canImport(SwiftSyntax601)
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      conformingTo protocols: [TypeSyntax],
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      try expansionImpl(of: node, providingMembersOf: declaration, in: context)
-    }
-  #else
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      try expansionImpl(of: node, providingMembersOf: declaration, in: context)
-    }
-  #endif
-
-  private static func expansionImpl(
+  public static func expansion(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
+    conformingTo: [TypeSyntax],
     in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
     let macro = try MetaEnumMacro(node: node, declaration: declaration, context: context)
@@ -115,7 +97,7 @@ extension EnumDeclSyntax {
   var caseElements: [EnumCaseElementSyntax] {
     memberBlock.members.flatMap { member in
       guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
-        return [EnumCaseElementSyntax]()
+        return Array<EnumCaseElementSyntax>()
       }
 
       return Array(caseDecl.elements)
@@ -131,8 +113,7 @@ extension CaseMacroDiagnostic: DiagnosticMessage {
   var message: String {
     switch self {
     case .notAnEnum(let decl):
-      return
-        "'@MetaEnum' can only be attached to an enum, not \(decl.descriptiveDeclKind(withArticle: true))"
+      return "'@MetaEnum' can only be attached to an enum, not \(decl.descriptiveDeclKind(withArticle: true))"
     }
   }
 

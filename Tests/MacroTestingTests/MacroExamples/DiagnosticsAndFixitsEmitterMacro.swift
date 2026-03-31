@@ -18,30 +18,11 @@ import SwiftSyntaxMacros
 /// Emits two diagnostics, the first of which is a warning and has two fix-its, and
 /// the second is a note and has no fix-its.
 public enum DiagnosticsAndFixitsEmitterMacro: MemberMacro {
-  #if canImport(SwiftSyntax601)
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      conformingTo protocols: [TypeSyntax],
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      expansionImpl(of: node, providingMembersOf: declaration, in: context)
-    }
-  #else
-    public static func expansion(
-      of node: AttributeSyntax,
-      providingMembersOf declaration: some DeclGroupSyntax,
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      expansionImpl(of: node, providingMembersOf: declaration, in: context)
-    }
-  #endif
-
-  private static func expansionImpl(
+  public static func expansion(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
     in context: some MacroExpansionContext
-  ) -> [DeclSyntax] {
+  ) throws -> [DeclSyntax] {
     let firstFixIt = FixIt(
       message: SimpleDiagnosticMessage(
         message: "This is the first fix-it.",

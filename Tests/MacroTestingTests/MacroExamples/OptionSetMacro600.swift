@@ -9,7 +9,10 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
-
+// swift-format-ignore-file
+// The content of this file was copied from the swift-syntax repository.
+// version: 600.0.1
+#if !canImport(SwiftSyntax601)
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
@@ -79,21 +82,26 @@ public struct OptionSetMacro {
   static func decodeExpansion(
     of attribute: AttributeSyntax,
     attachedTo decl: some DeclGroupSyntax,
-    in context: some MacroExpansionContext
+    in context: some MacroExpansionContext,
+    emitDiagnostics: Bool
   ) -> (StructDeclSyntax, EnumDeclSyntax, TypeSyntax)? {
     // Determine the name of the options enum.
     let optionsEnumName: String
-    if case .argumentList(let arguments) = attribute.arguments,
+    if case let .argumentList(arguments) = attribute.arguments,
       let optionEnumNameArg = arguments.first(labeled: optionsEnumNameArgumentLabel)
     {
       // We have a options name; make sure it is a string literal.
       guard let stringLiteral = optionEnumNameArg.expression.as(StringLiteralExprSyntax.self),
         stringLiteral.segments.count == 1,
-        case .stringSegment(let optionsEnumNameString)? = stringLiteral.segments.first
+        case let .stringSegment(optionsEnumNameString)? = stringLiteral.segments.first
       else {
-        context.diagnose(
-          OptionSetMacroDiagnostic.requiresStringLiteral(optionsEnumNameArgumentLabel).diagnose(
-            at: optionEnumNameArg.expression))
+        if emitDiagnostics {
+          context.diagnose(
+            OptionSetMacroDiagnostic.requiresStringLiteral(optionsEnumNameArgumentLabel).diagnose(
+              at: optionEnumNameArg.expression
+            )
+          )
+        }
         return nil
       }
 
@@ -104,7 +112,9 @@ public struct OptionSetMacro {
 
     // Only apply to structs.
     guard let structDecl = decl.as(StructDeclSyntax.self) else {
-      context.diagnose(OptionSetMacroDiagnostic.requiresStruct.diagnose(at: decl))
+      if emitDiagnostics {
+        context.diagnose(OptionSetMacroDiagnostic.requiresStruct.diagnose(at: decl))
+      }
       return nil
     }
 
@@ -120,18 +130,19 @@ public struct OptionSetMacro {
         return nil
       }).first
     else {
-      context.diagnose(
-        OptionSetMacroDiagnostic.requiresOptionsEnum(optionsEnumName).diagnose(at: decl))
+      if emitDiagnostics {
+        context.diagnose(OptionSetMacroDiagnostic.requiresOptionsEnum(optionsEnumName).diagnose(at: decl))
+      }
       return nil
     }
 
     // Retrieve the raw type from the attribute.
-    guard
-      let genericArgs = attribute.attributeName.as(IdentifierTypeSyntax.self)?
-        .genericArgumentClause,
-      let rawType = genericArgs.arguments.first?.argumentCompat600
+    guard let genericArgs = attribute.attributeName.as(IdentifierTypeSyntax.self)?.genericArgumentClause,
+      let rawType = genericArgs.arguments.first?.argument
     else {
-      context.diagnose(OptionSetMacroDiagnostic.requiresOptionsEnumRawType.diagnose(at: attribute))
+      if emitDiagnostics {
+        context.diagnose(OptionSetMacroDiagnostic.requiresOptionsEnumRawType.diagnose(at: attribute))
+      }
       return nil
     }
 
@@ -148,15 +159,15 @@ extension OptionSetMacro: ExtensionMacro {
     in context: some MacroExpansionContext
   ) throws -> [ExtensionDeclSyntax] {
     // Decode the expansion arguments.
-    guard let (structDecl, _, _) = decodeExpansion(of: node, attachedTo: declaration, in: context)
+    guard
+      let (structDecl, _, _) = decodeExpansion(of: node, attachedTo: declaration, in: context, emitDiagnostics: false)
     else {
       return []
     }
 
     // If there is an explicit conformance to OptionSet already, don't add one.
     if let inheritedTypes = structDecl.inheritanceClause?.inheritedTypes,
-      inheritedTypes.contains(where: { inherited in inherited.type.trimmedDescription == "OptionSet"
-      })
+      inheritedTypes.contains(where: { inherited in inherited.type.trimmedDescription == "OptionSet" })
     {
       return []
     }
@@ -166,41 +177,27 @@ extension OptionSetMacro: ExtensionMacro {
 }
 
 extension OptionSetMacro: MemberMacro {
-  #if canImport(SwiftSyntax601)
-    public static func expansion(
-      of attribute: AttributeSyntax,
-      providingMembersOf decl: some DeclGroupSyntax,
-      conformingTo protocols: [TypeSyntax],
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      expansionImpl(of: attribute, providingMembersOf: decl, in: context)
-    }
-  #else
-    public static func expansion(
-      of attribute: AttributeSyntax,
-      providingMembersOf decl: some DeclGroupSyntax,
-      in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-      expansionImpl(of: attribute, providingMembersOf: decl, in: context)
-    }
-  #endif
-
-  private static func expansionImpl(
+  public static func expansion(
     of attribute: AttributeSyntax,
     providingMembersOf decl: some DeclGroupSyntax,
     in context: some MacroExpansionContext
-  ) -> [DeclSyntax] {
+  ) throws -> [DeclSyntax] {
     // Decode the expansion arguments.
     guard
-      let (_, optionsEnum, rawType) = decodeExpansion(of: attribute, attachedTo: decl, in: context)
+      let (_, optionsEnum, rawType) = decodeExpansion(
+        of: attribute,
+        attachedTo: decl,
+        in: context,
+        emitDiagnostics: true
+      )
     else {
       return []
     }
 
     // Find all of the case elements.
-    let caseElements = optionsEnum.memberBlock.members.flatMap { member in
+    let caseElements: [EnumCaseElementSyntax] = optionsEnum.memberBlock.members.flatMap { member in
       guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
-        return [EnumCaseElementSyntax]()
+        return Array<EnumCaseElementSyntax>()
       }
 
       return Array(caseDecl.elements)
@@ -224,3 +221,4 @@ extension OptionSetMacro: MemberMacro {
     ] + staticVars
   }
 }
+#endif

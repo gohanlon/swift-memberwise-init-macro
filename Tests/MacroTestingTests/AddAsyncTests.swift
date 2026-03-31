@@ -58,11 +58,12 @@ final class AddAsyncMacroTests: BaseTestCase {
             c(a: a, for: b, value) { returnValue in
 
               switch returnValue {
-              case .success(let value):
-                continuation.resume(returning: value)
-              case .failure(let error):
-                continuation.resume(throwing: error)
-              }
+          case .success(let value):
+              continuation.resume(returning: value)
+          case .failure(let error):
+              continuation.resume(throwing: error)
+          }
+
             }
           }
         }
@@ -115,7 +116,8 @@ final class AddAsyncMacroTests: BaseTestCase {
           await withCheckedContinuation { continuation in
             d(a: a, for: b, value) { returnValue in
 
-              continuation.resume(returning: returnValue)
+            continuation.resume(returning: returnValue)
+
             }
           }
         }
