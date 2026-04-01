@@ -112,13 +112,12 @@ extension Package.Dependency {
   ) -> (Version, String, Version) {
     let rangeOperators = ["..<", "..."]
     for op in rangeOperators {
-      if expression.contains(op) {
-        let parts = expression.split(separator: op, maxSplits: 1, omittingEmptySubsequences: true)
-          .map(String.init)
+      if let range = expression.range(of: op) {
+        let lowerString = String(expression[expression.startIndex..<range.lowerBound])
+        let upperString = String(expression[range.upperBound...])
         guard
-          parts.count == 2,
-          let lower = Version(parts[0]),
-          let upper = Version(parts[1])
+          let lower = Version(lowerString),
+          let upper = Version(upperString)
         else {
           fatalError("Invalid version expression format: \(expression)")
         }
