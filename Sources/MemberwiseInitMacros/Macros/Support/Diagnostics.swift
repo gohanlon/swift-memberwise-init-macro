@@ -470,9 +470,9 @@ private func determineRemoveDefaultFixIt(
   defaultValue: String
 ) -> FixIt? {
   let shouldRemoveDefault =
-    variable.isVar
-    && (!variable.hasSoleArgument("default") || variable.hasNonConfigurationAttributes)
-    || variable.bindings.count > 1 && !variable.hasSoleArgument("default")
+    (variable.isVar
+      && (!variable.hasSoleArgument("default") || variable.hasNonConfigurationAttributes))
+    || (variable.bindings.count > 1 && !variable.hasSoleArgument("default"))
 
   return shouldRemoveDefault ? variable.fixItRemoveDefault(defaultValue: defaultValue) : nil
 }
