@@ -48,12 +48,50 @@ test-swift-syntax-versions:
 test-linux:
 	./bin/test-linux --parallel --continue-on-error --log-dir ./tmp/logs
 
+# Swift version → compatible Xcode mapping for macOS multi-version builds.
+# Each toolchain needs an SDK from a compatible Xcode version.
+SWIFT_VERSIONS := 5.9 5.10 6.0 6.1 6.2
+SWIFT_VERSIONS_MACOS := 5.9 5.10 6.0 6.1 6.2
+XCODE_5.9  := /Applications/Xcode-15.4.0.app
+XCODE_5.10 := /Applications/Xcode-15.4.0.app
+XCODE_6.0  := /Applications/Xcode-16.0.0.app
+XCODE_6.1  := /Applications/Xcode-16.3.0.app
+XCODE_6.2  := /Applications/Xcode-26.0.1.app
+
+preflight-swiftly:
+	@swiftly --version > /dev/null 2>&1 || { echo "Error: swiftly is not installed. Install it with: brew install swiftly"; exit 1; }
+
+# Build the example client across Swift versions on macOS via swiftly.
+# Requires multiple Xcode versions installed (older toolchains need matching SDKs).
+build-client-macos: preflight-swiftly
+	@for swift_ver in $(SWIFT_VERSIONS_MACOS); do \
+		echo "## Ensuring Swift $$swift_ver is installed"; \
+		swiftly install $$swift_ver --assume-yes; \
+	done
+	@set -e; \
+	for swift_ver in $(SWIFT_VERSIONS_MACOS); do \
+		case $$swift_ver in \
+			5.9)  xcode_path="$(XCODE_5.9)" ;; \
+			5.10) xcode_path="$(XCODE_5.10)" ;; \
+			6.0)  xcode_path="$(XCODE_6.0)" ;; \
+			6.1)  xcode_path="$(XCODE_6.1)" ;; \
+			6.2)  xcode_path="$(XCODE_6.2)" ;; \
+		esac; \
+		if [ ! -d "$$xcode_path" ]; then \
+			echo "Error: $$xcode_path not found (needed for Swift $$swift_ver)"; \
+			exit 1; \
+		fi; \
+		echo "\n## Building client with Swift $$swift_ver (macOS, $$(basename $$xcode_path))"; \
+		DEVELOPER_DIR="$$xcode_path/Contents/Developer" \
+			swiftly run swift build +$$swift_ver --build-path .build-client-macos-$$swift_ver --target MemberwiseInitClient; \
+	done
+	@rm -rf .build-client-macos-* 2>/dev/null
+
 # Build the example client across Swift versions on Linux via Podman.
-# Use before releases or after major changes to main.swift.
 build-client-linux: preflight-podman
-	@for swift_ver in 5.9 5.10 6.0 6.1 6.2; do \
-		echo "\n## Building client with Swift $$swift_ver"; \
-		build_dir=".build-client-$$swift_ver"; \
+	@for swift_ver in $(SWIFT_VERSIONS); do \
+		echo "\n## Building client with Swift $$swift_ver (Linux)"; \
+		build_dir=".build-client-linux-$$swift_ver"; \
 		rm -rf "$$build_dir" 2>/dev/null; \
 		mkdir -p "$$build_dir"; \
 		podman run --rm \
@@ -63,7 +101,9 @@ build-client-linux: preflight-podman
 			"swift:$$swift_ver" \
 			swift build --target MemberwiseInitClient || exit 1; \
 	done
-	@rm -rf .build-client-* 2>/dev/null
+	@rm -rf .build-client-linux-* 2>/dev/null
+
+build-client-all: build-client-macos build-client-linux
 
 format:
 	swift format \
@@ -72,4 +112,4 @@ format:
 		--recursive \
 		./Package.swift ./Sources ./Tests
 
-.PHONY: default test build-client test-swift clean test-all preflight-podman test-swift-syntax-versions test-linux build-client-linux format
+.PHONY: default test build-client build-client-macos build-client-linux build-client-all test-swift clean test-all preflight-swiftly preflight-podman test-swift-syntax-versions test-linux format
