@@ -2543,7 +2543,7 @@ final class MemberwiseInitTests: XCTestCase {
         }
         """
       }
-    #elseif canImport(SwfitSyntax509)
+    #elseif canImport(SwiftSyntax509)
       assertMacro {
         """
         @MemberwiseInit
@@ -2600,7 +2600,7 @@ final class MemberwiseInitTests: XCTestCase {
         }
         """
       }
-    #elseif canImport(SwfitSyntax509)
+    #elseif canImport(SwiftSyntax509)
       assertMacro {
         """
         @MemberwiseInit(.public)
@@ -2663,7 +2663,7 @@ final class MemberwiseInitTests: XCTestCase {
         }
         """
       }
-    #elseif canImport(SwfitSyntax509)
+    #elseif canImport(SwiftSyntax509)
       assertMacro {
         """
         @MemberwiseInit(.public)
