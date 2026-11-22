@@ -112,47 +112,89 @@ final class CustomInitRawTests: XCTestCase {
   }
 
   func testDefaultOnMultipleBindings() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct S {
-        @InitRaw(default: 42) let x, y: Int
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let x, y: Int
-
-        internal init() {
+    #if canImport(SwiftSyntax510)
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @InitRaw(default: 42) let x, y: Int
         }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit
-      struct S {
+        """
+      } expansion: {
+        """
+        struct S {
+          let x, y: Int
+
+          internal init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @InitRaw(default: 42) let x, y: Int
+                   ┬──────────
+          │        ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+          │           ✏️ Remove '@InitRaw(default: 42)'
+          ┬────────────────────
+          ╰─ 🛑 peer macro can only be applied to a single variable
+        }
+        """
+      } fixes: {
+        """
         @InitRaw(default: 42) let x, y: Int
                  ┬──────────
-        │        ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
-        │           ✏️ Remove '@InitRaw(default: 42)'
-        ┬────────────────────
-        ╰─ 🛑 peer macro can only be applied to a single variable
-      }
-      """
-    } fixes: {
-      """
-      @InitRaw(default: 42) let x, y: Int
-               ┬──────────
-               ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                 ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
 
-      ✏️ Remove '@InitRaw(default: 42)'
-      @MemberwiseInit
-      struct S {
-        let x, y: Int
+        ✏️ Remove '@InitRaw(default: 42)'
+        @MemberwiseInit
+        struct S {
+          let x, y: Int
+        }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @InitRaw(default: 42) let x, y: Int
+        }
+        """
+      } expansion: {
+        """
+        struct S {
+          let x, y: Int
+
+          internal init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @InitRaw(default: 42) let x, y: Int
+                   ┬──────────
+                   ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                      ✏️ Remove '@InitRaw(default: 42)'
+        }
+        """
+      } fixes: {
+        """
+        @InitRaw(default: 42) let x, y: Int
+                 ┬──────────
+                 ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+
+        ✏️ Remove '@InitRaw(default: 42)'
+        @MemberwiseInit
+        struct S {
+          let x, y: Int
+        }
+        """
+      }
+    #endif
   }
 
   func testType() {

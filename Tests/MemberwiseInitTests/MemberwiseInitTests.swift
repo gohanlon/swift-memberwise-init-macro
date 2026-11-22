@@ -944,7 +944,6 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit(.public)
       public struct MyView {
         @Init(.ignore)
-
         @State private var isOn: Bool = <#value#>
       }
 
@@ -952,7 +951,6 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit(.public)
       public struct MyView {
         @Init
-
         @State private var isOn: Bool
       }
       """

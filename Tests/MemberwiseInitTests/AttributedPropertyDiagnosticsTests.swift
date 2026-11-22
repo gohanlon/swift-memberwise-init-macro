@@ -58,7 +58,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @InitWrapper(type: Binding<Int>.self)
-
         @Binding var count: Int
       }
 
@@ -66,7 +65,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @Init
-
         @Binding var count: Int
       }
 
@@ -74,7 +72,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @Init(.ignore)
-
         @Binding var count: Int = <#value#>
       }
       """
@@ -120,7 +117,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @InitWrapper(type: Binding<<#Type#>>.self)
-
         @Binding var count = 0
       }
 
@@ -128,7 +124,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @Init
-
         @Binding var count = 0
       }
 
@@ -136,7 +131,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @Init(.ignore)
-
         @Binding var count = 0
       }
       """
@@ -182,7 +176,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @InitWrapper(type: Binding<Int>.self)
-
         @SwiftUI.Binding var count: Int
       }
 
@@ -190,7 +183,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @Init
-
         @SwiftUI.Binding var count: Int
       }
 
@@ -198,7 +190,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct CounterView {
         @Init(.ignore)
-
         @SwiftUI.Binding var count: Int = <#value#>
       }
       """
@@ -245,7 +236,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class ViewModel {
         @Init
-
         @Published var name: String
       }
 
@@ -253,7 +243,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class ViewModel {
         @Init(.ignore)
-
         @Published var name: String = <#value#>
       }
       """
@@ -298,7 +287,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct DetailView {
         @Init
-
         @ObservedObject var viewModel: MyViewModel
       }
 
@@ -306,7 +294,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct DetailView {
         @Init(.ignore)
-
         @ObservedObject var viewModel: MyViewModel = <#value#>
       }
       """
@@ -351,7 +338,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct DetailView {
         @Init
-
         @Bindable var model: MyModel
       }
 
@@ -359,7 +345,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct DetailView {
         @Init(.ignore)
-
         @Bindable var model: MyModel = <#value#>
       }
       """
@@ -404,7 +389,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class ViewModel {
         @Init
-
         @ObservationIgnored var cache: [String: Data]
       }
 
@@ -412,7 +396,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class ViewModel {
         @Init(.ignore)
-
         @ObservationIgnored var cache: [String: Data] = <#value#>
       }
       """
@@ -457,7 +440,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class BirdSpecies {
         @Init
-
         @Attribute(.unique) var id: String
       }
 
@@ -465,7 +447,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class BirdSpecies {
         @Init(.ignore)
-
         @Attribute(.unique) var id: String = <#value#>
       }
       """
@@ -510,7 +491,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class BirdSpecies {
         @Init
-
         @Relationship(deleteRule: .cascade) var birds: [Bird]
       }
 
@@ -518,7 +498,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class BirdSpecies {
         @Init(.ignore)
-
         @Relationship(deleteRule: .cascade) var birds: [Bird] = <#value#>
       }
       """
@@ -565,7 +544,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct DetailView {
         @Init(.ignore)
-
         @State var isActive: Bool = <#value#>
       }
 
@@ -573,7 +551,62 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct DetailView {
         @Init
+        @State var isActive: Bool
+      }
+      """
+    }
+  }
 
+  func testState_DocComment() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct DetailView {
+        /// Whether the detail is showing.
+        @State var isActive: Bool
+      }
+      """
+    } expansion: {
+      """
+      struct DetailView {
+        /// Whether the detail is showing.
+        @State var isActive: Bool
+
+        internal init() {
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct DetailView {
+        /// Whether the detail is showing.
+        @State var isActive: Bool
+        ┬────────────────────────
+        ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
+           ✏️ Add '@Init(.ignore)' and a default value
+           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      }
+      """
+    } fixes: {
+      """
+      @State var isActive: Bool
+      ┬────────────────────────
+      ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
+
+      ✏️ Add '@Init(.ignore)' and a default value
+      @MemberwiseInit
+      struct DetailView {
+        /// Whether the detail is showing.
+        @Init(.ignore)
+        @State var isActive: Bool = <#value#>
+      }
+
+      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      @MemberwiseInit
+      struct DetailView {
+        /// Whether the detail is showing.
+        @Init
         @State var isActive: Bool
       }
       """
@@ -618,7 +651,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct MyView {
         @Init(.ignore)
-
         @StateObject var viewModel: MyViewModel = <#value#>
       }
 
@@ -626,7 +658,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct MyView {
         @Init
-
         @StateObject var viewModel: MyViewModel
       }
       """
@@ -671,7 +702,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct MyView {
         @Init(.ignore)
-
         @SwiftUI.State var isOn: Bool = <#value#>
       }
 
@@ -679,7 +709,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct MyView {
         @Init
-
         @SwiftUI.State var isOn: Bool
       }
       """
@@ -726,7 +755,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct ContentView {
         @Init(.ignore)
-
         @Environment(\.colorScheme) var colorScheme = <#value#>
       }
 
@@ -734,7 +762,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct ContentView {
         @Init
-
         @Environment(\.colorScheme) var colorScheme
       }
       """#
@@ -779,7 +806,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct SettingsView {
         @Init(.ignore)
-
         @EnvironmentObject var settings: UserSettings = <#value#>
       }
 
@@ -787,7 +813,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct SettingsView {
         @Init
-
         @EnvironmentObject var settings: UserSettings
       }
       """
@@ -834,7 +859,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct MyView {
         @Init(.ignore)
-
         @FocusState var isFocused: Bool = <#value#>
       }
 
@@ -842,7 +866,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct MyView {
         @Init
-
         @FocusState var isFocused: Bool
       }
       """
@@ -887,7 +910,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct SettingsView {
         @Init(.ignore)
-
         @AppStorage("fontSize") var fontSize = 14.0
       }
 
@@ -895,7 +917,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct SettingsView {
         @Init
-
         @AppStorage("fontSize") var fontSize = 14.0
       }
       """
@@ -940,7 +961,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct PeopleView {
         @Init(.ignore)
-
         @Query var people: [Person] = <#value#>
       }
 
@@ -948,7 +968,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct PeopleView {
         @Init
-
         @Query var people: [Person]
       }
       """
@@ -995,7 +1014,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class MainEntity {
         @Init(.ignore)
-
         @NSManaged var name: String = <#value#>
       }
 
@@ -1003,7 +1021,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class MainEntity {
         @Init
-
         @NSManaged var name: String
       }
       """
@@ -1050,7 +1067,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class Player {
         @Init(.ignore)
-
         @Transient var levelsPlayed = 0
       }
 
@@ -1058,7 +1074,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class Player {
         @Init
-
         @Transient var levelsPlayed = 0
       }
       """
@@ -1153,7 +1168,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct Counter {
         @Init
-
         @Logged var count: Int
       }
 
@@ -1161,7 +1175,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct Counter {
         @Init(.ignore)
-
         @Logged var count: Int = <#value#>
       }
       """
@@ -1208,7 +1221,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class ViewModel {
         @Init
-
         @MainActor @Published var isLoading: Bool
       }
 
@@ -1216,7 +1228,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       class ViewModel {
         @Init(.ignore)
-
         @MainActor @Published var isLoading: Bool = <#value#>
       }
       """
@@ -1264,7 +1275,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit(.public)
       public struct CounterView {
         @InitWrapper(type: Binding<Int>.self)
-
         @Binding private var count: Int
       }
 
@@ -1272,7 +1282,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit(.public)
       public struct CounterView {
         @Init
-
         @Binding private var count: Int
       }
 
@@ -1280,7 +1289,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit(.public)
       public struct CounterView {
         @Init(.ignore)
-
         @Binding private var count: Int = <#value#>
       }
       """
@@ -1327,7 +1335,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct MyView {
         @Init(.ignore)
-
         @State var isOn: Bool = false
       }
 
@@ -1335,7 +1342,6 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       @MemberwiseInit
       struct MyView {
         @Init
-
         @State var isOn: Bool = false
       }
       """

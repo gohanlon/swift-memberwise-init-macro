@@ -163,19 +163,39 @@ private func fixItsForUnknown(
 
 // MARK: Primitive fix-it constructors
 
+/// Returns `variable` with `attributeString` on its own line above it.
+///
+/// The new attribute takes the variable's leading trivia (its line break, doc comment, and
+/// indentation), and the variable starts a fresh line at the same indentation.
+///
+/// NB: The line break is built explicitly rather than parsed from `"@Init\n"`, because
+/// swift-syntax 509 and 510 drop a parsed attribute's trailing newline and later versions keep it.
+private func prependingAttribute(
+  _ attributeString: String,
+  to variable: VariableDeclSyntax
+) -> VariableDeclSyntax {
+  var attribute = AttributeSyntax(stringLiteral: attributeString)
+  attribute.leadingTrivia = variable.leadingTrivia
+  attribute.trailingTrivia = Trivia()
+
+  let indentation = Trivia(
+    pieces: variable.leadingTrivia.pieces.reversed().prefix(while: \.isSpaceOrTab).reversed()
+  )
+
+  var newVariable = variable
+  newVariable.leadingTrivia = .newline + indentation
+  newVariable.attributes = AttributeListSyntax(
+    [.attribute(attribute)] + Array(newVariable.attributes)
+  )
+  return newVariable
+}
+
 private func makeAddAttributeFixIt(
   variable: VariableDeclSyntax,
   attributeString: String,
   message: String
 ) -> FixIt {
-  var attr = AttributeSyntax(stringLiteral: "\(attributeString)\n")
-  attr.leadingTrivia = variable.leadingTrivia
-
-  var newVariable = variable
-  newVariable.leadingTrivia = Trivia()
-  newVariable.attributes = AttributeListSyntax(
-    [.attribute(attr)] + Array(variable.attributes)
-  )
+  let newVariable = prependingAttribute(attributeString, to: variable)
 
   return FixIt(
     message: MacroExpansionFixItMessage(message),
@@ -200,14 +220,7 @@ private func makeAddIgnoreFixIt(
   variable: VariableDeclSyntax,
   message: String?
 ) -> FixIt {
-  var ignoreAttr = AttributeSyntax(stringLiteral: "@Init(.ignore)\n")
-  ignoreAttr.leadingTrivia = variable.leadingTrivia
-
-  var newVariable = variable
-  newVariable.leadingTrivia = Trivia()
-  newVariable.attributes = AttributeListSyntax(
-    [.attribute(ignoreAttr)] + Array(variable.attributes)
-  )
+  var newVariable = prependingAttribute("@Init(.ignore)", to: variable)
 
   let needsDefault = !variable.isFullyInitialized
 

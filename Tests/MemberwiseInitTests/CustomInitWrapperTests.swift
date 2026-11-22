@@ -18,47 +18,89 @@ final class CustomInitWrapperTests: XCTestCase {
   }
 
   func testDefaultOnMultipleBindings() {
-    assertMacro {
-      """
-      @MemberwiseInit
-      struct S {
-        @InitWrapper(default: Q<T>()) let x, y: T
-      }
-      """
-    } expansion: {
-      """
-      struct S {
-        let x, y: T
-
-        internal init() {
+    #if canImport(SwiftSyntax510)
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @InitWrapper(default: Q<T>()) let x, y: T
         }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit
-      struct S {
+        """
+      } expansion: {
+        """
+        struct S {
+          let x, y: T
+
+          internal init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @InitWrapper(default: Q<T>()) let x, y: T
+                       ┬──────────────
+          │            ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+          │               ✏️ Remove '@InitWrapper(default: Q<T>())'
+          ┬────────────────────────────
+          ╰─ 🛑 peer macro can only be applied to a single variable
+        }
+        """
+      } fixes: {
+        """
         @InitWrapper(default: Q<T>()) let x, y: T
                      ┬──────────────
-        │            ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
-        │               ✏️ Remove '@InitWrapper(default: Q<T>())'
-        ┬────────────────────────────
-        ╰─ 🛑 peer macro can only be applied to a single variable
-      }
-      """
-    } fixes: {
-      """
-      @InitWrapper(default: Q<T>()) let x, y: T
-                   ┬──────────────
-                   ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                     ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
 
-      ✏️ Remove '@InitWrapper(default: Q<T>())'
-      @MemberwiseInit
-      struct S {
-        let x, y: T
+        ✏️ Remove '@InitWrapper(default: Q<T>())'
+        @MemberwiseInit
+        struct S {
+          let x, y: T
+        }
+        """
       }
-      """
-    }
+    #else
+      assertMacro {
+        """
+        @MemberwiseInit
+        struct S {
+          @InitWrapper(default: Q<T>()) let x, y: T
+        }
+        """
+      } expansion: {
+        """
+        struct S {
+          let x, y: T
+
+          internal init() {
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MemberwiseInit
+        struct S {
+          @InitWrapper(default: Q<T>()) let x, y: T
+                       ┬──────────────
+                       ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+                          ✏️ Remove '@InitWrapper(default: Q<T>())'
+        }
+        """
+      } fixes: {
+        """
+        @InitWrapper(default: Q<T>()) let x, y: T
+                     ┬──────────────
+                     ╰─ 🛑 Custom 'default' can't be applied to multiple bindings
+
+        ✏️ Remove '@InitWrapper(default: Q<T>())'
+        @MemberwiseInit
+        struct S {
+          let x, y: T
+        }
+        """
+      }
+    #endif
   }
 
   func testType() {
