@@ -51,7 +51,7 @@ jobs:
       - name: Install Swift
         uses: SwiftyLab/setup-swift@v1
         with:
-          swift-version: "6.3"
+          swift-version: "6.4"
       - uses: actions/checkout@v6
       - name: Run tests
         run: swift test

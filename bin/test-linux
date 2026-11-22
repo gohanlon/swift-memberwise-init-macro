@@ -10,7 +10,7 @@ set -euo pipefail
 #
 # To ensure compatibility for all users, we test the full matrix.
 
-readonly SWIFT_VERSIONS=(5.9 5.10 6.0 6.1 6.2 6.3)
+readonly SWIFT_VERSIONS=(5.9 5.10 6.0 6.1 6.2 6.3 6.4)
 readonly SYNTAX_VERSIONS=(509 510 600 601 602 603 604)
 readonly MAX_RETRIES=2  # Retry transient compiler crashes
 
@@ -104,7 +104,7 @@ Options:
   -h, --help             Show this help
 
 Examples:
-  $(basename "$0")                              # Full matrix (25 combinations)
+  $(basename "$0")                              # Full matrix (every Swift × swift-syntax)
   $(basename "$0") --swift 5.9 --swift-syntax 509
   $(basename "$0") --swift 6                    # All Swift 6.x versions
   $(basename "$0") --dry-run                    # Preview without running
