@@ -36,7 +36,7 @@ test-swift-syntax-versions:
 		"601.0.0..<602.0.0" \
 		"602.0.0..<603.0.0" \
 		"603.0.0..<604.0.0" \
-		"604.0.0-prerelease..<605.0.0"; \
+		"604.0.0..<605.0.0"; \
 	do \
 		echo "\n## Testing SwiftSyntax version $$version"; \
 		$(MAKE) clean; \
