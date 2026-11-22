@@ -4,6 +4,7 @@ public enum AccessLevelConfig: Sendable {
   case `internal`
   case `package`
   case `public`
+  @available(*, unavailable, message: "An initializer can't be 'open'; use '.public'")
   case `open`
 }
 

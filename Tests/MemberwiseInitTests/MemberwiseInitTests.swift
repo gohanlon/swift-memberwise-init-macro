@@ -2398,7 +2398,9 @@ final class MemberwiseInitTests: XCTestCase {
 
   // MARK: - Test open access level
 
-  func testOpenOnClass() {
+  // NB: `AccessLevelConfig.open` is unavailable, so the compiler rejects `.open` before expansion.
+  // These pin what the macro does should it see one anyway: an initializer can't be `open`.
+  func testOpen_GeneratesPublicInit() {
     assertMacro {
       """
       @MemberwiseInit(.open)
@@ -2411,29 +2413,6 @@ final class MemberwiseInitTests: XCTestCase {
       open class Person {
         open var name: String
 
-        open init(
-          name: String
-        ) {
-          self.name = name
-        }
-      }
-      """
-    }
-  }
-
-  func testOpenOnStruct_FailsWithDiagnostic() {
-    assertMacro {
-      """
-      @MemberwiseInit(.open)
-      public struct S {
-        public var name: String
-      }
-      """
-    } expansion: {
-      """
-      public struct S {
-        public var name: String
-
         public init(
           name: String
         ) {
@@ -2441,77 +2420,10 @@ final class MemberwiseInitTests: XCTestCase {
         }
       }
       """
-    } diagnostics: {
-      """
-      @MemberwiseInit(.open)
-                      ┬────
-                      ╰─ 🛑 'open' can only be used with classes
-                         ✏️ Replace '.open' with '.public'
-      public struct S {
-        public var name: String
-      }
-      """
-    } fixes: {
-      """
-      @MemberwiseInit(.open)
-                      ┬────
-                      ╰─ 🛑 'open' can only be used with classes
-
-      ✏️ Replace '.open' with '.public'
-      @MemberwiseInit(.public)
-      public struct S {
-        public var name: String
-      }
-      """
     }
   }
 
-  func testOpenOnActor_FailsWithDiagnostic() {
-    assertMacro {
-      """
-      @MemberwiseInit(.open)
-      public actor A {
-        public var name: String
-      }
-      """
-    } expansion: {
-      """
-      public actor A {
-        public var name: String
-
-        public init(
-          name: String
-        ) {
-          self.name = name
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @MemberwiseInit(.open)
-                      ┬────
-                      ╰─ 🛑 'open' can only be used with classes
-                         ✏️ Replace '.open' with '.public'
-      public actor A {
-        public var name: String
-      }
-      """
-    } fixes: {
-      """
-      @MemberwiseInit(.open)
-                      ┬────
-                      ╰─ 🛑 'open' can only be used with classes
-
-      ✏️ Replace '.open' with '.public'
-      @MemberwiseInit(.public)
-      public actor A {
-        public var name: String
-      }
-      """
-    }
-  }
-
-  func testOpenOnClass_LeaksInternalProperty_FailsWithDiagnostic() {
+  func testOpen_LeaksInternalProperty_FailsWithPublicDiagnostic() {
     assertMacro {
       """
       @MemberwiseInit(.open)
@@ -2524,7 +2436,7 @@ final class MemberwiseInitTests: XCTestCase {
       open class Person {
         var name: String
 
-        open init() {
+        public init() {
         }
       }
       """
@@ -2534,9 +2446,9 @@ final class MemberwiseInitTests: XCTestCase {
       open class Person {
         var name: String
         ┬───────────────
-        ╰─ 🛑 @MemberwiseInit(.open) would leak access to 'internal' property
-           ✏️ Add '@Init(.open)'
-           ✏️ Add 'open' access level
+        ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
+           ✏️ Add '@Init(.public)'
+           ✏️ Add 'public' access level
            ✏️ Add '@Init(.ignore)' and a default value
       }
       """
@@ -2544,18 +2456,18 @@ final class MemberwiseInitTests: XCTestCase {
       """
       var name: String
       ┬───────────────
-      ╰─ 🛑 @MemberwiseInit(.open) would leak access to 'internal' property
+      ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'internal' property
 
-      ✏️ Add '@Init(.open)'
+      ✏️ Add '@Init(.public)'
       @MemberwiseInit(.open)
       open class Person {
-        @Init(.open) var name: String
+        @Init(.public) var name: String
       }
 
-      ✏️ Add 'open' access level
+      ✏️ Add 'public' access level
       @MemberwiseInit(.open)
       open class Person {
-        open var name: String
+        public var name: String
       }
 
       ✏️ Add '@Init(.ignore)' and a default value

@@ -57,16 +57,7 @@ public struct MemberwiseInitMacro: MemberMacro {
     let optionalsDefaultNil: Bool =
       extractLabeledBoolArgument("optionalsDefaultNil", from: node) ?? false
 
-    if configuredAccessLevel == .open && decl.kind != .classDecl {
-      context.diagnose(
-        diagnoseOpenOnNonClass(node: node, decl: decl)
-      )
-    }
-
-    let accessLevel =
-      (configuredAccessLevel == .open && decl.kind != .classDecl)
-      ? .public
-      : configuredAccessLevel ?? .internal
+    let accessLevel = configuredAccessLevel ?? .internal
     let (properties, diagnostics) = try collectMemberPropertiesAndDiagnostics(
       from: decl.memberBlock.members,
       targetAccessLevel: accessLevel
@@ -95,7 +86,10 @@ public struct MemberwiseInitMacro: MemberMacro {
       if let identifier = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self)?.declName,
         let accessLevel = AccessLevelModifier(rawValue: identifier.baseName.trimmedDescription)
       {
-        return accessLevel
+        // NB: `AccessLevelConfig.open` is unavailable, so the compiler rejects `.open` before
+        // expansion. Should it reach the macro anyway, read it as `.public`: an initializer can't
+        // be `open`, and an `open` parameter reaches no further than a `public` one.
+        return accessLevel == .open ? .public : accessLevel
       }
     }
 
