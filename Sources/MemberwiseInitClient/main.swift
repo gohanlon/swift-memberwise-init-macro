@@ -16,24 +16,21 @@ public struct Person2 {
 _ = Person2(name: "Blob")
 //_ = Person2(name: "Blob", age: 42) // 🛑 Incorrect argument label in call
 
-// NB: Swift 5.9/5.10 crash during SILGen on `any Sendable` existentials in @Sendable closures.
-#if compiler(>=6.0)
-  @MemberwiseInit(.public)
-  public struct Dependency: Sendable {
-    public let get: @Sendable (_ key: String, _ type: Any.Type) -> (any Sendable)?
-    public let set: @Sendable (_ value: (any Sendable)?, _ key: String) -> Void
-    public let values: @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
-  }
-  _ = Dependency(
-    get: { key, type in },
-    set: { value, key in },
-    values: { key, value in
-      return .init { continuation in
-        // …
-      }
+@MemberwiseInit(.public)
+public struct Dependency: Sendable {
+  public let get: @Sendable (_ key: String, _ type: Any.Type) -> (any Sendable)?
+  public let set: @Sendable (_ value: (any Sendable)?, _ key: String) -> Void
+  public let values: @Sendable (_ key: String, _ value: Any.Type) -> AsyncStream<(any Sendable)?>
+}
+_ = Dependency(
+  get: { key, type in },
+  set: { value, key in },
+  values: { key, value in
+    return .init { continuation in
+      // …
     }
-  )
-#endif
+  }
+)
 
 @MemberwiseInit(.public)
 public struct User1 {
@@ -352,12 +349,10 @@ public struct TestManualExpressionFolding {
 }
 _ = TestManualExpressionFolding(number: 2)
 
-// NB: Swift compiler bug (apple/swift#66450) prevented extending inner types (in the same
-// file) when the outer type has macros. Fixed in Swift 6.0.
-#if compiler(>=6.0)
-  @MemberwiseInit(.public)
-  public struct BottomMenuState {
-    public struct Button {}
-  }
-  extension BottomMenuState.Button: Equatable {}
-#endif
+// NB: Before Swift 6.0, apple/swift#66450 prevented extending an inner type in the same file
+// as a macro on its outer type.
+@MemberwiseInit(.public)
+public struct BottomMenuState {
+  public struct Button {}
+}
+extension BottomMenuState.Button: Equatable {}

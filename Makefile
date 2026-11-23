@@ -50,10 +50,8 @@ test-linux:
 
 # Swift version → compatible Xcode mapping for macOS multi-version builds.
 # Each toolchain needs an SDK from a compatible Xcode version.
-SWIFT_VERSIONS := 5.9 5.10 6.0 6.1 6.2
-SWIFT_VERSIONS_MACOS := 5.9 5.10 6.0 6.1 6.2
-XCODE_5.9  := /Applications/Xcode-15.4.0.app
-XCODE_5.10 := /Applications/Xcode-15.4.0.app
+SWIFT_VERSIONS := 6.0 6.1 6.2
+SWIFT_VERSIONS_MACOS := 6.0 6.1 6.2
 XCODE_6.0  := /Applications/Xcode-16.0.0.app
 XCODE_6.1  := /Applications/Xcode-16.3.0.app
 XCODE_6.2  := /Applications/Xcode-26.0.1.app
@@ -71,8 +69,6 @@ build-client-macos: preflight-swiftly
 	@set -e; \
 	for swift_ver in $(SWIFT_VERSIONS_MACOS); do \
 		case $$swift_ver in \
-			5.9)  xcode_path="$(XCODE_5.9)" ;; \
-			5.10) xcode_path="$(XCODE_5.10)" ;; \
 			6.0)  xcode_path="$(XCODE_6.0)" ;; \
 			6.1)  xcode_path="$(XCODE_6.1)" ;; \
 			6.2)  xcode_path="$(XCODE_6.2)" ;; \
