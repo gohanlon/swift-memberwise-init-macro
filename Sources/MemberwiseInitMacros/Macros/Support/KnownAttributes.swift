@@ -11,7 +11,7 @@ enum IgnoreReason {
     case .injected: "value is injected, not initialized"
     case .frameworkManaged: "value is framework-managed"
     case .runtimeManaged: "properties are runtime-managed"
-    case .nonPersistent: "non-persistent, must have a default"
+    case .nonPersistent: "value is non-persistent and needs a default"
     }
   }
 
@@ -24,6 +24,28 @@ enum IgnoreReason {
     }
   }
 }
+
+/// Property wrappers that set themselves up, so an ignored property they wrap needs no default
+/// value. All but `@Query` refuse one: `@Environment(\.dismiss) var dismiss = …` doesn't compile.
+/// Each was checked against the compiler with Swift 6.4.
+let selfInitializingWrappers: Set<String> = [
+  "SwiftUI.Environment",
+  "SwiftUI.EnvironmentObject",
+  "SwiftUI.FocusState",
+  "SwiftUI.AccessibilityFocusState",
+  "SwiftUI.Namespace",
+  "SwiftUI.FetchRequest",
+  "SwiftUI.SectionedFetchRequest",
+  "SwiftUI.FocusedObject",
+  "SwiftUI.FocusedValue",
+  "SwiftUI.FocusedBinding",
+  "SwiftUI.UIApplicationDelegateAdaptor",
+  "SwiftUI.NSApplicationDelegateAdaptor",
+  "SwiftUI.WKApplicationDelegateAdaptor",
+  "SwiftUI.WKExtensionDelegateAdaptor",
+  "SwiftData.Query",
+  "CoreData.NSManaged",
+]
 
 enum KnownAttributeKind {
   /// Metadata-only attribute — skip diagnostic entirely

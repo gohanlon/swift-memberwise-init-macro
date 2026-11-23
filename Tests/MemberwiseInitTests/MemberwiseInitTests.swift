@@ -931,7 +931,7 @@ final class MemberwiseInitTests: XCTestCase {
         ┬────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
            ✏️ Add '@Init(.ignore)' and a default value
-           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+           ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       }
       """
     } fixes: {
@@ -947,7 +947,7 @@ final class MemberwiseInitTests: XCTestCase {
         @State private var isOn: Bool = <#value#>
       }
 
-      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       @MemberwiseInit(.public)
       public struct MyView {
         @Init

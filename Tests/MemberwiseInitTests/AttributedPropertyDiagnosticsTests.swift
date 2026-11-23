@@ -531,7 +531,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         ┬────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
            ✏️ Add '@Init(.ignore)' and a default value
-           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+           ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       }
       """
     } fixes: {
@@ -547,7 +547,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @State var isActive: Bool = <#value#>
       }
 
-      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       @MemberwiseInit
       struct DetailView {
         @Init
@@ -585,7 +585,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         ┬────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
            ✏️ Add '@Init(.ignore)' and a default value
-           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+           ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       }
       """
     } fixes: {
@@ -602,12 +602,63 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @State var isActive: Bool = <#value#>
       }
 
-      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       @MemberwiseInit
       struct DetailView {
         /// Whether the detail is showing.
         @Init
         @State var isActive: Bool
+      }
+      """
+    }
+  }
+
+  func testNamespace() {
+    assertMacro {
+      """
+      @MemberwiseInit
+      struct CardView {
+        @Namespace private var animation
+      }
+      """
+    } expansion: {
+      """
+      struct CardView {
+        @Namespace private var animation
+
+        internal init() {
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @MemberwiseInit
+      struct CardView {
+        @Namespace private var animation
+        ┬───────────────────────────────
+        ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@Namespace' attribute
+           ✏️ Add '@Init(.ignore)' without a default value (@SwiftUI.Namespace value is framework-managed)
+           ✏️ Add '@Init' to include in the initializer
+      }
+      """
+    } fixes: {
+      """
+      @Namespace private var animation
+      ┬───────────────────────────────
+      ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@Namespace' attribute
+
+      ✏️ Add '@Init(.ignore)' without a default value (@SwiftUI.Namespace value is framework-managed)
+      @MemberwiseInit
+      struct CardView {
+        @Init(.ignore)
+        @Namespace private var animation
+      }
+
+      ✏️ Add '@Init' to include in the initializer
+      @MemberwiseInit
+      struct CardView {
+        @Init
+        @Namespace private var animation
       }
       """
     }
@@ -638,7 +689,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         ┬──────────────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@StateObject' attribute
            ✏️ Add '@Init(.ignore)' and a default value
-           ✏️ Add '@Init' to include (@SwiftUI.StateObject — value is only used on first render)
+           ✏️ Add '@Init' to include (@SwiftUI.StateObject value is only used on first render)
       }
       """
     } fixes: {
@@ -654,7 +705,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @StateObject var viewModel: MyViewModel = <#value#>
       }
 
-      ✏️ Add '@Init' to include (@SwiftUI.StateObject — value is only used on first render)
+      ✏️ Add '@Init' to include (@SwiftUI.StateObject value is only used on first render)
       @MemberwiseInit
       struct MyView {
         @Init
@@ -689,7 +740,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         ┬────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@SwiftUI.State' attribute
            ✏️ Add '@Init(.ignore)' and a default value
-           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+           ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       }
       """
     } fixes: {
@@ -705,7 +756,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @SwiftUI.State var isOn: Bool = <#value#>
       }
 
-      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       @MemberwiseInit
       struct MyView {
         @Init
@@ -741,7 +792,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @Environment(\.colorScheme) var colorScheme
         ┬──────────────────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@Environment' attribute
-           ✏️ Add '@Init(.ignore)' (@SwiftUI.Environment — value is injected, not initialized) and a default value
+           ✏️ Add '@Init(.ignore)' without a default value (@SwiftUI.Environment value is injected, not initialized)
            ✏️ Add '@Init' to include in the initializer
       }
       """#
@@ -751,11 +802,11 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       ┬──────────────────────────────────────────
       ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@Environment' attribute
 
-      ✏️ Add '@Init(.ignore)' (@SwiftUI.Environment — value is injected, not initialized) and a default value
+      ✏️ Add '@Init(.ignore)' without a default value (@SwiftUI.Environment value is injected, not initialized)
       @MemberwiseInit
       struct ContentView {
         @Init(.ignore)
-        @Environment(\.colorScheme) var colorScheme = <#value#>
+        @Environment(\.colorScheme) var colorScheme
       }
 
       ✏️ Add '@Init' to include in the initializer
@@ -792,7 +843,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @EnvironmentObject var settings: UserSettings
         ┬────────────────────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@EnvironmentObject' attribute
-           ✏️ Add '@Init(.ignore)' (@SwiftUI.EnvironmentObject — value is injected, not initialized) and a default value
+           ✏️ Add '@Init(.ignore)' without a default value (@SwiftUI.EnvironmentObject value is injected, not initialized)
            ✏️ Add '@Init' to include in the initializer
       }
       """
@@ -802,11 +853,11 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       ┬────────────────────────────────────────────
       ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@EnvironmentObject' attribute
 
-      ✏️ Add '@Init(.ignore)' (@SwiftUI.EnvironmentObject — value is injected, not initialized) and a default value
+      ✏️ Add '@Init(.ignore)' without a default value (@SwiftUI.EnvironmentObject value is injected, not initialized)
       @MemberwiseInit
       struct SettingsView {
         @Init(.ignore)
-        @EnvironmentObject var settings: UserSettings = <#value#>
+        @EnvironmentObject var settings: UserSettings
       }
 
       ✏️ Add '@Init' to include in the initializer
@@ -845,7 +896,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @FocusState var isFocused: Bool
         ┬──────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@FocusState' attribute
-           ✏️ Add '@Init(.ignore)' (@SwiftUI.FocusState — value is framework-managed) and a default value
+           ✏️ Add '@Init(.ignore)' without a default value (@SwiftUI.FocusState value is framework-managed)
            ✏️ Add '@Init' to include in the initializer
       }
       """
@@ -855,11 +906,11 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       ┬──────────────────────────────
       ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@FocusState' attribute
 
-      ✏️ Add '@Init(.ignore)' (@SwiftUI.FocusState — value is framework-managed) and a default value
+      ✏️ Add '@Init(.ignore)' without a default value (@SwiftUI.FocusState value is framework-managed)
       @MemberwiseInit
       struct MyView {
         @Init(.ignore)
-        @FocusState var isFocused: Bool = <#value#>
+        @FocusState var isFocused: Bool
       }
 
       ✏️ Add '@Init' to include in the initializer
@@ -896,7 +947,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @AppStorage("fontSize") var fontSize = 14.0
         ┬──────────────────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@AppStorage' attribute
-           ✏️ Add '@Init(.ignore)' (@SwiftUI.AppStorage — value is framework-managed)
+           ✏️ Add '@Init(.ignore)' (@SwiftUI.AppStorage value is framework-managed)
            ✏️ Add '@Init' to include in the initializer
       }
       """
@@ -906,7 +957,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       ┬──────────────────────────────────────────
       ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@AppStorage' attribute
 
-      ✏️ Add '@Init(.ignore)' (@SwiftUI.AppStorage — value is framework-managed)
+      ✏️ Add '@Init(.ignore)' (@SwiftUI.AppStorage value is framework-managed)
       @MemberwiseInit
       struct SettingsView {
         @Init(.ignore)
@@ -947,7 +998,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @Query var people: [Person]
         ┬──────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@Query' attribute
-           ✏️ Add '@Init(.ignore)' (@SwiftData.Query — value is framework-managed) and a default value
+           ✏️ Add '@Init(.ignore)' without a default value (@SwiftData.Query value is framework-managed)
            ✏️ Add '@Init' to include in the initializer
       }
       """
@@ -957,11 +1008,11 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       ┬──────────────────────────
       ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@Query' attribute
 
-      ✏️ Add '@Init(.ignore)' (@SwiftData.Query — value is framework-managed) and a default value
+      ✏️ Add '@Init(.ignore)' without a default value (@SwiftData.Query value is framework-managed)
       @MemberwiseInit
       struct PeopleView {
         @Init(.ignore)
-        @Query var people: [Person] = <#value#>
+        @Query var people: [Person]
       }
 
       ✏️ Add '@Init' to include in the initializer
@@ -1000,7 +1051,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @NSManaged var name: String
         ┬──────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@NSManaged' attribute
-           ✏️ Add '@Init(.ignore)' (@CoreData.NSManaged — properties are runtime-managed) and a default value
+           ✏️ Add '@Init(.ignore)' without a default value (@CoreData.NSManaged properties are runtime-managed)
            ✏️ Add '@Init' to include in the initializer
       }
       """
@@ -1010,11 +1061,11 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       ┬──────────────────────────
       ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@NSManaged' attribute
 
-      ✏️ Add '@Init(.ignore)' (@CoreData.NSManaged — properties are runtime-managed) and a default value
+      ✏️ Add '@Init(.ignore)' without a default value (@CoreData.NSManaged properties are runtime-managed)
       @MemberwiseInit
       class MainEntity {
         @Init(.ignore)
-        @NSManaged var name: String = <#value#>
+        @NSManaged var name: String
       }
 
       ✏️ Add '@Init' to include in the initializer
@@ -1053,7 +1104,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @Transient var levelsPlayed = 0
         ┬──────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@Transient' attribute
-           ✏️ Add '@Init(.ignore)' (@SwiftData.Transient — non-persistent, must have a default)
+           ✏️ Add '@Init(.ignore)' (@SwiftData.Transient value is non-persistent and needs a default)
            ✏️ Add '@Init' to include in the initializer
       }
       """
@@ -1063,7 +1114,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
       ┬──────────────────────────────
       ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@Transient' attribute
 
-      ✏️ Add '@Init(.ignore)' (@SwiftData.Transient — non-persistent, must have a default)
+      ✏️ Add '@Init(.ignore)' (@SwiftData.Transient value is non-persistent and needs a default)
       @MemberwiseInit
       class Player {
         @Init(.ignore)
@@ -1322,7 +1373,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         ┬────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
            ✏️ Add '@Init(.ignore)'
-           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+           ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       }
       """
     } fixes: {
@@ -1338,7 +1389,7 @@ final class AttributedPropertyDiagnosticsTests: XCTestCase {
         @State var isOn: Bool = false
       }
 
-      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       @MemberwiseInit
       struct MyView {
         @Init

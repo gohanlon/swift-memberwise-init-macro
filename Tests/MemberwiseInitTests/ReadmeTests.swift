@@ -401,7 +401,7 @@ final class ReadmeTests: XCTestCase {
         ┬────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
            ✏️ Add '@Init(.ignore)' and a default value
-           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+           ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
 
         var body: some View { EmptyView() }
       }
@@ -422,7 +422,7 @@ final class ReadmeTests: XCTestCase {
         var body: some View { EmptyView() }
       }
 
-      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       import SwiftUI
       @MemberwiseInit(.internal)  // 👈
       struct MyView: View {
@@ -465,7 +465,7 @@ final class ReadmeTests: XCTestCase {
         ┬────────────────────────────
         ╰─ 🛑 @MemberwiseInit requires explicit @Init configuration for property with '@State' attribute
            ✏️ Add '@Init(.ignore)'
-           ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+           ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
 
         var body: some View { EmptyView() }
       }
@@ -486,7 +486,7 @@ final class ReadmeTests: XCTestCase {
         var body: some View { EmptyView() }
       }
 
-      ✏️ Add '@Init' to include (@SwiftUI.State — value is only used on first render)
+      ✏️ Add '@Init' to include (@SwiftUI.State value is only used on first render)
       import SwiftUI
       @MemberwiseInit(. internal)
       struct MyView: View {

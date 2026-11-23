@@ -103,7 +103,7 @@ private func fixItsForWrapperInit(
       variable: variable,
       message: "Add '@Init' to include in the initializer"
     ),
-    makeAddIgnoreFixIt(variable: variable, message: nil),
+    makeAddIgnoreFixIt(variable: variable),
   ]
 }
 
@@ -116,7 +116,7 @@ private func fixItsForDirectInclude(
       variable: variable,
       message: "Add '@Init' to include in the initializer (@\(qualifiedName))"
     ),
-    makeAddIgnoreFixIt(variable: variable, message: nil),
+    makeAddIgnoreFixIt(variable: variable),
   ]
 }
 
@@ -125,13 +125,14 @@ private func fixItsForIgnore(
   qualifiedName: String,
   reason: IgnoreReason
 ) -> [FixIt] {
+  let addingDefault = !selfInitializingWrappers.contains(qualifiedName)
   if reason.noteOnInitFixIt {
     // firstRender: note goes on @Init fix-it, not on @Init(.ignore)
     return [
-      makeAddIgnoreFixIt(variable: variable, message: nil),
+      makeAddIgnoreFixIt(variable: variable, addingDefault: addingDefault),
       makeAddInitFixIt(
         variable: variable,
-        message: "Add '@Init' to include (@\(qualifiedName) — \(reason.note))"
+        message: "Add '@Init' to include (@\(qualifiedName) \(reason.note))"
       ),
     ]
   } else {
@@ -139,7 +140,8 @@ private func fixItsForIgnore(
     return [
       makeAddIgnoreFixIt(
         variable: variable,
-        message: "Add '@Init(.ignore)' (@\(qualifiedName) — \(reason.note))"
+        note: "@\(qualifiedName) \(reason.note)",
+        addingDefault: addingDefault
       ),
       makeAddInitFixIt(
         variable: variable,
@@ -157,7 +159,7 @@ private func fixItsForUnknown(
       variable: variable,
       message: "Add '@Init' to include in the initializer"
     ),
-    makeAddIgnoreFixIt(variable: variable, message: nil),
+    makeAddIgnoreFixIt(variable: variable),
   ]
 }
 
@@ -214,15 +216,18 @@ private func makeAddInitFixIt(
   )
 }
 
-/// Builds an `@Init(.ignore)` fix-it, adding a default value placeholder when needed.
-/// When `message` is nil, a default message is generated based on initialization state.
+/// Builds an `@Init(.ignore)` fix-it, adding a default value placeholder when the property has
+/// no value. Pass `addingDefault: false` for a property wrapper that sets itself up, and the
+/// fix-it says it adds the attribute without one. A `note` ends the message, in parentheses.
 private func makeAddIgnoreFixIt(
   variable: VariableDeclSyntax,
-  message: String?
+  note: String? = nil,
+  addingDefault: Bool = true
 ) -> FixIt {
   var newVariable = prependingAttribute("@Init(.ignore)", to: variable)
 
-  let needsDefault = !variable.isFullyInitialized
+  let hasValue = variable.isFullyInitialized
+  let needsDefault = addingDefault && !hasValue
 
   if needsDefault {
     newVariable.bindings = PatternBindingListSyntax(
@@ -240,14 +245,14 @@ private func makeAddIgnoreFixIt(
     )
   }
 
-  let effectiveMessage: String
-  if let message {
-    effectiveMessage = needsDefault ? "\(message) and a default value" : message
-  } else {
-    effectiveMessage =
-      needsDefault
-      ? "Add '@Init(.ignore)' and a default value"
-      : "Add '@Init(.ignore)'"
+  var effectiveMessage = "Add '@Init(.ignore)'"
+  if needsDefault {
+    effectiveMessage += " and a default value"
+  } else if !hasValue {
+    effectiveMessage += " without a default value"
+  }
+  if let note {
+    effectiveMessage += " (\(note))"
   }
 
   return FixIt(
