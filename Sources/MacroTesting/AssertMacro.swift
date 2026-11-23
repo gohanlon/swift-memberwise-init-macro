@@ -808,53 +808,55 @@ public func withMacroTesting<R>(
 }
 
 extension Snapshotting where Value == String, Format == String {
-  fileprivate static let _lines = Snapshotting(
-    pathExtension: "txt",
-    diffing: .diff(
-      toData: { Data($0.utf8) },
-      fromData: { String(decoding: $0, as: UTF8.self) }
-    ) { old, new in
-      guard old != new else { return nil }
+  fileprivate static var _lines: Self {
+    Snapshotting(
+      pathExtension: "txt",
+      diffing: .diff(
+        toData: { Data($0.utf8) },
+        fromData: { String(decoding: $0, as: UTF8.self) }
+      ) { old, new in
+        guard old != new else { return nil }
 
-      let newLines = new.split(separator: "\n", omittingEmptySubsequences: false)
+        let newLines = new.split(separator: "\n", omittingEmptySubsequences: false)
 
-      let oldLines = old.split(separator: "\n", omittingEmptySubsequences: false)
-      let difference = newLines.difference(from: oldLines)
+        let oldLines = old.split(separator: "\n", omittingEmptySubsequences: false)
+        let difference = newLines.difference(from: oldLines)
 
-      var result = ""
+        var result = ""
 
-      var insertions = [Int: Substring]()
-      var removals = [Int: Substring]()
+        var insertions = [Int: Substring]()
+        var removals = [Int: Substring]()
 
-      for change in difference {
-        switch change {
-        case .insert(let offset, let element, _):
-          insertions[offset] = element
-        case .remove(let offset, let element, _):
-          removals[offset] = element
+        for change in difference {
+          switch change {
+          case .insert(let offset, let element, _):
+            insertions[offset] = element
+          case .remove(let offset, let element, _):
+            removals[offset] = element
+          }
         }
-      }
 
-      var oldLine = 0
-      var newLine = 0
+        var oldLine = 0
+        var newLine = 0
 
-      while oldLine < oldLines.count || newLine < newLines.count {
-        if let removal = removals[oldLine] {
-          result += "\(oldPrefix) \(removal)\n"
-          oldLine += 1
-        } else if let insertion = insertions[newLine] {
-          result += "\(newPrefix) \(insertion)\n"
-          newLine += 1
-        } else {
-          result += "\(prefix) \(oldLines[oldLine])\n"
-          oldLine += 1
-          newLine += 1
+        while oldLine < oldLines.count || newLine < newLines.count {
+          if let removal = removals[oldLine] {
+            result += "\(oldPrefix) \(removal)\n"
+            oldLine += 1
+          } else if let insertion = insertions[newLine] {
+            result += "\(newPrefix) \(insertion)\n"
+            newLine += 1
+          } else {
+            result += "\(prefix) \(oldLines[oldLine])\n"
+            oldLine += 1
+            newLine += 1
+          }
         }
-      }
 
-      return (result, [.data(Data(result.utf8), name: "diff.patch")])
-    }
-  )
+        return (result, [.data(Data(result.utf8), name: "diff.patch")])
+      }
+    )
+  }
 }
 
 internal func macroName(className: String, isExpression: Bool) -> String {
@@ -871,7 +873,9 @@ internal func macroName(className: String, isExpression: Bool) -> String {
   return name
 }
 
-struct MacroTestingConfiguration {
+// NB: `@unchecked` because swift-syntax 601 and earlier don't mark `Trivia` or `Macro` as
+// `Sendable`. The configuration holds only a value type and metatypes, which are safe to share.
+struct MacroTestingConfiguration: @unchecked Sendable {
   @TaskLocal static var current = Self()
 
   var indentationWidth: Trivia? = nil

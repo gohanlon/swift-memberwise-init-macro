@@ -13,7 +13,9 @@
 import SwiftDiagnostics
 import SwiftSyntax
 
-struct SimpleDiagnosticMessage: DiagnosticMessage, Error {
+// NB: `@unchecked` because swift-syntax 509 doesn't mark `MessageID` or `DiagnosticSeverity` as
+// `Sendable`, which Swift 6.0 and 6.1 require of an `Error`. Both are value types, safe to share.
+struct SimpleDiagnosticMessage: DiagnosticMessage, Error, @unchecked Sendable {
   let message: String
   let diagnosticID: MessageID
   let severity: DiagnosticSeverity
