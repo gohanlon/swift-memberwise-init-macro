@@ -624,11 +624,13 @@ private func diagnoseAccessibilityLeak(
     )
   }
 
-  let fixIts: [FixIt] = [
-    fixWithCustomInitAccess,
-    fixWithAccessModifier,
-    fixWithCustomInitIgnore,
-  ].compactMap { $0 }
+  // With a default value, ignoring the property exposes nothing, so it comes first. Swift 6.4's
+  // own memberwise init does the same without asking (SE-0502).
+  let fixIts: [FixIt] =
+    (variable.isFullyInitialized
+    ? [fixWithCustomInitIgnore, fixWithCustomInitAccess, fixWithAccessModifier]
+    : [fixWithCustomInitAccess, fixWithAccessModifier, fixWithCustomInitIgnore])
+    .compactMap { $0 }
 
   return Diagnostic(
     node: targetNode,

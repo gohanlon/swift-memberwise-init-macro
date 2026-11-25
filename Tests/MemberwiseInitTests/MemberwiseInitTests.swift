@@ -2156,9 +2156,9 @@ final class MemberwiseInitTests: XCTestCase {
         private var stepsToday: Int = 0
         ┬──────
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+           ✏️ Add '@Init(.ignore)'
            ✏️ Add '@Init(.public)'
            ✏️ Replace 'private' access with 'public'
-           ✏️ Add '@Init(.ignore)'
       }
       """
     } fixes: {
@@ -2166,6 +2166,12 @@ final class MemberwiseInitTests: XCTestCase {
       private var stepsToday: Int = 0
       ┬──────
       ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+
+      ✏️ Add '@Init(.ignore)'
+      @MemberwiseInit(.public)
+      struct Pedometer {
+        @Init(.ignore) private var stepsToday: Int = 0
+      }
 
       ✏️ Add '@Init(.public)'
       @MemberwiseInit(.public)
@@ -2177,12 +2183,6 @@ final class MemberwiseInitTests: XCTestCase {
       @MemberwiseInit(.public)
       struct Pedometer {
         public var stepsToday: Int = 0
-      }
-
-      ✏️ Add '@Init(.ignore)'
-      @MemberwiseInit(.public)
-      struct Pedometer {
-        @Init(.ignore) private var stepsToday: Int = 0
       }
       """
     }

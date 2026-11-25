@@ -48,9 +48,9 @@ final class ReadmeTests: XCTestCase {
         private var age: Int? = nil
         ┬──────
         ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+           ✏️ Add '@Init(.ignore)'
            ✏️ Add '@Init(.public)'
            ✏️ Replace 'private' access with 'public'
-           ✏️ Add '@Init(.ignore)'
       }
       """
     } fixes: {
@@ -58,6 +58,13 @@ final class ReadmeTests: XCTestCase {
       private var age: Int? = nil
       ┬──────
       ╰─ 🛑 @MemberwiseInit(.public) would leak access to 'private' property
+
+      ✏️ Add '@Init(.ignore)'
+      @MemberwiseInit(.public)
+      public struct Person {
+        public let name: String
+        @Init(.ignore) private var age: Int? = nil
+      }
 
       ✏️ Add '@Init(.public)'
       @MemberwiseInit(.public)
@@ -71,13 +78,6 @@ final class ReadmeTests: XCTestCase {
       public struct Person {
         public let name: String
         public var age: Int? = nil
-      }
-
-      ✏️ Add '@Init(.ignore)'
-      @MemberwiseInit(.public)
-      public struct Person {
-        public let name: String
-        @Init(.ignore) private var age: Int? = nil
       }
       """
     }
